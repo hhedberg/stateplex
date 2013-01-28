@@ -1,0 +1,77 @@
+#! /bin/bash
+
+#
+# Stateplex - A server-side actor model library.
+#
+# configure - a script to generate Makefile
+#
+# (c) 2013 Henrik Hedberg <henrik.hedberg@innologies.fi>
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 2.1 as published by the Free Software Foundation.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# Lesser General Public License for more details.
+#
+# Authors: Henrik Hedberg
+#
+
+function configure_module() {
+	module=$1
+
+	echo ""
+	echo -e "### $module ###"
+	echo ""
+	echo -e "\$(TARGET)/$module/.deps:"
+	echo -e "\tmkdir -p \$(TARGET)/$module/.deps"
+
+	for source in $library/$module/*.cpp; do
+		object=$(basename $source .cpp).o
+
+		echo ""
+		echo -e "# $module/$object"
+		echo -e "${module}_OBJECTS += \$(TARGET)/$module/$object"
+		echo -e "${module}_DEPS += \$(TARGET)/$module/.deps/${object}.dep"
+
+		echo -e "\$(TARGET)/$module/$object: $source \$(TARGET)/$module/.deps"
+		echo -e "\tg++ -c -fPIC \$(CPPFLAGS) -o \$(TARGET)/$module/$object $source"
+
+		echo -e "\$(TARGET)/$module/.deps/${object}.dep: $source \$(TARGET)/$module/.deps"
+		echo -e "\tg++ -MM -MT \$(TARGET)/$module/$object -MF \$(TARGET)/$module/.deps/${object}.dep \$(CPPFLAGS) $source"
+		echo -e "-include \$(TARGET)/$module/.deps/${object}.dep"
+	done
+
+	echo ""
+	echo -e "\$(TARGET)/lib${library}-$module.so: \$(${module}_OBJECTS) \$(${module}_DEPS)"
+	echo -e "\tg++ -shared -o \$(TARGET)/lib${library}-$module.so \$(${module}_OBJECTS)"
+	echo -e "\$(TARGET)/lib${library}-$module.a: \$(${module}_OBJECTS) \$(${module}_DEPS)"
+	echo -e "\trm -f \$(TARGET)/lib${library}-$module.a"
+	echo -e "\tar -cq \$(TARGET)/lib${library}-$module.a \$(${module}_OBJECTS)"
+	echo -e "\tranlib \$(TARGET)/lib${library}-$module.a"
+}
+
+exec > Makefile
+
+library=stateplex
+target=build/debug
+echo -e "TARGET=$target"
+echo -e "CPPFLAGS=-g"
+echo ""
+
+echo -e "all: \$(TARGET)/libstateplex-core.so \$(TARGET)/libstateplex-core.a"
+echo ""
+
+echo -e "clean:"
+echo -e "\trm -Rf build"
+
+echo -e "distclean: clean"
+echo -e "\trm -f Makefile"
+
+
+configure_module core
+
+
+
