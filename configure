@@ -19,49 +19,96 @@
 # Authors: Henrik Hedberg
 #
 
-function configure_module() {
-	module=$1
+target=build/debug
+cppflags=-I.
+cxxflags=-g
+ldflags=
+output=Makefile
+
+function configure_library() {
+	path=$1
+	name=$(echo $path | tr / _)
+	library_name=$(echo $path | tr / -)
+	directory=$(dirname $path)
 
 	echo ""
-	echo -e "### $module ###"
+	echo -e "### Library: $library_name ###"
 	echo ""
-	echo -e "\$(TARGET)/$module/.deps:"
-	echo -e "\tmkdir -p \$(TARGET)/$module/.deps"
+	echo -e "\$(TARGET)/$path/.deps:"
+	echo -e "\tmkdir -p \$(TARGET)/$path/.deps"
 
-	for source in $library/$module/*.cpp; do
+	for source in $path/*.cpp; do
 		object=$(basename $source .cpp).o
 
 		echo ""
-		echo -e "# $module/$object"
-		echo -e "${module}_OBJECTS += \$(TARGET)/$module/$object"
-		echo -e "${module}_DEPS += \$(TARGET)/$module/.deps/${object}.dep"
+		echo -e "# $path/$object"
+		echo -e "${name}_OBJECTS += \$(TARGET)/$path/$object"
+		echo -e "${name}_DEPS += \$(TARGET)/$path/.deps/${object}.dep"
 
-		echo -e "\$(TARGET)/$module/$object: $source \$(TARGET)/$module/.deps"
-		echo -e "\tg++ -c -fPIC \$(CPPFLAGS) -o \$(TARGET)/$module/$object $source"
+		echo -e "\$(TARGET)/$path/$object: $source \$(TARGET)/$path/.deps"
+		echo -e "\tg++ -c -fPIC \$(CPPFLAGS) \$(${name}_CPPFLAGS) \$(CXXFLAGS) \$(${name}_CXXFLAGS) -o \$(TARGET)/$path/$object $source"
 
-		echo -e "\$(TARGET)/$module/.deps/${object}.dep: $source \$(TARGET)/$module/.deps"
-		echo -e "\tg++ -MM -MT \$(TARGET)/$module/$object -MF \$(TARGET)/$module/.deps/${object}.dep \$(CPPFLAGS) $source"
-		echo -e "-include \$(TARGET)/$module/.deps/${object}.dep"
+		echo -e "\$(TARGET)/$path/.deps/${object}.dep: $source \$(TARGET)/$path/.deps"
+		echo -e "\tg++ -MM -MT \$(TARGET)/$path/$object -MF \$(TARGET)/$path/.deps/${object}.dep \$(CPPFLAGS) \$(${name}_CPPFLAGS) \$(CXXFLAGS) \$(${name}_CXXFLAGS) $source"
+		echo -e "-include \$(TARGET)/$path/.deps/${object}.dep"
 	done
 
 	echo ""
-	echo -e "\$(TARGET)/lib${library}-$module.so: \$(${module}_OBJECTS) \$(${module}_DEPS)"
-	echo -e "\tg++ -shared -o \$(TARGET)/lib${library}-$module.so \$(${module}_OBJECTS)"
-	echo -e "\$(TARGET)/lib${library}-$module.a: \$(${module}_OBJECTS) \$(${module}_DEPS)"
-	echo -e "\trm -f \$(TARGET)/lib${library}-$module.a"
-	echo -e "\tar -cq \$(TARGET)/lib${library}-$module.a \$(${module}_OBJECTS)"
-	echo -e "\tranlib \$(TARGET)/lib${library}-$module.a"
+	echo -e "\$(TARGET)/$directory/lib$library_name.so: \$(${name}_OBJECTS) \$(${name}_DEPS)"
+	echo -e "\tg++ -shared \$(LDFLAGS) \$(${name}_LDFLAGS) -o \$(TARGET)/$directory/lib$library_name.so \$(${name}_OBJECTS)"
+	echo -e "\$(TARGET)/$directory/lib$library_name.a: \$(${name}_OBJECTS) \$(${name}_DEPS)"
+	echo -e "\trm -f \$(TARGET)/$directory/lib$library_name.a"
+	echo -e "\tar -cq \$(TARGET)/$directory/lib$library_name.a \$(${name}_OBJECTS)"
+	echo -e "\tranlib \$(TARGET)/$directory/lib$library_name.a"
 }
 
-exec > Makefile
+function configure_executable() {
+	path=$1
+	name=$(echo $path | tr / _)
+	executable_name=$(echo $path | tr / -)
+	directory=$(dirname $path)
 
-library=stateplex
-target=build/debug
+	echo ""
+	echo -e "### Executable: $executable_name ###"
+	echo ""
+	echo -e "\$(TARGET)/$path/.deps:"
+	echo -e "\tmkdir -p \$(TARGET)/$path/.deps"
+
+	if [ -r $path/build.conf ]; then
+		cat $path/build.conf | while read -r line ; do echo ${name}_$line; done
+	fi
+
+	for source in $path/*.cpp; do
+		object=$(basename $source .cpp).o
+
+		echo ""
+		echo -e "# $path/$object"
+		echo -e "${name}_OBJECTS += \$(TARGET)/$path/$object"
+		echo -e "${name}_DEPS += \$(TARGET)/$path/.deps/${object}.dep"
+
+		echo -e "\$(TARGET)/$path/$object: $source \$(TARGET)/$path/.deps"
+		echo -e "\tg++ -c -fPIC \$(CPPFLAGS) \$(${name}_CPPFLAGS) \$(CXXFLAGS) \$(${name}_CXXFLAGS) -o \$(TARGET)/$path/$object $source"
+
+		echo -e "\$(TARGET)/$path/.deps/${object}.dep: $source \$(TARGET)/$path/.deps"
+		echo -e "\tg++ -MM -MT \$(TARGET)/$path/$object -MF \$(TARGET)/$path/.deps/${object}.dep \$(CPPFLAGS) \$(${name}_CPPFLAGS) \$(CXXFLAGS) \$(${name}_CXXFLAGS) $source"
+		echo -e "-include \$(TARGET)/$path/.deps/${object}.dep"
+	done
+
+	echo ""
+	echo -e "\$(TARGET)/$directory/$executable_name: \$(${name}_OBJECTS) \$(${name}_DEPS)"
+	echo -e "\tg++ -o \$(TARGET)/$directory/$executable_name \$(${name}_OBJECTS) \$(LDFLAGS) \$(${name}_LDFLAGS)"
+}
+
+
+exec > $output
+
 echo -e "TARGET=$target"
-echo -e "CPPFLAGS=-g"
+echo -e "CPPFLAGS=$cppflags"
+echo -e "CXXFLAGS=$cxxflags"
+echo -e "LDFLAGS=$ldflags"
 echo ""
 
-echo -e "all: \$(TARGET)/libstateplex-core.so \$(TARGET)/libstateplex-core.a"
+echo -e "all: \$(TARGET)/stateplex/libstateplex-core.so \$(TARGET)/stateplex/libstateplex-core.a \$(TARGET)/examples/examples-hello"
 echo ""
 
 echo -e "clean:"
@@ -70,8 +117,12 @@ echo -e "\trm -Rf build"
 echo -e "distclean: clean"
 echo -e "\trm -f Makefile"
 
+for library in $(find stateplex -mindepth 1 -type d); do
+	echo Configuring library: $library >&2
+	configure_library $library
+done
 
-configure_module core
-
-
-
+for executable in $(find examples -mindepth 1 -type d); do
+	echo Configuring executable: $executable >&2
+	configure_executable $executable
+done
