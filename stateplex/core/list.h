@@ -93,17 +93,21 @@ inline void ListItem<T>::addBetween(ListItem<T> *previous, ListItem<T> *next)
 template<typename T>
 inline void ListItem<T>::addBefore(ListItem<T> *existing_item)
 {
+	ListItem<T> *previous = existing_item->mPrevious;
+
 	mPrevious->mNext = mNext;
 	mNext->mPrevious = mPrevious;
-	addBetween(existing_item->mPrevious, existing_item);
+	addBetween(previous, existing_item);
 }
 
 template<typename T>
 inline void ListItem<T>::addAfter(ListItem<T> *existing_item)
 {
+	ListItem<T> *next = existing_item->mNext;
+
 	mNext->mPrevious = mPrevious;
 	mPrevious->mNext = mNext;
-	addBetween(existing_item, existing_item->mNext);
+	addBetween(existing_item, next);
 }
 
 template<typename T>
