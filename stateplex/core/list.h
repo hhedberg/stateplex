@@ -28,6 +28,9 @@ template<typename T>
 class List;
 
 template<typename T>
+class ListIterator;
+
+template<typename T>
 struct ListItem {
 	ListItem<T> *mNext;
 	ListItem<T> *mPrevious;
@@ -61,6 +64,24 @@ public:
 	void spliceTail(List<T> *list);
 
 	bool isEmpty();
+};
+
+template<typename T>
+class ListIterator {
+	List<T> *mList;
+	ListItem<T> *mCurrent;
+	ListItem<T> *mSubsequent;
+	bool mBackwards;
+	
+public:
+	ListIterator(List<T> *list, bool backwards = false);
+
+	List<T> *list();
+	ListItem<T> *current();
+	ListItem<T> *subsequent();
+	bool hasCurrent();
+	bool hasSubsequent();
+	bool backwards();
 };
 
 }
@@ -194,6 +215,61 @@ template<typename T>
 inline bool List<T>::isEmpty()
 {
 	return mItems.mNext == &mItems;
+}
+
+template<typename T>
+ListIterator<T>::ListIterator(List<T> *list, bool backwards)
+	: mList(list), mBackwards(backwards)
+{
+	if (!backwards) {
+		mCurrent = mList->first();
+		if (mCurrent)
+			mSubsequent = mList->next(mCurrent);
+	} else {
+		mCurrent = list->last();
+		if (mCurrent)
+			mSubsequent = mList->previous(mCurrent);
+	}
+}
+
+template<typename T>
+List<T> *ListIterator<T>::list()
+{
+	return mList;
+}
+
+template<typename T>
+ListItem<T> *ListIterator<T>::current()
+{
+	return mCurrent;
+}
+
+template<typename T>
+ListItem<T> *ListIterator<T>::subsequent()
+{
+	mCurrent = mSubsequent;
+	if (mCurrent)
+		mSubsequent = (!mBackwards ? mList->next(mCurrent) : mList->previous(mCurrent));
+
+	return mCurrent;
+}
+
+template<typename T>
+bool ListIterator<T>::hasCurrent()
+{
+	return mCurrent != 0;
+}
+
+template<typename T>
+bool ListIterator<T>::hasSubsequent()
+{
+	return mSubsequent != 0;
+}
+
+template<typename T>
+bool ListIterator<T>::backwards()
+{
+	return mBackwards;
 }
 
 }
