@@ -29,7 +29,7 @@ doxygen=0
 function check_for_doxygen() {
         for d in `echo $PATH | sed "s/:/ /g"`; do
                 if [ -r $d/doxygen ]; then
-                        let doxygen=0
+                        let doxygen=1
                         break
                 fi
         done
@@ -120,7 +120,9 @@ echo ""
 
 if [ $doxygen == 1 ]; then
         echo -e "docs:"
-        echo -e "\tdoxygen $(pwd)/doc/settings"
+        echo -e "\t @echo -n \"Creating Doxygen documentation...\""
+        echo -e "\t@doxygen $(pwd)/doc/settings"
+        echo -e "\t @echo \"done\""
         echo ""
 else
         echo -e "docs:"
@@ -136,7 +138,7 @@ echo -e "\trm -Rf build"
 
 echo -e "distclean: clean"
 echo -e "\trm -f Makefile"
-echo -e "\trm -Rf html latex" 
+echo -e "\trm -Rf doc/html doc/latex" 
 
 for library in $(find stateplex -mindepth 1 -type d); do
 	echo Configuring library: $library >&2
