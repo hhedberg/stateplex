@@ -24,6 +24,16 @@ cppflags=-I.
 cxxflags=-g
 ldflags=
 output=Makefile
+doxygen=0
+
+function check_for_doxygen() {
+        for d in `echo $PATH | sed "s/:/ /g"`; do
+                if [ -r $d/doxygen ]; then
+                        let doxygen=0
+                        break
+                fi
+        done
+}
 
 function configure_library() {
 	path=$1
@@ -99,7 +109,7 @@ function configure_executable() {
 	echo -e "\tg++ -o \$(TARGET)/$directory/$executable_name \$(${name}_OBJECTS) \$(LDFLAGS) \$(${name}_LDFLAGS)"
 }
 
-
+check_for_doxygen
 exec > $output
 
 echo -e "TARGET=$target"
@@ -107,6 +117,16 @@ echo -e "CPPFLAGS=$cppflags"
 echo -e "CXXFLAGS=$cxxflags"
 echo -e "LDFLAGS=$ldflags"
 echo ""
+
+if [ $doxygen == 1 ]; then
+        echo -e "docs:"
+        echo -e "\tdoxygen $(pwd)/doc/settings"
+        echo ""
+else
+        echo -e "docs:"
+        echo -e "\t @echo \"Doxygen is not installed to your system, you can get it from http://www.stack.nl/~dimitri/doxygen/download.html\""
+        echo ""
+fi
 
 echo -e "all: \$(TARGET)/stateplex/libstateplex-core.so \$(TARGET)/stateplex/libstateplex-core.a \$(TARGET)/examples/examples-hello"
 echo ""
@@ -116,6 +136,7 @@ echo -e "\trm -Rf build"
 
 echo -e "distclean: clean"
 echo -e "\trm -f Makefile"
+echo -e "\trm -Rf html latex" 
 
 for library in $(find stateplex -mindepth 1 -type d); do
 	echo Configuring library: $library >&2
@@ -126,3 +147,4 @@ for executable in $(find examples -mindepth 1 -type d); do
 	echo Configuring executable: $executable >&2
 	configure_executable $executable
 done
+
