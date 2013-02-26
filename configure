@@ -25,6 +25,7 @@ cxxflags=-g
 ldflags=
 output=Makefile
 doxygen=0
+gtest_installed=0
 
 function check_for_doxygen() {
         for d in `echo $PATH | sed "s/:/ /g"`; do
@@ -33,6 +34,17 @@ function check_for_doxygen() {
                         break
                 fi
         done
+}
+
+function check_for_gtest() {
+        tmp=$(ls /usr/include/ | grep gtest)
+        if [ "$tmp" !=  gtest ]; then
+                tmp=$(ls /usr/local/include | grep gtest)
+        fi
+
+        if [ "$tmp" == gtest ]; then
+                let gtest_installed=0
+        fi
 }
 
 function configure_library() {
@@ -108,7 +120,7 @@ function configure_executable() {
 	echo -e "\$(TARGET)/$directory/$executable_name: \$(${name}_OBJECTS) \$(${name}_DEPS)"
 	echo -e "\tg++ -o \$(TARGET)/$directory/$executable_name \$(${name}_OBJECTS) \$(LDFLAGS) \$(${name}_LDFLAGS)"
 }
-
+check_for_gtest
 check_for_doxygen
 exec > $output
 
@@ -117,18 +129,6 @@ echo -e "CPPFLAGS=$cppflags"
 echo -e "CXXFLAGS=$cxxflags"
 echo -e "LDFLAGS=$ldflags"
 echo ""
-
-if [ $doxygen == 1 ]; then
-        echo -e "docs:"
-        echo -e "\t @echo -n \"Creating Doxygen documentation...\""
-        echo -e "\t@doxygen $(pwd)/doc/settings"
-        echo -e "\t @echo \"done\""
-        echo ""
-else
-        echo -e "docs:"
-        echo -e "\t @echo \"Doxygen is not installed to your system, you can get it from http://www.stack.nl/~dimitri/doxygen/download.html\""
-        echo ""
-fi
 
 echo -e "all: \$(TARGET)/stateplex/libstateplex-core.so \$(TARGET)/stateplex/libstateplex-core.a \$(TARGET)/examples/examples-hello"
 echo ""
@@ -139,6 +139,24 @@ echo -e "\trm -Rf build"
 echo -e "distclean: clean"
 echo -e "\trm -f Makefile"
 echo -e "\trm -Rf doc/html doc/latex" 
+
+if [ $gtest_installed == 0 ]; then
+        echo -e "test:"
+        echo -e "\t@echo -n \"Google test framework is not installed to your system, you can get it from http://code.google.com/p/googletest/\""
+        echo ""
+fi
+
+if [ $doxygen == 1 ]; then
+        echo -e "docs:"
+        echo -e "\t@echo -n \"Creating Doxygen documentation...\""
+        echo -e "\t@doxygen $(pwd)/doc/settings"
+        echo -e "\t@echo \"done\""
+        echo ""
+else
+        echo -e "docs:"
+        echo -e "\t@echo \"Doxygen is not installed to your system, you can get it from http://www.stack.nl/~dimitri/doxygen/download.html\""
+        echo ""
+fi
 
 for library in $(find stateplex -mindepth 1 -type d); do
 	echo Configuring library: $library >&2
