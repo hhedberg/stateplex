@@ -30,36 +30,40 @@ class List;
 template<typename T>
 class ListIterator;
 
-template<typename T>
-struct ListItem {
-	ListItem<T> *mNext;
-	ListItem<T> *mPrevious;
+class ListItem {
+	template<typename T> friend class List;
 
+	ListItem *mNext;
+	ListItem *mPrevious;
+
+	void addBetween(ListItem *previous, ListItem *next);
+
+public:
 	ListItem();
 
-	void addBetween(ListItem<T> *previous, ListItem<T> *next);
-	void addBefore(ListItem<T> *existing_item);
-	void addAfter(ListItem<T> *existing_item);
-	void initialise();
+	void addBefore(ListItem *existing_item);
+	void addAfter(ListItem *existing_item);
 	void remove();
-	T *container();
 };
 
 template<typename T>
 class List {
-	ListItem<T> mItems;
+	template<typename S> friend class ListIterator;
+
+	ListItem mItems;
+
+	void addBetween(ListItem *previous, ListItem *next);
+	ListItem *next(ListItem *item);
+	ListItem *previous(ListItem *item);
 
 public:
 	List();
 	
-	ListItem<T> *first();
-	ListItem<T> *last();
-	ListItem<T> *next(ListItem<T> *item);
-	ListItem<T> *previous(ListItem<T> *item);
+	T *first();
+	T *last();
 	
-	void addBetween(ListItem<T> *previous, ListItem<T> *next);
-	void addHead(ListItem<T> *item);
-	void addTail(ListItem<T> *item);
+	void addHead(T *item);
+	void addTail(T *item);
 	void spliceHead(List<T> *list);
 	void spliceTail(List<T> *list);
 
@@ -69,16 +73,16 @@ public:
 template<typename T>
 class ListIterator {
 	List<T> *mList;
-	ListItem<T> *mCurrent;
-	ListItem<T> *mSubsequent;
+	ListItem *mCurrent;
+	ListItem *mSubsequent;
 	bool mBackwards;
 	
 public:
 	ListIterator(List<T> *list, bool backwards = false);
 
 	List<T> *list();
-	ListItem<T> *current();
-	ListItem<T> *subsequent();
+	T *current();
+	T *subsequent();
 	bool hasCurrent();
 	bool hasSubsequent();
 	bool backwards();
@@ -90,20 +94,11 @@ public:
 
 namespace Stateplex {
 
-template<typename T>
-inline ListItem<T>::ListItem()
-{
-	initialise();
-}
+inline ListItem::ListItem()
+	: mNext(this), mPrevious(this)
+{ }
 
-template<typename T>
-inline void ListItem<T>::initialise()
-{
-	mNext = mPrevious = this;
-}
-
-template<typename T>
-inline void ListItem<T>::addBetween(ListItem<T> *previous, ListItem<T> *next)
+inline void ListItem::addBetween(ListItem *previous, ListItem *next)
 {
 	previous->mNext = this;
 	mPrevious = previous;
@@ -111,28 +106,25 @@ inline void ListItem<T>::addBetween(ListItem<T> *previous, ListItem<T> *next)
 	next->mPrevious = this;
 }
 
-template<typename T>
-inline void ListItem<T>::addBefore(ListItem<T> *existing_item)
+inline void ListItem::addBefore(ListItem *existing_item)
 {
-	ListItem<T> *previous = existing_item->mPrevious;
+	ListItem *previous = existing_item->mPrevious;
 
 	mPrevious->mNext = mNext;
 	mNext->mPrevious = mPrevious;
 	addBetween(previous, existing_item);
 }
 
-template<typename T>
-inline void ListItem<T>::addAfter(ListItem<T> *existing_item)
+inline void ListItem::addAfter(ListItem *existing_item)
 {
-	ListItem<T> *next = existing_item->mNext;
+	ListItem *next = existing_item->mNext;
 
 	mNext->mPrevious = mPrevious;
 	mPrevious->mNext = mNext;
 	addBetween(existing_item, next);
 }
 
-template<typename T>
-inline void ListItem<T>::remove()
+inline void ListItem::remove()
 {
 	mPrevious->mNext = mNext;
 	mNext->mPrevious = mPrevious;
@@ -141,78 +133,70 @@ inline void ListItem<T>::remove()
 }
 
 template<typename T>
-inline T *ListItem<T>::container()
+List<T>::List()
+{ }
+
+template<typename T>
+T *List<T>::first()
 {
-	return reinterpret_cast<T *>(this);
+	return static_cast<T *>(mItems.mNext != &mItems ? mItems.mNext : 0);
 }
 
 template<typename T>
-inline List<T>::List()
+T *List<T>::last()
 {
-	mItems.initialise();
+	return static_cast<T *>(mItems.mPrevious != &mItems ? mItems.mPrevious : 0);
 }
 
 template<typename T>
-inline ListItem<T> *List<T>::first()
-{
-	return (mItems.mNext != &mItems ? mItems.mNext : 0);
-}
-
-template<typename T>
-inline ListItem<T> *List<T>::last()
-{
-	return (mItems.mPrevious != &mItems ? mItems.mPrevious : 0);
-}
-
-template<typename T>
-ListItem<T> *List<T>::next(ListItem<T> *item)
+ListItem *List<T>::next(ListItem *item)
 {
 	return (item->mNext != &mItems ? item->mNext : 0);
 }
 
 template<typename T>
-ListItem<T> *List<T>::previous(ListItem<T> *item)
+ListItem *List<T>::previous(ListItem *item)
 {
 	return (item->mPrevious != &mItems ? item->mPrevious : 0);
 }
 
 template<typename T>
-inline void List<T>::addBetween(ListItem<T> *previous, ListItem<T> *next)
+void List<T>::addBetween(ListItem *previous, ListItem *next)
 {
 	previous->mNext = mItems.mNext;
 	mItems.mNext->mPrevious = previous;
 	mItems.mPrevious->mNext = next;
 	next->mPrevious = mItems.mPrevious;
 
-	mItems.initialise();
+	mItems.mNext = mItems.mPrevious = &mItems;
 }
 
 template<typename T>
-inline void List<T>::addHead(ListItem<T> *item)
+void List<T>::addHead(T *item)
 {
 	item->addAfter(&mItems);
 }
 
 template<typename T>
-inline void List<T>::addTail(ListItem<T> *item)
+void List<T>::addTail(T *item)
 {
 	item->addBefore(&mItems);
 }
 
 template<typename T>
-inline void List<T>::spliceHead(List<T> *list)
+void List<T>::spliceHead(List<T> *list)
 {
-	addBetween(&mItems, mItems.mNext);
+	list->addBetween(&mItems, mItems.mNext);
 }
 
 template<typename T>
-inline void List<T>::spliceTail(List<T> *list)
+void List<T>::spliceTail(List<T> *list)
 {
-	addBetween(mItems.mPrevious, &mItems);
+	list->addBetween(mItems.mPrevious, &mItems);
 }
 
 template<typename T>
-inline bool List<T>::isEmpty()
+bool List<T>::isEmpty()
 {
 	return mItems.mNext == &mItems;
 }
@@ -239,19 +223,19 @@ List<T> *ListIterator<T>::list()
 }
 
 template<typename T>
-ListItem<T> *ListIterator<T>::current()
+T *ListIterator<T>::current()
 {
-	return mCurrent;
+	return static_cast<T *>(mCurrent);
 }
 
 template<typename T>
-ListItem<T> *ListIterator<T>::subsequent()
+T *ListIterator<T>::subsequent()
 {
 	mCurrent = mSubsequent;
 	if (mCurrent)
 		mSubsequent = (!mBackwards ? mList->next(mCurrent) : mList->previous(mCurrent));
 
-	return mCurrent;
+	return static_cast<T *>(mCurrent);
 }
 
 template<typename T>
