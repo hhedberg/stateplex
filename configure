@@ -215,8 +215,5 @@ for executable in $(find examples -mindepth 1 -type d); do
 	configure_executable $executable
 done
 
-<<<<<<< HEAD
-=======
 echo -e ""
 echo -e "default: \$(ALL)"
->>>>>>> master
