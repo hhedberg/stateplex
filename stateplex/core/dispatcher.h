@@ -54,6 +54,8 @@ public:
 	void activateActor(Actor *actor);
 	void queueMessage(Message *message);
 	unsigned long milliseconds() const;
+
+	static Dispatcher *leastLoaded();
 };
 
 }
@@ -77,7 +79,7 @@ inline Dispatcher::~Dispatcher()
 inline void Dispatcher::activateActor(Actor *actor)
 {
 	if (!actor->mActive) {
-		mActiveActors.addTail(&actor->listItem);
+		mActiveActors.addTail(actor);
 		actor->mActive = 1;
 	}
 }

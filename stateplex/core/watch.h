@@ -25,10 +25,9 @@
 
 namespace Stateplex {
 
-class Watch {
+class Watch : public ListItem {
 	friend class Dispatcher;
 
-	ListItem<Watch> listItem; /* Keep first! */
 	int mFd;
 	Method mHandler;
 

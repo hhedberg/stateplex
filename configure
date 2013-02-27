@@ -21,7 +21,9 @@
 
 target=build/debug
 cppflags=-I.
+cxx=g++
 cxxflags=-g
+ld=g++
 ldflags=
 output=Makefile
 doxygen=0
@@ -47,78 +49,121 @@ function check_for_gtest() {
         fi
 }
 
+function write_line() {
+	text=$1
+	
+	echo -e "$text"
+}
+
+function write_rule() {
+	rule=$1
+	prerequisites=$2
+	message=$3
+	shift 3
+	
+	write_line "$rule: $prerequisites"
+	if [ "$message" != "" ]; then
+		write_line "\t@echo $message..."
+	fi
+	while [ "$1" != "" ]; do
+		write_line "\t@$1"
+		shift 1
+	done
+}
+
+function write_header() {
+	path=$1
+	name=$2
+	title=$3
+	
+	write_line ""
+	write_line "### $title ###"
+	write_line ""
+
+	if [ -r $path/build.conf ]; then
+		cat $path/build.conf | while read -r line ; do echo ${name}_$line; done
+		write_line ""
+	fi
+
+	write_rule "\$(TARGET)/$path/.deps" \
+	           "" \
+		   "" \
+	           "mkdir -p \$(TARGET)/$path/.deps"
+}
+
+function write_unit() {
+	name=$1
+	path=$2
+	object=$3
+
+	write_line ""
+	write_line "# $path/$object"
+	write_line "${name}_OBJECTS += \$(TARGET)/$path/$object"
+	write_line "${name}_DEPS += \$(TARGET)/$path/.deps/${object}.dep"
+	write_line "-include \$(TARGET)/$path/.deps/${object}.dep"
+}
+
+function configure_sources() {
+	path=$1
+	name=$2
+
+	for source in $path/*.cpp; do
+		object=$(basename $source .cpp).o
+
+		write_unit "$name" "$path" "$object"
+		write_rule "\$(TARGET)/$path/$object" \
+		           "$source \$(TARGET)/$path/.deps" \
+		           "Compiling $source" \
+		           "\$(CXX) -c -fPIC \$(CPPFLAGS) \$(${name}_CPPFLAGS) \$(CXXFLAGS) \$(${name}_CXXFLAGS) -o \$(TARGET)/$path/$object $source"
+		write_rule "\$(TARGET)/$path/.deps/${object}.dep" \
+		           "$source \$(TARGET)/$path/.deps" \
+		           "Calculating dependencies for $source" \
+		           "\$(CXX) -MM -MT \$(TARGET)/$path/$object -MF \$(TARGET)/$path/.deps/${object}.dep \$(CPPFLAGS) \$(${name}_CPPFLAGS) \$(CXXFLAGS) \$(${name}_CXXFLAGS) $source"
+	done
+}
+
 function configure_library() {
 	path=$1
+
 	name=$(echo $path | tr / _)
 	library_name=$(echo $path | tr / -)
 	directory=$(dirname $path)
 
-	echo ""
-	echo -e "### Library: $library_name ###"
-	echo ""
-	echo -e "\$(TARGET)/$path/.deps:"
-	echo -e "\tmkdir -p \$(TARGET)/$path/.deps"
+	write_header "$path" "$name" "Library: $library_name"
 
-	for source in $path/*.cpp; do
-		object=$(basename $source .cpp).o
+	configure_sources "$path" "$name"
 
-		echo ""
-		echo -e "# $path/$object"
-		echo -e "${name}_OBJECTS += \$(TARGET)/$path/$object"
-		echo -e "${name}_DEPS += \$(TARGET)/$path/.deps/${object}.dep"
-
-		echo -e "\$(TARGET)/$path/$object: $source \$(TARGET)/$path/.deps"
-		echo -e "\tg++ -c -fPIC \$(CPPFLAGS) \$(${name}_CPPFLAGS) \$(CXXFLAGS) \$(${name}_CXXFLAGS) -o \$(TARGET)/$path/$object $source"
-
-		echo -e "\$(TARGET)/$path/.deps/${object}.dep: $source \$(TARGET)/$path/.deps"
-		echo -e "\tg++ -MM -MT \$(TARGET)/$path/$object -MF \$(TARGET)/$path/.deps/${object}.dep \$(CPPFLAGS) \$(${name}_CPPFLAGS) \$(CXXFLAGS) \$(${name}_CXXFLAGS) $source"
-		echo -e "-include \$(TARGET)/$path/.deps/${object}.dep"
-	done
-
-	echo ""
-	echo -e "\$(TARGET)/$directory/lib$library_name.so: \$(${name}_OBJECTS) \$(${name}_DEPS)"
-	echo -e "\tg++ -shared \$(LDFLAGS) \$(${name}_LDFLAGS) -o \$(TARGET)/$directory/lib$library_name.so \$(${name}_OBJECTS)"
-	echo -e "\$(TARGET)/$directory/lib$library_name.a: \$(${name}_OBJECTS) \$(${name}_DEPS)"
-	echo -e "\trm -f \$(TARGET)/$directory/lib$library_name.a"
-	echo -e "\tar -cq \$(TARGET)/$directory/lib$library_name.a \$(${name}_OBJECTS)"
-	echo -e "\tranlib \$(TARGET)/$directory/lib$library_name.a"
+	write_line ""
+	write_line "ALL += \$(TARGET)/$directory/lib$library_name.so \$(TARGET)/$directory/lib$library_name.a"
+	write_rule "\$(TARGET)/$directory/lib$library_name.so" \
+	           "\$(${name}_OBJECTS) \$(${name}_DEPS)" \
+	           "Assembling $directory/lib$library_name.so" \
+	           "\$(LD) -shared \$(LDFLAGS) \$(${name}_LDFLAGS) -o \$(TARGET)/$directory/lib$library_name.so \$(${name}_OBJECTS)"
+	write_rule "\$(TARGET)/$directory/lib$library_name.a" \
+	           "\$(${name}_OBJECTS) \$(${name}_DEPS)" \
+	           "Assembling $directory/lib$library_name.a" \
+		   "rm -f \$(TARGET)/$directory/lib$library_name.a" \
+		   "ar -cq \$(TARGET)/$directory/lib$library_name.a \$(${name}_OBJECTS)" \
+		   "ranlib \$(TARGET)/$directory/lib$library_name.a"
 }
 
 function configure_executable() {
 	path=$1
+
 	name=$(echo $path | tr / _)
 	executable_name=$(echo $path | tr / -)
 	directory=$(dirname $path)
 
-	echo ""
-	echo -e "### Executable: $executable_name ###"
-	echo ""
-	echo -e "\$(TARGET)/$path/.deps:"
-	echo -e "\tmkdir -p \$(TARGET)/$path/.deps"
+	write_header "$path" "$name" "Executable: $executable_name"
 
-	if [ -r $path/build.conf ]; then
-		cat $path/build.conf | while read -r line ; do echo ${name}_$line; done
-	fi
+	configure_sources "$path" "$name"
 
-	for source in $path/*.cpp; do
-		object=$(basename $source .cpp).o
-
-		echo ""
-		echo -e "# $path/$object"
-		echo -e "${name}_OBJECTS += \$(TARGET)/$path/$object"
-		echo -e "${name}_DEPS += \$(TARGET)/$path/.deps/${object}.dep"
-
-		echo -e "\$(TARGET)/$path/$object: $source \$(TARGET)/$path/.deps"
-		echo -e "\tg++ -c -fPIC \$(CPPFLAGS) \$(${name}_CPPFLAGS) \$(CXXFLAGS) \$(${name}_CXXFLAGS) -o \$(TARGET)/$path/$object $source"
-
-		echo -e "\$(TARGET)/$path/.deps/${object}.dep: $source \$(TARGET)/$path/.deps"
-		echo -e "\tg++ -MM -MT \$(TARGET)/$path/$object -MF \$(TARGET)/$path/.deps/${object}.dep \$(CPPFLAGS) \$(${name}_CPPFLAGS) \$(CXXFLAGS) \$(${name}_CXXFLAGS) $source"
-		echo -e "-include \$(TARGET)/$path/.deps/${object}.dep"
-	done
-
-	echo ""
-	echo -e "\$(TARGET)/$directory/$executable_name: \$(${name}_OBJECTS) \$(${name}_DEPS)"
-	echo -e "\tg++ -o \$(TARGET)/$directory/$executable_name \$(${name}_OBJECTS) \$(LDFLAGS) \$(${name}_LDFLAGS)"
+	write_line ""
+	write_line "ALL += \$(TARGET)/$directory/$executable_name"
+	write_rule "\$(TARGET)/$directory/$executable_name" \
+	           "\$(${name}_OBJECTS) \$(${name}_DEPS)" \
+	           "Linking $directory/$executable_name..." \
+	           "\$(LD) -o \$(TARGET)/$directory/$executable_name \$(${name}_OBJECTS) \$(LDFLAGS) \$(${name}_LDFLAGS)"
 }
 check_for_gtest
 check_for_doxygen
@@ -126,11 +171,13 @@ exec > $output
 
 echo -e "TARGET=$target"
 echo -e "CPPFLAGS=$cppflags"
+echo -e "CXX=$cxx"
 echo -e "CXXFLAGS=$cxxflags"
+echo -e "LD=$ld"
 echo -e "LDFLAGS=$ldflags"
 echo ""
 
-echo -e "all: \$(TARGET)/stateplex/libstateplex-core.so \$(TARGET)/stateplex/libstateplex-core.a \$(TARGET)/examples/examples-hello"
+echo -e "all: default"
 echo ""
 
 echo -e "clean:"
@@ -159,12 +206,17 @@ else
 fi
 
 for library in $(find stateplex -mindepth 1 -type d); do
-	echo Configuring library: $library >&2
+	echo "Configuring library $library..." >&2
 	configure_library $library
 done
 
 for executable in $(find examples -mindepth 1 -type d); do
-	echo Configuring executable: $executable >&2
+	echo "Configuring executable $executable..." >&2
 	configure_executable $executable
 done
 
+<<<<<<< HEAD
+=======
+echo -e ""
+echo -e "default: \$(ALL)"
+>>>>>>> master

@@ -29,10 +29,8 @@ class Dispatcher;
 class Watch;
 class Timeout;
 
-class Actor {
+class Actor : public ListItem {
 	friend class Dispatcher;
-
-	ListItem<Actor> listItem; /* Keep first! */
 
 	Dispatcher *mDispatcher;
 	
@@ -103,7 +101,7 @@ inline Dispatcher *Actor::dispatcher()
 
 inline unsigned long Actor::nextTimeoutMilliseconds()
 {
-	Timeout *timeout = mTimeouts.first()->container();
+	Timeout *timeout = mTimeouts.first();
 	return timeout ? timeout->milliseconds() : 0;
 }
 
@@ -126,7 +124,7 @@ Timeout *Actor::addTimeout(unsigned long milliseconds, T *object, void (T::*call
 
 inline void Actor::deleteTimeout(Timeout* timeout)
 {
-	timeout->listItem.remove();
+	timeout->remove();
 	delete timeout;
 }
 

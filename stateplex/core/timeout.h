@@ -25,10 +25,9 @@
 
 namespace Stateplex {
 
-class Timeout {
+class Timeout : public ListItem {
 	friend class Actor;
 
-	ListItem<Timeout> listItem; /* Keep first! */
 	unsigned long mMilliseconds;
 	Method mHandler;
 
