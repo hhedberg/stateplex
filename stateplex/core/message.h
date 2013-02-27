@@ -28,11 +28,10 @@ namespace Stateplex {
 class Dispatcher;
 class Actor;
 
-class Message {
+class Message : public ListItem {
 	friend class Dispatcher;
 	friend class Actor;
 	
-	ListItem<Message> listItem; /* Keep first! */
 	Actor *receiver;
 	Actor *sender;
 
