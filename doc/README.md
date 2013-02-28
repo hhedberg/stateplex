@@ -38,7 +38,8 @@ File header comment
 * @author Team Stateplex
 * @see doxygen.cpp
 *
-*/```
+*/
+```
 
 File header comment should be in each source and header file.
 
@@ -51,7 +52,8 @@ Function comments
 * @param first, integer value
 * @param second, integer value
 * @return max, integer value
-*/```
+*/
+```
 
 Each function should be commented in this way. Remember to put the comment always before the implementation (either in the .cpp or the .h file) and NOT before the prototype/definition of the function. Of course the param and return might be missing if the function does not take any parameters or returns void.
 
@@ -65,6 +67,7 @@ Main page comments (for doxygen output, in mainpage.dox)
 * @section install_sec Installation topic
 * @subsection Step 1: Opening the box
 * etc...
-*/```
+*/
+```
 
 The project must only have one mainpage.dox file and it should have general information about the project and its targeted purpose.
