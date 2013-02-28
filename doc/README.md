@@ -3,11 +3,7 @@ General
 
 Stateplex uses Doxygen for source code documentation.
 
-Doxygen is a widely used tool for generating documentation from annotated C++ source files. 
-It also supports many other programming languages. With Doxygen you can create online documentation 
-in HTML format and you can extract the code structure from undocumented source files, 
-which is good for visualizing the relations between various elements. The possible diagrams are 
-include dependency graph, inheritance diagrams and collaboration diagrams and they are generated automatically.
+Doxygen is a widely used tool for generating documentation from annotated C++ source files. It also supports many other programming languages. With Doxygen you can create online documentation in HTML format and you can extract the code structure from undocumented source files, which is good for visualizing the relations between various elements. The possible diagrams are include dependency graph, inheritance diagrams and collaboration diagrams and they are generated automatically.
 
 Making documentation requires that you have Doxygen installed on your system. You can make documentation by writing ‘make docs’ after running ‘./configure’. That will create html output of the documentation to the doc folder. By opening index.html in your web browser, you can navigate through the documentation in html form.
 
@@ -30,7 +26,7 @@ Functions
 Every function should have a comment block before its implementation. It should contain at least a short and concise description of what the function does, descriptions of all the parameters it gets and the return value.
 
 Examples
---------
+========
 
 File header comment
 -------------------
