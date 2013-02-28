@@ -31,7 +31,8 @@ Examples
 File header comment
 -------------------
 
-```/**
+```
+/**
 * Doxygen testing class, this is brief description
 *
 * @file doxygen.h
@@ -46,7 +47,8 @@ File header comment should be in each source and header file.
 Function comments
 -----------------
 
-```/**
+```
+/**
 * Function that returns the bigger number of the parameters given.
 *
 * @param first, integer value
@@ -60,7 +62,8 @@ Each function should be commented in this way. Remember to put the comment alway
 Main page comments (for doxygen output, in mainpage.dox)
 --------------------------------------------------------
 
-```/**
+```
+/**
 * @mainpage Mainpage header
 * @section intro_sec introduction topic
 * Introduction text
