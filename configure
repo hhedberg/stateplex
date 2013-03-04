@@ -20,6 +20,7 @@
 #
 
 target=build/debug
+gtest_dir=
 cppflags=-I.
 cxx=g++
 cxxflags=-g
@@ -39,14 +40,33 @@ function check_for_doxygen() {
 }
 
 function check_for_gtest() {
-        tmp=$(ls /usr/include/ | grep gtest)
-        if [ "$tmp" !=  gtest ]; then
-                tmp=$(ls /usr/local/include | grep gtest)
-        fi
+	if [[ -z "$gtest_dir" ]]; then
+		tmp=$(find /usr/src -name "gtest.h" -printf "%h\n")
+		flag=`echo $tmp | awk '{print match($0,"gtest")}'`
 
-        if [ "$tmp" == gtest ]; then
-                let gtest_installed=0
-        fi
+		if [ $flag -gt 0 ]; then
+			gtest_dir=$tmp
+		fi
+	fi
+ 
+	if [ "$flag" == "gtest" ] || [[ ! -z $gtest_dir ]]; then
+		let gtest_installed=1
+	fi
+}
+
+function build_google_tests() {
+	
+	write_line "\t@mkdir -p \$(TARGET)/tests"
+
+	write_line "\t@\$(CXX) -I \$(GTEST_DIR) -c \$(GTEST_DIR)/gtest-all.cc -o \$(TARGET)/stateplex/libgtest.a"
+
+	for library in $(find tests -mindepth 1 -type d); do
+		name=$(echo $library | tr / _) 
+		write_line "Creating $name Tests " >&2
+		write_line "\t@\$(CXX) -I \$(GTEST_DIR)/include $library/*.cpp \$(TARGET)/stateplex/libgtest.a -lpthread -o \$(TARGET)/tests/$name"
+	done	
+	
+>>>>>>> master
 }
 
 function write_line() {
@@ -170,6 +190,7 @@ check_for_doxygen
 exec > $output
 
 echo -e "TARGET=$target"
+echo -e "GTEST_DIR=$gtest_dir"
 echo -e "CPPFLAGS=$cppflags"
 echo -e "CXX=$cxx"
 echo -e "CXXFLAGS=$cxxflags"
@@ -191,6 +212,10 @@ if [ $gtest_installed == 0 ]; then
         echo -e "test:"
         echo -e "\t@echo -n \"Google test framework is not installed to your system, you can get it from http://code.google.com/p/googletest/\""
         echo ""
+else
+        write_line "test:"
+        build_google_tests
+        write_line ""
 fi
 
 if [ $doxygen == 1 ]; then
