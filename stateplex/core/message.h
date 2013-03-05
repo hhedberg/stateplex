@@ -48,9 +48,10 @@ public:
 
 namespace Stateplex {
 
+
 /**
 *
-*Call this function with the event handler
+*A function that calls the event handler
 *
 */
 

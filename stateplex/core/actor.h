@@ -117,7 +117,7 @@ inline void Actor::queueMessage(M *message, Actor *sender, T *handlerObject, voi
 
 /**
 *
-*Return value to pointer dispatcher
+*A function that return value to pointer dispatcher
 *
 */
 
@@ -128,7 +128,7 @@ inline Dispatcher *Actor::dispatcher()
 
 /**
 *
-*
+*A function that returns time out seconds
 *
 */
 
@@ -172,8 +172,8 @@ Timeout *Actor::addTimeout(unsigned long milliseconds, T *object, void (T::*call
 }
 
 /**
-* A 
-*
+* 
+*A function that delete time out variable
 *
 */
 
