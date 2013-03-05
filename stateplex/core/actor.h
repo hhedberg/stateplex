@@ -55,13 +55,13 @@ protected:
 	template<typename T> Source *addSource(int fd, T *callbackObject, void (T::*callbackFunction)(Source *source));
 	void deleteWatch(Source *source);
 
-	Dispatcher *dispatcher();
 	void setCallback(Message *message, void (Actor::*callback)(Message *message));
 
 public:
 	Actor(Dispatcher *dispatcher);
 	virtual ~Actor();
 
+	Dispatcher *dispatcher();
 	bool isAlive();
 	bool isActive(unsigned long milliseconds);
 };
