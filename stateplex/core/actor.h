@@ -88,10 +88,10 @@ inline Actor::~Actor()
 template<typename T, typename M>
 inline void Actor::queueMessage(M *message, Actor *sender, T *handlerObject, void (T::*handlerFunction)(M *message))
 {
-	message->message.sender = sender;
-	message->message.receiver = this;
-	message->message.handler.set(handlerObject, handlerFunction);
-	mDispatcher->queueMessage(&message->message);
+	message->sender = sender;
+	message->receiver = this;
+	message->handler.set(handlerObject, handlerFunction);
+	mDispatcher->queueMessage(message);
 }
 
 inline Dispatcher *Actor::dispatcher()
