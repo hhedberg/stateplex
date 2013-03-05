@@ -1,7 +1,7 @@
 /*
  * Stateplex - A server-side actor model library.
  *
- * core/watch.h
+ * core/source.h
  *
  * (c) 2013 Henrik Hedberg <henrik.hedberg@innologies.fi>
  *
@@ -17,15 +17,15 @@
  * Authors: Henrik Hedberg
  */
 
-#ifndef INCLUDED_STATEPLEX_WATCH_H
-#define INCLUDED_STATEPLEX_WATCH_H
+#ifndef INCLUDED_STATEPLEX_SOURCE_H
+#define INCLUDED_STATEPLEX_SOURCE_H
 
 #include "list.h"
 #include "method.h"
 
 namespace Stateplex {
 
-class Watch : public ListItem {
+class Source : public ListItem {
 	friend class Dispatcher;
 
 	int mFd;
@@ -34,10 +34,10 @@ class Watch : public ListItem {
 	void invokeHandler();
 
 public:
-	template<typename T> Watch(int fd, T *handlerObject, void (T::*handlerFunction)(Watch *watch));
+	template<typename T> Source(int fd, T *handlerObject, void (T::*handlerFunction)(Source *watch));
 
 	int fd() const;
-	template<typename T> void setHandler(T *handlerObject, void (T::*handlerFunction)(Watch *watch));
+	template<typename T> void setHandler(T *handlerObject, void (T::*handlerFunction)(Source *watch));
 };
 
 }
@@ -46,7 +46,7 @@ public:
 
 namespace Stateplex {
 
-inline void Watch::invokeHandler()
+inline void Source::invokeHandler()
 {
 	mHandler.invoke(this);
 }

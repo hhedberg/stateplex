@@ -26,7 +26,7 @@
 namespace Stateplex {
 
 class Dispatcher;
-class Watch;
+class Source;
 class Timeout;
 
 class Actor : public ListItem {
@@ -52,8 +52,8 @@ protected:
 	void deleteTimeout(Timeout *timeout);
 	unsigned long nextTimeoutMilliseconds();
 
-	template<typename T> Watch *addWatch(int fd, T *callbackObject, void (T::*callbackFunction)(Watch *watch));
-	void deleteWatch(Watch *watch);
+	template<typename T> Source *addSource(int fd, T *callbackObject, void (T::*callbackFunction)(Source *source));
+	void deleteWatch(Source *source);
 
 	Dispatcher *dispatcher();
 	void setCallback(Message *message, void (Actor::*callback)(Message *message));
