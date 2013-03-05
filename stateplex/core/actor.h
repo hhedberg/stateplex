@@ -149,8 +149,8 @@ inline bool Actor::isAlive()
 
 /**
 *
-*
-*
+*A fucntion that return true 
+*@return int 
 */
 
 inline bool Actor::isActive(unsigned long milliseconds)
@@ -173,7 +173,7 @@ Timeout *Actor::addTimeout(unsigned long milliseconds, T *object, void (T::*call
 
 /**
 * 
-*A function that delete time out variable
+*A function that delete the timeout 
 *
 */
 
