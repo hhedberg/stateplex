@@ -25,24 +25,28 @@
 
 namespace Stateplex {
 
+class Actor;
+
 class Source : public ListItem {
 	friend class Dispatcher;
 
+	Actor *mActor;
 	int mFd;
 	Method mHandler;
 
 protected:
-	template<typename T> Source(T *handlerObject, void (T::*handlerFunction)(Source *source));
+	template<typename T> Source(Actor *actor, T *handlerObject, void (T::*handlerFunction)(Source *source));
 
 	virtual void handleReady();
 	void invokeHandler();
 	void setFd(int fd);
 
 public:
-	template<typename T> Source(int fd, T *handlerObject, void (T::*handlerFunction)(Source *source));
+	template<typename T> Source(Actor *actor, int fd, T *handlerObject, void (T::*handlerFunction)(Source *source));
 	virtual ~Source();
 
 	int fd() const;
+	Actor *actor() const;
 	template<typename T> void setHandler(T *handlerObject, void (T::*handlerFunction)(Source *source));
 };
 
@@ -52,12 +56,14 @@ public:
 
 namespace Stateplex {
 
-template<typename T> Source::Source(T *handlerObject, void (T::*handlerFunction)(Source *source))
-	: mFd(-1), mHandler(handlerObject, handlerFunction)
+template<typename T>
+Source::Source(Actor *actor, T *handlerObject, void (T::*handlerFunction)(Source *source))
+	: mActor(actor), mFd(-1), mHandler(handlerObject, handlerFunction)
 { }
 
-template<typename T> Source::Source(int fd, T *handlerObject, void (T::*handlerFunction)(Source *source))
-	: mFd(fd), mHandler(handlerObject, handlerFunction)
+template<typename T>
+Source::Source(Actor *actor, int fd, T *handlerObject, void (T::*handlerFunction)(Source *source))
+	: mActor(actor), mFd(fd), mHandler(handlerObject, handlerFunction)
 { }
 
 inline Source::~Source()
@@ -71,6 +77,22 @@ inline void Source::invokeHandler()
 inline void Source::setFd(int fd)
 {
 	mFd = fd;
+}
+
+inline int Source::fd() const
+{
+	return mFd;
+}
+
+inline Actor *Source::actor() const
+{
+	return mActor;
+}
+
+template<typename T>
+void Source::setHandler(T *handlerObject, void (T::*handlerFunction)(Source *source))
+{
+	mHandler.set(handlerObject, handlerFunction);
 }
 
 }
