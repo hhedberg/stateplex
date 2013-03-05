@@ -49,6 +49,12 @@ public:
 
 namespace Stateplex {
 
+/**
+*
+*Call this function with the event handler
+*
+*/
+
 inline void Message::invokeHandler()
 {
 	handler.invoke(this);

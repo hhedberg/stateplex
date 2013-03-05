@@ -78,14 +78,35 @@ public:
 
 namespace Stateplex {
 
+/**
+* Constructor that initialize variable Alive, Active and Dispacther
+*
+* @param (*dispatcher)	is a pointer to dispatcher
+*/
+
 inline Actor::Actor(Dispatcher *dispatcher)
 	: mAlive(1), mActive(0), mDispatcher(dispatcher)
 {
 	dispatcher->activateActor(this);
 }
 
+/**
+*
+* Distructor
+*
+*/
+
 inline Actor::~Actor()
 { }
+
+/**
+* A template function thats swithces values between variables
+* Sends message, queue message and receive message
+* @param (*message)is pointer ro message
+* @param (*sender)
+* @param (*handlerObject)
+* @param (*handlerFunction) 
+*/
 
 template<typename T, typename M>
 inline void Actor::queueMessage(M *message, Actor *sender, T *handlerObject, void (T::*handlerFunction)(M *message))
@@ -96,26 +117,54 @@ inline void Actor::queueMessage(M *message, Actor *sender, T *handlerObject, voi
 	mDispatcher->queueMessage(&message->message);
 }
 
+/**
+*
+*Return value to pointer dispatcher
+*
+*/
+
 inline Dispatcher *Actor::dispatcher()
 {
 	return mDispatcher;
 }
+
+/**
+*
+*
+*
+*/
 
 inline unsigned long Actor::nextTimeoutMilliseconds()
 {
 	Timeout *timeout = mTimeouts.first()->container();
 	return timeout ? timeout->milliseconds() : 0;
 }
-
+/**
+*
+*
+*@return mAlive integer value
+*/
 inline bool Actor::isAlive()
 {
 	return !!mAlive;
 }
 
+/**
+*
+*
+*
+*/
+
 inline bool Actor::isActive(unsigned long milliseconds)
 {
 	return true; /* TODO */
 }
+
+/**
+*
+*A template function 
+*
+*/
 
 template<typename T>
 Timeout *Actor::addTimeout(unsigned long milliseconds, T *object, void (T::*callback)(Timeout *timeout))
@@ -123,6 +172,12 @@ Timeout *Actor::addTimeout(unsigned long milliseconds, T *object, void (T::*call
 	Timeout *timeout = new Timeout(milliseconds, object, callback);
 	addTimeout(timeout);
 }
+
+/**
+* A 
+*
+*
+*/
 
 inline void Actor::deleteTimeout(Timeout* timeout)
 {
