@@ -31,13 +31,19 @@ class Source : public ListItem {
 	int mFd;
 	Method mHandler;
 
+protected:
+	template<typename T> Source(T *handlerObject, void (T::*handlerFunction)(Source *source));
+
+	virtual void handleReady();
 	void invokeHandler();
+	void setFd(int fd);
 
 public:
-	template<typename T> Source(int fd, T *handlerObject, void (T::*handlerFunction)(Source *watch));
+	template<typename T> Source(int fd, T *handlerObject, void (T::*handlerFunction)(Source *source));
+	virtual ~Source();
 
 	int fd() const;
-	template<typename T> void setHandler(T *handlerObject, void (T::*handlerFunction)(Source *watch));
+	template<typename T> void setHandler(T *handlerObject, void (T::*handlerFunction)(Source *source));
 };
 
 }
@@ -46,9 +52,25 @@ public:
 
 namespace Stateplex {
 
+template<typename T> Source::Source(T *handlerObject, void (T::*handlerFunction)(Source *source))
+	: mFd(-1), mHandler(handlerObject, handlerFunction)
+{ }
+
+template<typename T> Source::Source(int fd, T *handlerObject, void (T::*handlerFunction)(Source *source))
+	: mFd(fd), mHandler(handlerObject, handlerFunction)
+{ }
+
+inline Source::~Source()
+{ }
+
 inline void Source::invokeHandler()
 {
 	mHandler.invoke(this);
+}
+
+inline void Source::setFd(int fd)
+{
+	mFd = fd;
 }
 
 }

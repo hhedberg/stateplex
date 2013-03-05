@@ -70,8 +70,8 @@ void Dispatcher::run()
 		n_events = epoll_wait(mEpollFd, events, MAX_EVENTS, timeout);
 		for (int i = 0; i < n_events; i++) {
 			Source *source = reinterpret_cast<Source *>(events[i].data.ptr);
-			/* TODO: set source->readOrWrite */
-			source->invokeHandler();
+			/* TODO: read or write? */
+			source->handleReady();
 		}
 
 		/* Handle timeouts for waiting actors */
