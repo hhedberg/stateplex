@@ -20,8 +20,11 @@
 #
 
 target=build/debug
+gtest_dir=
 cppflags=-I.
+cxx=g++
 cxxflags=-g
+ld=g++
 ldflags=
 output=Makefile
 doxygen=0
@@ -37,100 +40,167 @@ function check_for_doxygen() {
 }
 
 function check_for_gtest() {
-        tmp=$(ls /usr/include/ | grep gtest)
-        if [ "$tmp" !=  gtest ]; then
-                tmp=$(ls /usr/local/include | grep gtest)
-        fi
+	if [[ -z "$gtest_dir" ]]; then
+		tmp=$(find /usr/src -name "gtest.h" -printf "%h\n")
+		flag=`echo $tmp | awk '{print match($0,"gtest")}'`
 
-        if [ "$tmp" == gtest ]; then
-                let gtest_installed=0
-        fi
+		if [ $flag -gt 0 ]; then
+			gtest_dir=$tmp
+		fi
+	fi
+ 
+	if [ "$flag" == "gtest" ] || [[ ! -z $gtest_dir ]]; then
+		let gtest_installed=1
+	fi
+}
+
+function build_google_tests() {
+	
+	write_line "\t@mkdir -p \$(TARGET)/tests"
+
+	write_line "\t@\$(CXX) -I \$(GTEST_DIR) -c \$(GTEST_DIR)/gtest-all.cc -o \$(TARGET)/stateplex/libgtest.a"
+
+	for library in $(find tests -mindepth 1 -type d); do
+                name=$(echo $library | tr / _)
+                if [ "$(ls -A $library)" ]; then
+		         write_line "\t@echo Creating $name tests..."
+		         write_line "\t@\$(CXX) -I \$(GTEST_DIR) $library/*.cpp \$(TARGET)/stateplex/libgtest.a -lpthread -o \$(TARGET)/tests/$name"
+                else
+                        write_line "\t@echo \"There aren't any tests available...\""
+                fi
+	done
+}
+
+function write_line() {
+	text=$1
+	
+	echo -e "$text"
+}
+
+function write_rule() {
+	rule=$1
+	prerequisites=$2
+	message=$3
+	shift 3
+	
+	write_line "$rule: $prerequisites"
+	if [ "$message" != "" ]; then
+		write_line "\t@echo $message..."
+	fi
+	while [ "$1" != "" ]; do
+		write_line "\t@$1"
+		shift 1
+	done
+}
+
+function write_header() {
+	path=$1
+	name=$2
+	title=$3
+	
+	write_line ""
+	write_line "### $title ###"
+	write_line ""
+
+	if [ -r $path/build.conf ]; then
+		cat $path/build.conf | while read -r line ; do echo ${name}_$line; done
+		write_line ""
+	fi
+
+	write_rule "\$(TARGET)/$path/.deps" \
+	           "" \
+		   "" \
+	           "mkdir -p \$(TARGET)/$path/.deps"
+}
+
+function write_unit() {
+	name=$1
+	path=$2
+	object=$3
+
+	write_line ""
+	write_line "# $path/$object"
+	write_line "${name}_OBJECTS += \$(TARGET)/$path/$object"
+	write_line "${name}_DEPS += \$(TARGET)/$path/.deps/${object}.dep"
+	write_line "-include \$(TARGET)/$path/.deps/${object}.dep"
+}
+
+function configure_sources() {
+	path=$1
+	name=$2
+
+	for source in $path/*.cpp; do
+		object=$(basename $source .cpp).o
+
+		write_unit "$name" "$path" "$object"
+		write_rule "\$(TARGET)/$path/$object" \
+		           "$source \$(TARGET)/$path/.deps" \
+		           "Compiling $source" \
+		           "\$(CXX) -c -fPIC \$(CPPFLAGS) \$(${name}_CPPFLAGS) \$(CXXFLAGS) \$(${name}_CXXFLAGS) -o \$(TARGET)/$path/$object $source"
+		write_rule "\$(TARGET)/$path/.deps/${object}.dep" \
+		           "$source \$(TARGET)/$path/.deps" \
+		           "Calculating dependencies for $source" \
+		           "\$(CXX) -MM -MT \$(TARGET)/$path/$object -MF \$(TARGET)/$path/.deps/${object}.dep \$(CPPFLAGS) \$(${name}_CPPFLAGS) \$(CXXFLAGS) \$(${name}_CXXFLAGS) $source"
+	done
 }
 
 function configure_library() {
 	path=$1
+
 	name=$(echo $path | tr / _)
 	library_name=$(echo $path | tr / -)
 	directory=$(dirname $path)
 
-	echo ""
-	echo -e "### Library: $library_name ###"
-	echo ""
-	echo -e "\$(TARGET)/$path/.deps:"
-	echo -e "\tmkdir -p \$(TARGET)/$path/.deps"
+	write_header "$path" "$name" "Library: $library_name"
 
-	for source in $path/*.cpp; do
-		object=$(basename $source .cpp).o
+	configure_sources "$path" "$name"
 
-		echo ""
-		echo -e "# $path/$object"
-		echo -e "${name}_OBJECTS += \$(TARGET)/$path/$object"
-		echo -e "${name}_DEPS += \$(TARGET)/$path/.deps/${object}.dep"
-
-		echo -e "\$(TARGET)/$path/$object: $source \$(TARGET)/$path/.deps"
-		echo -e "\tg++ -c -fPIC \$(CPPFLAGS) \$(${name}_CPPFLAGS) \$(CXXFLAGS) \$(${name}_CXXFLAGS) -o \$(TARGET)/$path/$object $source"
-
-		echo -e "\$(TARGET)/$path/.deps/${object}.dep: $source \$(TARGET)/$path/.deps"
-		echo -e "\tg++ -MM -MT \$(TARGET)/$path/$object -MF \$(TARGET)/$path/.deps/${object}.dep \$(CPPFLAGS) \$(${name}_CPPFLAGS) \$(CXXFLAGS) \$(${name}_CXXFLAGS) $source"
-		echo -e "-include \$(TARGET)/$path/.deps/${object}.dep"
-	done
-
-	echo ""
-	echo -e "\$(TARGET)/$directory/lib$library_name.so: \$(${name}_OBJECTS) \$(${name}_DEPS)"
-	echo -e "\tg++ -shared \$(LDFLAGS) \$(${name}_LDFLAGS) -o \$(TARGET)/$directory/lib$library_name.so \$(${name}_OBJECTS)"
-	echo -e "\$(TARGET)/$directory/lib$library_name.a: \$(${name}_OBJECTS) \$(${name}_DEPS)"
-	echo -e "\trm -f \$(TARGET)/$directory/lib$library_name.a"
-	echo -e "\tar -cq \$(TARGET)/$directory/lib$library_name.a \$(${name}_OBJECTS)"
-	echo -e "\tranlib \$(TARGET)/$directory/lib$library_name.a"
+	write_line ""
+	write_line "ALL += \$(TARGET)/$directory/lib$library_name.so \$(TARGET)/$directory/lib$library_name.a"
+	write_rule "\$(TARGET)/$directory/lib$library_name.so" \
+	           "\$(${name}_OBJECTS) \$(${name}_DEPS)" \
+	           "Assembling $directory/lib$library_name.so" \
+	           "\$(LD) -shared \$(LDFLAGS) \$(${name}_LDFLAGS) -o \$(TARGET)/$directory/lib$library_name.so \$(${name}_OBJECTS)"
+	write_rule "\$(TARGET)/$directory/lib$library_name.a" \
+	           "\$(${name}_OBJECTS) \$(${name}_DEPS)" \
+	           "Assembling $directory/lib$library_name.a" \
+		   "rm -f \$(TARGET)/$directory/lib$library_name.a" \
+		   "ar -cq \$(TARGET)/$directory/lib$library_name.a \$(${name}_OBJECTS)" \
+		   "ranlib \$(TARGET)/$directory/lib$library_name.a"
 }
 
 function configure_executable() {
 	path=$1
+
 	name=$(echo $path | tr / _)
 	executable_name=$(echo $path | tr / -)
 	directory=$(dirname $path)
 
-	echo ""
-	echo -e "### Executable: $executable_name ###"
-	echo ""
-	echo -e "\$(TARGET)/$path/.deps:"
-	echo -e "\tmkdir -p \$(TARGET)/$path/.deps"
+	write_header "$path" "$name" "Executable: $executable_name"
 
-	if [ -r $path/build.conf ]; then
-		cat $path/build.conf | while read -r line ; do echo ${name}_$line; done
-	fi
+	configure_sources "$path" "$name"
 
-	for source in $path/*.cpp; do
-		object=$(basename $source .cpp).o
-
-		echo ""
-		echo -e "# $path/$object"
-		echo -e "${name}_OBJECTS += \$(TARGET)/$path/$object"
-		echo -e "${name}_DEPS += \$(TARGET)/$path/.deps/${object}.dep"
-
-		echo -e "\$(TARGET)/$path/$object: $source \$(TARGET)/$path/.deps"
-		echo -e "\tg++ -c -fPIC \$(CPPFLAGS) \$(${name}_CPPFLAGS) \$(CXXFLAGS) \$(${name}_CXXFLAGS) -o \$(TARGET)/$path/$object $source"
-
-		echo -e "\$(TARGET)/$path/.deps/${object}.dep: $source \$(TARGET)/$path/.deps"
-		echo -e "\tg++ -MM -MT \$(TARGET)/$path/$object -MF \$(TARGET)/$path/.deps/${object}.dep \$(CPPFLAGS) \$(${name}_CPPFLAGS) \$(CXXFLAGS) \$(${name}_CXXFLAGS) $source"
-		echo -e "-include \$(TARGET)/$path/.deps/${object}.dep"
-	done
-
-	echo ""
-	echo -e "\$(TARGET)/$directory/$executable_name: \$(${name}_OBJECTS) \$(${name}_DEPS)"
-	echo -e "\tg++ -o \$(TARGET)/$directory/$executable_name \$(${name}_OBJECTS) \$(LDFLAGS) \$(${name}_LDFLAGS)"
+	write_line ""
+	write_line "ALL += \$(TARGET)/$directory/$executable_name"
+	write_rule "\$(TARGET)/$directory/$executable_name" \
+	           "\$(${name}_OBJECTS) \$(${name}_DEPS)" \
+	           "Linking $directory/$executable_name..." \
+	           "\$(LD) -o \$(TARGET)/$directory/$executable_name \$(${name}_OBJECTS) \$(LDFLAGS) \$(${name}_LDFLAGS)"
 }
 check_for_gtest
 check_for_doxygen
 exec > $output
 
 echo -e "TARGET=$target"
+echo -e "GTEST_DIR=$gtest_dir"
 echo -e "CPPFLAGS=$cppflags"
+echo -e "CXX=$cxx"
 echo -e "CXXFLAGS=$cxxflags"
+echo -e "LD=$ld"
 echo -e "LDFLAGS=$ldflags"
 echo ""
 
-echo -e "all: \$(TARGET)/stateplex/libstateplex-core.so \$(TARGET)/stateplex/libstateplex-core.a \$(TARGET)/examples/examples-hello"
+echo -e "all: default"
 echo ""
 
 echo -e "clean:"
@@ -138,33 +208,38 @@ echo -e "\trm -Rf build"
 
 echo -e "distclean: clean"
 echo -e "\trm -f Makefile"
-echo -e "\trm -Rf doc/html doc/latex" 
+echo -e "\trm -Rf doc/html" 
 
 if [ $gtest_installed == 0 ]; then
-        echo -e "test:"
-        echo -e "\t@echo -n \"Google test framework is not installed to your system, you can get it from http://code.google.com/p/googletest/\""
-        echo ""
+        write_line "test:"
+        write_line "\t@echo -n \"Google test framework is not installed to your system, you can get it from http://code.google.com/p/googletest/\""
+        write_line ""
+else
+        write_line "test:"
+        build_google_tests
+        write_line ""
 fi
 
 if [ $doxygen == 1 ]; then
-        echo -e "docs:"
-        echo -e "\t@echo -n \"Creating Doxygen documentation...\""
-        echo -e "\t@doxygen $(pwd)/doc/settings"
-        echo -e "\t@echo \"done\""
-        echo ""
+        write_line "docs:"
+        write_line "\t@echo -n \"Creating Doxygen documentation...\""
+        write_line "\t@doxygen $(pwd)/doc/settings >/dev/null"
+        write_line ""
 else
-        echo -e "docs:"
-        echo -e "\t@echo \"Doxygen is not installed to your system, you can get it from http://www.stack.nl/~dimitri/doxygen/download.html\""
-        echo ""
+        write_line "docs:"
+        write_line"\t@echo \"Doxygen is not installed to your system, you can get it from http://www.stack.nl/~dimitri/doxygen/download.html\""
+        write_line ""
 fi
 
 for library in $(find stateplex -mindepth 1 -type d); do
-	echo Configuring library: $library >&2
+	echo "Configuring library $library..." >&2
 	configure_library $library
 done
 
 for executable in $(find examples -mindepth 1 -type d); do
-	echo Configuring executable: $executable >&2
+	echo "Configuring executable $executable..." >&2
 	configure_executable $executable
 done
 
+echo -e ""
+echo -e "default: \$(ALL)"

@@ -23,10 +23,12 @@ namespace Stateplex {
 
 bool Actor::handleTimeouts(unsigned long milliseconds)
 {
-	for (ListItem<Timeout> *item = mTimeouts.first(); item; item = mTimeouts.next(item)) {
-		if (item->container()->milliseconds() > milliseconds)
+	for (ListIterator<Timeout> iterator(&mTimeouts); iterator.hasCurrent(); iterator.subsequent()) {
+		Timeout *timeout = iterator.current();
+		if (timeout->milliseconds() > milliseconds)
 			break;
-		item->container()->invokeHandler();
+		timeout->invokeHandler();
+		timeout->remove();
 	}
 
 	return mAlive;
@@ -36,21 +38,25 @@ bool Actor::handleMessages(unsigned long milliseconds)
 {
 	handleTimeouts(milliseconds);
 
-	for (ListItem<Message> *item = mIncomingMessages.first(); item; item = mIncomingMessages.next(item))
-		item->container()->invokeHandler();
+	for (ListIterator<Message> iterator(&mIncomingMessages); iterator.hasCurrent(); iterator.subsequent()) {
+		Message *message = iterator.current();
+		message->invokeHandler();
+		message->remove();
+	}
 
 	return mAlive;
 }
 
 void Actor::addTimeout(Timeout *timeout)
 {
-	for (ListItem<Timeout> *item = mTimeouts.first(); item; item = mTimeouts.next(item)) {
-		if (timeout->milliseconds() < item->container()->milliseconds()) {
-			timeout->listItem.addBefore(item);
+	for (ListIterator<Timeout> iterator(&mTimeouts); iterator.hasCurrent(); iterator.subsequent()) {
+		Timeout *existing = iterator.current();
+		if (timeout->milliseconds() < existing->milliseconds()) {
+			timeout->addBefore(existing);
 			return;
 		}
 	}
-	mTimeouts.addTail(&timeout->listItem);
+	mTimeouts.addTail(timeout);
 }
 
 }
