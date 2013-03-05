@@ -32,46 +32,50 @@ class Source : public ListItem {
 
 	Actor *mActor;
 	int mFd;
-	Method mHandler;
+	bool mEnabled;
 
 protected:
-	template<typename T> Source(Actor *actor, T *handlerObject, void (T::*handlerFunction)(Source *source));
+	Source(Actor *actor, int fd, bool enabled = true);
 
-	virtual void handleReady();
-	void invokeHandler();
+	int fd() const;
+
+	virtual void handleReady(bool readyToReady, bool readyToWrite) = 0;
 	void setFd(int fd);
 
 public:
-	template<typename T> Source(Actor *actor, int fd, T *handlerObject, void (T::*handlerFunction)(Source *source));
 	virtual ~Source();
 
-	int fd() const;
 	Actor *actor() const;
-	template<typename T> void setHandler(T *handlerObject, void (T::*handlerFunction)(Source *source));
+	bool isOpen() const;
+	bool isEnabled() const;
+
+	void close();
+	void setEnabled(bool enabled);
 };
 
 }
 
 /*** Inline implementations ***/
 
+#include <unistd.h>
+
+#include "actor.h"
+
 namespace Stateplex {
 
-template<typename T>
-Source::Source(Actor *actor, T *handlerObject, void (T::*handlerFunction)(Source *source))
-	: mActor(actor), mFd(-1), mHandler(handlerObject, handlerFunction)
-{ }
-
-template<typename T>
-Source::Source(Actor *actor, int fd, T *handlerObject, void (T::*handlerFunction)(Source *source))
-	: mActor(actor), mFd(fd), mHandler(handlerObject, handlerFunction)
-{ }
+inline Source::Source(Actor *actor, int fd, bool enabled)
+	: mActor(actor), mFd(fd), mEnabled(enabled)
+{
+	if (enabled)
+		mActor->dispatcher()->addSource(this);
+}
 
 inline Source::~Source()
 { }
 
-inline void Source::invokeHandler()
+inline int Source::fd() const
 {
-	mHandler.invoke(this);
+	return mFd;
 }
 
 inline void Source::setFd(int fd)
@@ -79,20 +83,23 @@ inline void Source::setFd(int fd)
 	mFd = fd;
 }
 
-inline int Source::fd() const
-{
-	return mFd;
-}
-
 inline Actor *Source::actor() const
 {
 	return mActor;
 }
 
-template<typename T>
-void Source::setHandler(T *handlerObject, void (T::*handlerFunction)(Source *source))
+inline bool Source::isOpen() const
 {
-	mHandler.set(handlerObject, handlerFunction);
+	return (mFd != -1 ? true : false);
+}
+inline bool Source::isEnabled() const
+{
+	return !!mEnabled;
+}
+inline void Source::close()
+{
+	::close(mFd);
+	mFd = -1;
 }
 
 }

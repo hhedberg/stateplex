@@ -1,7 +1,7 @@
 /*
  * Stateplex - A server-side actor model library.
  *
- * core/source.h
+ * core/opsource.h
  *
  * (c) 2013 Henrik Hedberg <henrik.hedberg@innologies.fi>
  *
@@ -17,20 +17,44 @@
  * Authors: Henrik Hedberg
  */
 
-#include "source.h"
+#include <unistd.h>
+
+#include "iosource.h"
 
 namespace Stateplex {
 
-void Source::setEnabled(bool enabled)
+void IoSource::handleReady(bool readyToRead, bool readyToWrite)
 {
-	if (enabled == mEnabled)
-		return;
+	if (readyToRead)
+		mReadyToRead = 1;
+	if (readyToWrite)
+		mReadyToWrite = 1;
 
-	mEnabled = enabled;
-	if (mEnabled)
-		mActor->dispatcher()->addSource(this);
-	else
-		mActor->dispatcher()->removeSource(this);
+	invokeHandler();
+}
+
+Size IoSource::read(char *data, Size length)
+{
+	if (!mReadyToRead)
+		return 0;
+
+	Size size = ::read(fd(), data, length);
+	if (size == 0)
+		mReachedEof = 1;
+	mReadyToRead = 0;
+
+	return size;
+}
+
+Size IoSource::write(char *data, Size length)
+{
+	if (!mReadyToWrite)
+		return 0;
+
+	Size size = ::write(fd(), data, length);
+	mReadyToWrite = 0;
+
+	return size;
 }
 
 }
