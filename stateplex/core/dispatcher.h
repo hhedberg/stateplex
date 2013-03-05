@@ -50,7 +50,7 @@ public:
 	
 	void run();
 	void addSource(Source *source);
-	void deleteSource(Source *source);
+	void removeSource(Source *source);
 	void activateActor(Actor *actor);
 	void queueMessage(Message *message);
 	unsigned long milliseconds() const;
@@ -93,10 +93,9 @@ inline void Dispatcher::addSource(Source *source)
 	epoll_ctl(mEpollFd, EPOLL_CTL_ADD, source->mFd, &event);
 }
 
-inline void Dispatcher::deleteSource(Source *source)
+inline void Dispatcher::removeSource(Source *source)
 {
 	epoll_ctl(mEpollFd, EPOLL_CTL_DEL, source->mFd, 0);
-	delete source;
 }
 
 inline unsigned long Dispatcher::milliseconds() const
