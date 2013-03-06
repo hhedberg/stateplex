@@ -22,21 +22,21 @@ This is a modified version of kernel coding style. This coding style is applied 
 
 ## 3. Placing Braces and Spaces
 
-### Braces
+### 3.1 Braces
 
-#### Non-function statement blocks
+#### 3.1.1 Non-function statement blocks
 
 * Opening brace last in the line.
 * Closing brace in the beginning of the line.
 
-### Functions
+### 3.2 Functions
 
 * Opening and closing braces in the beginning of the line.
 
 * Closing brace is empty of its own except when there is a continuation of the same statement.
 * Use braces always.
 
-### Spaces
+### 3.3 Spaces
 
 * Use space after keyword except if they look more like a function (like typeof, sizeof etc.).
 * Surround ‘: ‘ with spaces e.g. in case of class inheritance.
