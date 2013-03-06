@@ -40,7 +40,6 @@ Class comment
  * @file doxygen.h
  * @author Team Stateplex
  * @see doxygen.cpp
- *
  */
 ```
 
