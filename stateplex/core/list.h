@@ -1,7 +1,7 @@
 /*
  * Stateplex - A server-side actor model library.
  *
- * @core/list.h
+ * core/list.h
  *
  * (c) 2013 Henrik Hedberg <henrik.hedberg@innologies.fi>
  *
@@ -14,7 +14,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
  *
- * @Authors: Henrik Hedberg
+ * Authors: Henrik Hedberg
  */
 
 
