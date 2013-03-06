@@ -34,9 +34,9 @@ public:
 /*** Inline implementations ***/
 
 /** 
- * Constructor for Spinlock class, sets member variable mState.
+ * Constructor for Spinlock class, sets state of the lock
  *
- * @param locked	boolean value that determines the value of mState
+ * @param locked	boolean value that determines the state of the lock
  */
 
 inline Spinlock::Spinlock(bool locked)
@@ -44,7 +44,7 @@ inline Spinlock::Spinlock(bool locked)
 { }
 
 /** 
- * Function that tries to get a lock if mState is 0
+ * Function that tries to get a lock
  *
  * @return	true if locking succeeded, otherwise false
  */
@@ -57,7 +57,7 @@ inline bool Spinlock::tryLock()
 }
 
 /** 
- * Function that tries to get a lock. Waits until mState is 0 and then
+ * Function that tries to get a lock. Waits until lock is available and then
  * tries locking.
  *
  */
