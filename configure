@@ -89,7 +89,7 @@ function write_rule() {
 	fi
 	while [ "$1" != "" ]; do
 		write_line "\t@$1"
-		SHift 1
+		shift 1
 	done
 }
 
