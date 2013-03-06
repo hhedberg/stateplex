@@ -27,7 +27,7 @@ namespace Stateplex {
 
 class Actor;
 class Message;
-class Watch;
+class Source;
 
 class Dispatcher {
 	static Spinlock sDispatchLock;
@@ -49,8 +49,8 @@ public:
 	~Dispatcher();
 	
 	void run();
-	void addWatch(Watch *watch);
-	void deleteWatch(Watch *watch);
+	void addSource(Source *source);
+	void removeSource(Source *source);
 	void activateActor(Actor *actor);
 	void queueMessage(Message *message);
 	unsigned long milliseconds() const;
@@ -65,7 +65,7 @@ public:
 #include <sys/epoll.h>
 
 #include "actor.h"
-#include "watch.h"
+#include "source.h"
 
 namespace Stateplex {
 
@@ -84,19 +84,18 @@ inline void Dispatcher::activateActor(Actor *actor)
 	}
 }
 
-inline void Dispatcher::addWatch(Watch *watch)
+inline void Dispatcher::addSource(Source *source)
 {
 	struct ::epoll_event event;
 
 	event.events = EPOLLIN | EPOLLOUT;
-	event.data.ptr = watch;
-	epoll_ctl(mEpollFd, EPOLL_CTL_ADD, watch->mFd, &event);
+	event.data.ptr = source;
+	epoll_ctl(mEpollFd, EPOLL_CTL_ADD, source->mFd, &event);
 }
 
-inline void Dispatcher::deleteWatch(Watch *watch)
+inline void Dispatcher::removeSource(Source *source)
 {
-	epoll_ctl(mEpollFd, EPOLL_CTL_DEL, watch->mFd, 0);
-	delete watch;
+	epoll_ctl(mEpollFd, EPOLL_CTL_DEL, source->mFd, 0);
 }
 
 inline unsigned long Dispatcher::milliseconds() const

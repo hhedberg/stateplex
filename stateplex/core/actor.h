@@ -26,7 +26,7 @@
 namespace Stateplex {
 
 class Dispatcher;
-class Watch;
+class Source;
 class Timeout;
 
 class Actor : public ListItem {
@@ -52,16 +52,16 @@ protected:
 	void deleteTimeout(Timeout *timeout);
 	unsigned long nextTimeoutMilliseconds();
 
-	template<typename T> Watch *addWatch(int fd, T *callbackObject, void (T::*callbackFunction)(Watch *watch));
-	void deleteWatch(Watch *watch);
+	template<typename T> Source *addSource(int fd, T *callbackObject, void (T::*callbackFunction)(Source *source));
+	void deleteWatch(Source *source);
 
-	Dispatcher *dispatcher();
 	void setCallback(Message *message, void (Actor::*callback)(Message *message));
 
 public:
 	Actor(Dispatcher *dispatcher);
 	virtual ~Actor();
 
+	Dispatcher *dispatcher();
 	bool isAlive();
 	bool isActive(unsigned long milliseconds);
 };
@@ -88,10 +88,10 @@ inline Actor::~Actor()
 template<typename T, typename M>
 inline void Actor::queueMessage(M *message, Actor *sender, T *handlerObject, void (T::*handlerFunction)(M *message))
 {
-	message->message.sender = sender;
-	message->message.receiver = this;
-	message->message.handler.set(handlerObject, handlerFunction);
-	mDispatcher->queueMessage(&message->message);
+	message->sender = sender;
+	message->receiver = this;
+	message->handler.set(handlerObject, handlerFunction);
+	mDispatcher->queueMessage(message);
 }
 
 inline Dispatcher *Actor::dispatcher()
