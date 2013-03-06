@@ -19,6 +19,8 @@
 
 #include <sys/time.h>
 #include <sys/epoll.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 #include "dispatcher.h"
 #include "actor.h"
@@ -29,6 +31,12 @@
 namespace Stateplex {
 
 Spinlock Dispatcher::sDispatchLock;
+
+Dispatcher::Dispatcher()
+	: mRunning(true), mMilliseconds(0)
+{
+	mEpollFd = epoll_create(1024);
+}
 
 void Dispatcher::run()
 {
@@ -66,8 +74,12 @@ void Dispatcher::run()
 		} else
 			timeout = -1;
 
-		/* Receive external events i.e. poll watches */
+		/* Receive external events i.e. poll sources */
 		n_events = epoll_wait(mEpollFd, events, MAX_EVENTS, timeout);
+		if (n_events == -1) {
+			perror("epoll_wait");
+			abort();
+		}
 		for (int i = 0; i < n_events; i++) {
 			Source *source = reinterpret_cast<Source *>(events[i].data.ptr);
 			source->handleReady(events[i].events & EPOLLIN, events[i].events & EPOLLOUT);
@@ -96,7 +108,7 @@ void Dispatcher::run()
 		for (ListIterator<Actor> iterator(&actors); iterator.hasCurrent(); iterator.subsequent()) {
 			Actor *actor = iterator.current();
 
-			/* Dispatch incoming messges for this actor with the lock hold */
+			/* Dispatch incoming messages for this actor with the lock hold */
 			if (!actor->mQueuedMessages.isEmpty()) {
 				sDispatchLock.lock();
 				actor->mIncomingMessages.spliceTail(&actor->mQueuedMessages);

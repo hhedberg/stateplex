@@ -69,10 +69,6 @@ public:
 
 namespace Stateplex {
 
-inline Dispatcher::Dispatcher()
-	: mRunning(true), mMilliseconds(0), mEpollFd(0)
-{ }
-
 inline Dispatcher::~Dispatcher()
 { }
 
@@ -88,7 +84,7 @@ inline void Dispatcher::addSource(Source *source)
 {
 	struct ::epoll_event event;
 
-	event.events = EPOLLIN | EPOLLOUT;
+	event.events = EPOLLIN | EPOLLOUT | EPOLLET;
 	event.data.ptr = source;
 	epoll_ctl(mEpollFd, EPOLL_CTL_ADD, source->mFd, &event);
 }
