@@ -15,10 +15,10 @@ Style
 
 Comments are in JavaDoc style. Comment blocks for functions should be always before implementation, so usually in source (.cpp) files but in some cases in header (.h) files.
 
-Files
+Class
 -----
 
-Every source and header file should have a comment block in the beginning stating at least the file name, author and short description of the purpose of the file
+Every class should have a comment about its purpose before its declaration. See class comment example for more details.
 
 Functions
 ---------
@@ -28,33 +28,35 @@ Every function should have a comment block before its implementation. It should 
 Examples
 ========
 
-File header comment
+Class comment
 -------------------
 
 ```
-/**
-* Doxygen testing class, this is brief description
-*
-* @file doxygen.h
-* @author Team Stateplex
-* @see doxygen.cpp
-*
-*/
+/** 
+ * @brief Short explanation of class
+ * 
+ * Detailed explanation of class
+ *
+ * @file doxygen.h
+ * @author Team Stateplex
+ * @see doxygen.cpp
+ *
+ */
 ```
 
-File header comment should be in each source and header file.
+Classes should be commented in header files before the class declaration. Brief, file, author and see markers can be left out if not needed.
 
 Function comments
 -----------------
 
 ```
 /**
-* Function that returns the bigger number of the parameters given.
-*
-* @param first, integer value
-* @param second, integer value
-* @return max, integer value
-*/
+ * Function that returns the bigger number of the parameters given.
+ *
+ * @param first		description of parameter
+ * @param second	description of parameter
+ * @return		description of what is returned
+ */
 ```
 
 Each function should be commented in this way. Remember to put the comment always before the implementation (either in the .cpp or the .h file) and NOT before the prototype/definition of the function. Of course the param and return might be missing if the function does not take any parameters or returns void.
@@ -64,13 +66,13 @@ Main page comments (for doxygen output, in mainpage.dox)
 
 ```
 /**
-* @mainpage Mainpage header
-* @section intro_sec introduction topic
-* Introduction text
-* @section install_sec Installation topic
-* @subsection Step 1: Opening the box
-* etc...
-*/
+ * @mainpage Mainpage header
+ * @section intro_sec introduction topic
+ * Introduction text
+ * @section install_sec Installation topic
+ * @subsection Step 1: Opening the box
+ * etc...
+ */
 ```
 
 The project must only have one mainpage.dox file and it should have general information about the project and its targeted purpose.
