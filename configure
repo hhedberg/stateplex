@@ -61,11 +61,14 @@ function build_google_tests() {
 	write_line "\t@\$(CXX) -I \$(GTEST_DIR) -c \$(GTEST_DIR)/gtest-all.cc -o \$(TARGET)/stateplex/libgtest.a"
 
 	for library in $(find tests -mindepth 1 -type d); do
-		name=$(echo $library | tr / _) 
-		write_line "Creating $name Tests " >&2
-		write_line "\t@\$(CXX) -I \$(GTEST_DIR)/include $library/*.cpp \$(TARGET)/stateplex/libgtest.a -lpthread -o \$(TARGET)/tests/$name"
-	done	
-	
+                name=$(echo $library | tr / _)
+                if [ "$(ls -A $library)" ]; then
+		         write_line "\t@echo Creating $name tests..."
+		         write_line "\t@\$(CXX) -I \$(GTEST_DIR) $library/*.cpp \$(TARGET)/stateplex/libgtest.a -lpthread -o \$(TARGET)/tests/$name"
+                else
+                        write_line "\t@echo \"There aren't any tests available...\""
+                fi
+	done
 }
 
 function write_line() {
@@ -205,12 +208,12 @@ echo -e "\trm -Rf build"
 
 echo -e "distclean: clean"
 echo -e "\trm -f Makefile"
-echo -e "\trm -Rf doc/html doc/latex" 
+echo -e "\trm -Rf doc/html" 
 
 if [ $gtest_installed == 0 ]; then
-        echo -e "test:"
-        echo -e "\t@echo -n \"Google test framework is not installed to your system, you can get it from http://code.google.com/p/googletest/\""
-        echo ""
+        write_line "test:"
+        write_line "\t@echo -n \"Google test framework is not installed to your system, you can get it from http://code.google.com/p/googletest/\""
+        write_line ""
 else
         write_line "test:"
         build_google_tests
@@ -218,15 +221,14 @@ else
 fi
 
 if [ $doxygen == 1 ]; then
-        echo -e "docs:"
-        echo -e "\t@echo -n \"Creating Doxygen documentation...\""
-        echo -e "\t@doxygen $(pwd)/doc/settings"
-        echo -e "\t@echo \"done\""
-        echo ""
+        write_line "docs:"
+        write_line "\t@echo -n \"Creating Doxygen documentation...\""
+        write_line "\t@doxygen $(pwd)/doc/settings >/dev/null"
+        write_line ""
 else
-        echo -e "docs:"
-        echo -e "\t@echo \"Doxygen is not installed to your system, you can get it from http://www.stack.nl/~dimitri/doxygen/download.html\""
-        echo ""
+        write_line "docs:"
+        write_line"\t@echo \"Doxygen is not installed to your system, you can get it from http://www.stack.nl/~dimitri/doxygen/download.html\""
+        write_line ""
 fi
 
 for library in $(find stateplex -mindepth 1 -type d); do
