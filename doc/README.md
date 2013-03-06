@@ -54,7 +54,7 @@ Function comments
  *
  * @param first		description of parameter
  * @param second	description of parameter
- * @return		description of what is returned
+ * @return			description of what is returned
  */
 ```
 
