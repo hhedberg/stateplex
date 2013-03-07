@@ -20,7 +20,7 @@
 #
 
 target=build/debug
-gtest_dir=$HOME/gtest/gtest-1.6.0/src
+gtest_dir=
 cppflags=-I.
 cxx=g++
 cxxflags=-g
