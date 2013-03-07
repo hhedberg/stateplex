@@ -23,8 +23,7 @@
 #include <stateplex/core/actor.h>
 #include <stateplex/core/message.h>
 
-struct GreetingMessage {
-	Stateplex::Message message; /* Keep first! */
+struct GreetingMessage : public Stateplex::Message {
 	const char *mText;
 
 	explicit GreetingMessage(const char *text);

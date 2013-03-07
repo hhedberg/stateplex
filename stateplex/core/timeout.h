@@ -37,7 +37,7 @@ public:
 	template<typename T> Timeout(unsigned long milliseconds, T *handlerObject, void (T::*handlerFunction)(Timeout *timeout));
 
 	unsigned long milliseconds() const;
-	template<typename T> void setHandler(T *handlerObject, void (T::*handlerFunction)(Watch *watch));
+	template<typename T> void setHandler(T *handlerObject, void (T::*handlerFunction)(Timeout *timeout));
 };
 
 }
@@ -52,7 +52,7 @@ Timeout::Timeout(unsigned long milliseconds, T *handlerObject, void (T::*handler
 { }
 
 template<typename T>
-inline void Timeout::setHandler(T *handlerObject, void (T::*handlerFunction)(Watch *watch))
+inline void Timeout::setHandler(T *handlerObject, void (T::*handlerFunction)(Timeout *timeout))
 {
 	mHandler.set(handlerObject, handlerFunction);
 }
