@@ -212,7 +212,7 @@ echo -e "\trm -Rf doc/html"
 
 if [ $gtest_installed == 0 ]; then
         write_line "test:"
-        write_line "\t@echo -n \"Google test framework is not installed to your system, you can get it from http://code.google.com/p/googletest/\""
+        write_line "\t@echo \"Google test framework is not installed to your system, you can get it from http://code.google.com/p/googletest/\""
         write_line ""
 else
         write_line "test:"
@@ -222,8 +222,8 @@ fi
 
 if [ $doxygen == 1 ]; then
         write_line "docs:"
-        write_line "\t@echo -n \"Creating Doxygen documentation...\""
-        write_line "\t@doxygen $(pwd)/doc/settings >/dev/null"
+        write_line "\t@echo \"Creating Doxygen documentation...\""
+        write_line "\t@doxygen $(pwd)/doc/settings > /dev/null 2> /dev/null "
         write_line ""
 else
         write_line "docs:"
