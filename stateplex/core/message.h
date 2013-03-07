@@ -50,10 +50,10 @@ namespace Stateplex {
 
 
 /**
-*
-*A function that calls the event handler
-*
-*/
+ *
+ *A function that calls the event handler
+ *
+ */
 
 inline void Message::invokeHandler()
 {
