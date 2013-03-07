@@ -20,7 +20,7 @@
 #
 
 target=build/debug
-gtest_dir=
+gtest_dir=$HOME/gtest/gtest-1.6.0/src
 cppflags=-I.
 cxx=g++
 cxxflags=-g
@@ -57,15 +57,23 @@ function check_for_gtest() {
 function build_google_tests() {
 	
 	write_line "\t@mkdir -p \$(TARGET)/tests"
-
-	write_line "\t@\$(CXX) -I \$(GTEST_DIR) -c \$(GTEST_DIR)/gtest-all.cc -o \$(TARGET)/stateplex/libgtest.a"
+	if [ "$GTEST_DIR" == "/usr/src/gtest/src" ]; then
+		write_line "\t@\$(CXX) -I \$(GTEST_DIR) -c \$(GTEST_DIR)/gtest-all.cc -o \$(TARGET)/stateplex/libgtest.a"
+	else
+		write_line "\t@\$(CXX) -I \$(GTEST_DIR)/../include -I \$(GTEST_DIR)/../ -c \$(GTEST_DIR)/gtest-all.cc -o \$(TARGET)/stateplex/libgtest.a"
+	fi
 
 	for library in $(find tests -mindepth 1 -type d); do
                 name=$(echo $library | tr / _)
                 if [ "$(ls -A $library)" ]; then
-		         write_line "\t@echo Creating $name tests..."
-		         write_line "\t@\$(CXX) -I \$(GTEST_DIR) $library/*.cpp \$(TARGET)/stateplex/libgtest.a -lpthread -o \$(TARGET)/tests/$name"
-                else
+		        write_line "\t@echo Creating $name tests..."
+			
+			if [ "$GTEST_DIR" == "/usr/src/gtest/src" ]; then
+				write_line "\t@\$(CXX) -I \$(GTEST_DIR) $library/*.cpp \$(TARGET)/stateplex/libgtest.a -lpthread -o \$(TARGET)/tests/$name"
+			else
+		         	write_line "\t@\$(CXX) -I \$(GTEST_DIR)/../include $library/*.cpp \$(TARGET)/stateplex/libgtest.a -lpthread -o \$(TARGET)/tests/$name"
+                	fi
+		else
                         write_line "\t@echo \"There aren't any tests available...\""
                 fi
 	done
