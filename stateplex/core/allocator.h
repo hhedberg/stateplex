@@ -60,12 +60,26 @@ public:
 #include <stdlib.h>
 #include "bitset.h"
 
+/** 
+ * Overriding of new operator.
+ *
+ * @param size		desc
+ * @param *allocator	desc
+ */
+
 void *operator new(size_t size, Stateplex::Allocator *allocator)
 {
 	if (allocator->size() < size)
 		throw std::bad_alloc();
 	return allocator->allocate();
 }
+
+/** 
+ * Overriding of delete operator.
+ *
+ * @param *pointer	desc
+ * @param *allocator	desc
+ */
 
 void operator delete(void *pointer, Stateplex::Allocator *allocator)
 {
@@ -75,9 +89,20 @@ void operator delete(void *pointer, Stateplex::Allocator *allocator)
 
 namespace Stateplex {
 
+/** 
+ * Constructor for Allocator class.
+ *
+ */
+
 template<typename T, Size multiplier, Size allocationsPerBlock>
 Allocator<T, multiplier, allocationsPerBlock>::Allocator()
 { }
+
+/** 
+ * Template function that...
+ *
+ * @return	desc
+ */
 
 template<typename T, Size multiplier, Size allocationsPerBlock>
 T *Allocator<T, multiplier, allocationsPerBlock>::allocate()
@@ -90,6 +115,13 @@ T *Allocator<T, multiplier, allocationsPerBlock>::allocate()
 	Block *block = allocateNewBlock();
 	return allocate(block);
 }
+
+/** 
+ * Template function that allocates new Block and returns it
+ * to the caller.
+ *
+ * @return	return pointer to newly allocated Block
+ */
 
 template<typename T, Size multiplier, Size allocationsPerBlock>
 typename Allocator<T, multiplier, allocationsPerBlock>::Block *Allocator<T, multiplier, allocationsPerBlock>::allocateNewBlock()
@@ -104,6 +136,13 @@ typename Allocator<T, multiplier, allocationsPerBlock>::Block *Allocator<T, mult
 	return block;
 }
 
+/** 
+ * Template function that...
+ *
+ * @param *block	desc
+ * @return		desc
+ */
+
 template<typename T, Size multiplier, Size allocationsPerBlock>
 T *Allocator<T, multiplier, allocationsPerBlock>::allocate(Block *block)
 {
@@ -115,6 +154,12 @@ T *Allocator<T, multiplier, allocationsPerBlock>::allocate(Block *block)
 	pointer += sizeof(Block *);
 	return reinterpret_cast<T *>(pointer);
 }
+
+/** 
+ * Template function that handles memory deallocation
+ *
+ * @param *allocation	pointer to allocated object
+ */
 
 template<typename T, Size multiplier, Size allocationsPerBlock>
 void Allocator<T, multiplier, allocationsPerBlock>::deallocate(T *allocation)

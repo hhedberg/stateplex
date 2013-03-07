@@ -69,9 +69,8 @@ void Dispatcher::run()
 		/* Receive external events i.e. poll watches */
 		n_events = epoll_wait(mEpollFd, events, MAX_EVENTS, timeout);
 		for (int i = 0; i < n_events; i++) {
-			Watch *watch = reinterpret_cast<Watch *>(events[i].data.ptr);
-			/* TODO: set watch->readOrWrite */
-			watch->invokeHandler();
+			Source *source = reinterpret_cast<Source *>(events[i].data.ptr);
+			source->handleReady(events[i].events & EPOLLIN, events[i].events & EPOLLOUT);
 		}
 
 		/* Handle timeouts for waiting actors */

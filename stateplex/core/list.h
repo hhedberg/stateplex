@@ -17,6 +17,7 @@
  * Authors: Henrik Hedberg
  */
 
+
 #ifndef INCLUDED_STATEPLEX_LIST_H
 #define INCLUDED_STATEPLEX_LIST_H
 
@@ -90,14 +91,26 @@ public:
 
 }
 
-/*** Inline implementations ***/
 
+/*** Inline implementations ***/
 namespace Stateplex {
 
+/** 
+ * A constructor that initializes mNext and mPrevious
+ *
+ * @param1 pointer of the using class to a member variable of mNext
+ * @param2 pointer of the using class to a member variable of mPrevious
+*/
 inline ListItem::ListItem()
 	: mNext(this), mPrevious(this)
 { }
 
+/**
+ * Adds a ListItem to the list between two ListItems
+ *
+ * @param (*previous) is a pointer to the previous list item
+ * @param (*next) is a pointer to the next list item
+ */
 inline void ListItem::addBetween(ListItem *previous, ListItem *next)
 {
 	previous->mNext = this;
@@ -106,6 +119,11 @@ inline void ListItem::addBetween(ListItem *previous, ListItem *next)
 	next->mPrevious = this;
 }
 
+/**
+ * Adds a ListItem to the list before an existing ListItem
+ *
+ * @param (*existing _item) is a pointer to the existing list item
+*/
 inline void ListItem::addBefore(ListItem *existing_item)
 {
 	ListItem *previous = existing_item->mPrevious;
@@ -115,6 +133,11 @@ inline void ListItem::addBefore(ListItem *existing_item)
 	addBetween(previous, existing_item);
 }
 
+/**
+ * Adds a ListItem after an existing ListItem
+ *
+ * @param (existing _item) is a pointer to the existing list item
+*/
 inline void ListItem::addAfter(ListItem *existing_item)
 {
 	ListItem *next = existing_item->mNext;
@@ -124,6 +147,9 @@ inline void ListItem::addAfter(ListItem *existing_item)
 	addBetween(existing_item, next);
 }
 
+/**
+ * Removes a ListItem from a list
+*/
 inline void ListItem::remove()
 {
 	mPrevious->mNext = mNext;
@@ -132,28 +158,53 @@ inline void ListItem::remove()
 	mPrevious = this;
 }
 
+/**
+ * Default constructor of List class 
+*/
 template<typename T>
 List<T>::List()
 { }
 
+/**
+ * Returns the first ListItem of a List
+ *
+ * @return ListItem or zero
+*/ 
 template<typename T>
 T *List<T>::first()
 {
 	return static_cast<T *>(mItems.mNext != &mItems ? mItems.mNext : 0);
 }
 
+/**
+ * Returns the last ListItem from a List
+ *
+ * @return *item or zero
+ *
+*/
 template<typename T>
 T *List<T>::last()
 {
 	return static_cast<T *>(mItems.mPrevious != &mItems ? mItems.mPrevious : 0);
 }
 
+
+/**
+ * Returns next ListItem from a List
+ * @param *item is a ListItem, whose next item will be returned 
+ * @return *item or zero
+*/
 template<typename T>
 ListItem *List<T>::next(ListItem *item)
 {
 	return (item->mNext != &mItems ? item->mNext : 0);
 }
 
+/**
+ * Returns previous ListItem from a List
+ * @param *item is a ListItem, whose previous item will be returned  
+ * return ListItem or zero 
+*/
 template<typename T>
 ListItem *List<T>::previous(ListItem *item)
 {
