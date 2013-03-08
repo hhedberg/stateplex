@@ -26,6 +26,12 @@ namespace Stateplex {
 
 #define STATEPLEX_BITSET_WORD_SIZE ((numberOfBits - 1) / sizeof(Word) + 1)
 
+/**
+ * Bitset class is used to set specific bits to different values and
+ * it is used to search for bits that are set. This class is also
+ * used to control the allacation of memory.
+ */
+
 template<Size numberOfBits>
 class Bitset {
 	Word bits[STATEPLEX_BITSET_WORD_SIZE];
@@ -47,11 +53,26 @@ public:
 
 namespace Stateplex {
 
+/**
+ * Constructor for class Bitset.
+ * The constructor initializes a new instance of class bitset.
+ * Also fills bits with ones or zeros.
+ * 
+ * @param setBits	boolean that determines the values for bits
+ */
+
 template<Size numberOfBits>
 inline Bitset<numberOfBits>::Bitset(bool setBits)
 {
 	memset(bits, setBits ? 1 : 0, STATEPLEX_BITSET_WORD_SIZE * sizeof(Word));
 }
+
+/**
+ * Function that is used to limit the maximum allocation size
+ * in Allocator class.
+ * 
+ * @return		limit for the Allocator.
+ */
 
 template<Size numberOfBits>
 inline Size Bitset<numberOfBits>::size()
@@ -59,11 +80,23 @@ inline Size Bitset<numberOfBits>::size()
 	return STATEPLEX_BITSET_WORD_SIZE * sizeof(Word);
 }
 
+/**
+ * Function that sets specific bit to one.
+ * 
+ * @param bit	target bit to set.
+ */
+
 template<Size numberOfBits>
 inline void Bitset<numberOfBits>::setBit(Size bit)
 {
 	bits[bit / sizeof(Word)] |= 1 << (bit % sizeof(Word));
 }
+	
+/**
+ * Function that unsets specific bit.
+ * 
+ * @param bit	target bit to unset.
+ */
 	
 template <Size numberOfBits>
 void Bitset<numberOfBits>::unsetBit(Size bit)
@@ -71,11 +104,26 @@ void Bitset<numberOfBits>::unsetBit(Size bit)
 	bits[bit / sizeof(Word)] &= ~(1 << (bit % sizeof(Word)));
 }
 
+/**
+ * Function that checks if specific bit is set.
+ * 
+ * @param bit	target bit to check.
+ * @return		true if set, otherwise false.
+ */
+
 template <Size numberOfBits>
 bool Bitset<numberOfBits>::isBitSet(Size bit)
 {
 	return bits[bit / sizeof(Word)] & (1 << (bit % sizeof(Word)));
 }
+
+
+/**
+ * Function that checks for first set bit.
+ * 
+ * @return numberOfBits if bits are not set, else return place of first
+ * set bit.
+ */
 
 template <Size numberOfBits>
 Size Bitset<numberOfBits>::findSetBit()
