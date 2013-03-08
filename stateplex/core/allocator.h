@@ -31,6 +31,12 @@ void operator delete(void *pointer, Allocator *allocator);
 
 namespace Stateplex {
 
+/** 
+ * @brief Class Allocator
+ *
+ * Class Allocator is used for allocating/deallocating memory.
+ */
+ 
 template<typename T, Size multiplier = 1, Size allocationsPerBlock = 8192>
 class Allocator {
 	struct Block : public ListItem<Block> {
@@ -63,8 +69,9 @@ public:
 /** 
  * Overriding of new operator.
  *
- * @param size		desc
- * @param *allocator	desc
+ * @param size			size limit for memory allocation.
+ * @param *allocator	allocator object that handles allocation.
+ * @return				pointer to allocated object.
  */
 
 void *operator new(size_t size, Stateplex::Allocator *allocator)
@@ -77,8 +84,8 @@ void *operator new(size_t size, Stateplex::Allocator *allocator)
 /** 
  * Overriding of delete operator.
  *
- * @param *pointer	desc
- * @param *allocator	desc
+ * @param *pointer		pointer to the object to be deallocated.
+ * @param *allocator	allocator object that handles deallocation.
  */
 
 void operator delete(void *pointer, Stateplex::Allocator *allocator)
@@ -99,9 +106,9 @@ Allocator<T, multiplier, allocationsPerBlock>::Allocator()
 { }
 
 /** 
- * Template function that...
+ * Template function that does the actual allocation of memory.
  *
- * @return	desc
+ * @return	pointer to allocated object.
  */
 
 template<typename T, Size multiplier, Size allocationsPerBlock>
@@ -120,7 +127,7 @@ T *Allocator<T, multiplier, allocationsPerBlock>::allocate()
  * Template function that allocates new Block and returns it
  * to the caller.
  *
- * @return	return pointer to newly allocated Block
+ * @return	returns pointer to newly allocated Block
  */
 
 template<typename T, Size multiplier, Size allocationsPerBlock>
@@ -137,10 +144,11 @@ typename Allocator<T, multiplier, allocationsPerBlock>::Block *Allocator<T, mult
 }
 
 /** 
- * Template function that...
+ * Template function that is used for memory allocation. Is called by
+ * public function allocate().
  *
- * @param *block	desc
- * @return		desc
+ * @param *block	pointer to block that is used for allocation.
+ * @return			allocated block.
  */
 
 template<typename T, Size multiplier, Size allocationsPerBlock>
@@ -156,9 +164,9 @@ T *Allocator<T, multiplier, allocationsPerBlock>::allocate(Block *block)
 }
 
 /** 
- * Template function that handles memory deallocation
+ * Template function that handles memory deallocation.
  *
- * @param *allocation	pointer to allocated object
+ * @param *allocation	pointer to object that is going to be deallocated.
  */
 
 template<typename T, Size multiplier, Size allocationsPerBlock>
