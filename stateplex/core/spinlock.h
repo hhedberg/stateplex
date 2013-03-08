@@ -22,6 +22,13 @@
 
 namespace Stateplex {
 
+/** 
+ * @brief Class Spinlock
+ *
+ * Class Spinlock is used for handling the locking and releasing
+ * of shared data.
+ */
+ 
 class Spinlock {
 	volatile int mState;
 public:
@@ -34,9 +41,9 @@ public:
 /*** Inline implementations ***/
 
 /** 
- * Constructor for Spinlock class, sets state of the lock
+ * Constructor for Spinlock class, sets state of the lock.
  *
- * @param locked	boolean value that determines the state of the lock
+ * @param locked	boolean value that determines the state of the lock.
  */
 
 inline Spinlock::Spinlock(bool locked)
@@ -44,9 +51,9 @@ inline Spinlock::Spinlock(bool locked)
 { }
 
 /** 
- * Function that tries to get a lock
+ * Function that tries to get a lock.
  *
- * @return	true if locking succeeded, otherwise false
+ * @return	true if locking succeeded, otherwise false.
  */
 
 inline bool Spinlock::tryLock()
