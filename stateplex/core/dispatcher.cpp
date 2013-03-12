@@ -40,6 +40,7 @@ Dispatcher::Dispatcher()
 
 void Dispatcher::run()
 {
+	bool locked;
 	struct epoll_event events[MAX_EVENTS];
 	int n_events;
 	struct timeval tv;
@@ -47,24 +48,42 @@ void Dispatcher::run()
 	int timeout;
 	
 	while (mRunning) {
+		locked = false;
+		actors.spliceTail(&mActiveActors);
+
 		/* Dispatch outgoing messages with the lock hold */
 		if (!mOutgoingMessages.isEmpty()) {
 			sDispatchLock.lock();
+			locked = true;
 			for (ListIterator<Message> iterator(&mOutgoingMessages); iterator.hasCurrent(); iterator.subsequent()) {
 				Message *message = iterator.current();
 				Actor *receiver = message->receiver;
 				receiver->mQueuedMessages.addTail(message);
 				activateActor(receiver);
 			}
-			sDispatchLock.unlock();
 		}
 
-		/* Start the new cycle */
+		/* Dispatch incoming messages with the lock hold */
+		if (!actors.isEmpty()) {
+			if (!locked) {
+				sDispatchLock.lock();
+				locked = true;
+			}
+			for (ListIterator<Actor> iterator(&actors); iterator.hasCurrent(); iterator.subsequent()) {
+				Actor *actor = iterator.current();
+				actor->mIncomingMessages.spliceTail(&actor->mQueuedMessages);
+			}
+		}
+
+		/* Release the lock if it was acquired in dispatching */
+		if (locked)
+			sDispatchLock.unlock();
+
+		/* Start a new cycle */
 		gettimeofday(&tv, 0);
 		mMilliseconds = tv.tv_sec * 1000 + tv.tv_usec / 1000;
 
-		/* Get the active actors, check when the next waiting actor timeouts, or wait indefinitely */
-		actors.spliceTail(&mActiveActors);
+		/* Do not block, if there are active actors, check when the next waiting actor timeouts, or wait indefinitely */
 		if (!actors.isEmpty())
 			timeout = 0;
 		else if(!mWaitingActors.isEmpty()) {
@@ -107,13 +126,6 @@ void Dispatcher::run()
 		/* Handle active actors i.e. actors that have incoming messages */
 		for (ListIterator<Actor> iterator(&actors); iterator.hasCurrent(); iterator.subsequent()) {
 			Actor *actor = iterator.current();
-
-			/* Dispatch incoming messages for this actor with the lock hold */
-			if (!actor->mQueuedMessages.isEmpty()) {
-				sDispatchLock.lock();
-				actor->mIncomingMessages.spliceTail(&actor->mQueuedMessages);
-				sDispatchLock.unlock();
-			}
 
 			bool alive = actor->handleMessages(mMilliseconds);
 			if (alive) {
