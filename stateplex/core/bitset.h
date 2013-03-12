@@ -30,6 +30,7 @@ namespace Stateplex {
  * Bitset class is used to set specific bits to different values and
  * it is used to search for bits that are set. This class is also
  * used to control the allacation of memory.
+ * 
  */
 
 template<Size numberOfBits>
@@ -121,7 +122,7 @@ bool Bitset<numberOfBits>::isBitSet(Size bit)
 /**
  * Function that checks for first set bit.
  * 
- * @return numberOfBits if bits are not set, else return place of first
+ * @return		numberOfBits if bits are not set, else return place of first
  * set bit.
  */
 
