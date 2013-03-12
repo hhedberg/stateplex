@@ -38,6 +38,12 @@ public:
 
 namespace Stateplex {
 
+/**
+ * A template fucntion that sets any pointer to be converted to any other type pointer
+ *
+ * @param mFunction	      is a memeber function
+ */
+
 template<typename Type, typename Argument>
 inline void Method::set(Type *object, void (Type::*function)(Argument *argument))
 {
@@ -45,6 +51,11 @@ inline void Method::set(Type *object, void (Type::*function)(Argument *argument)
 	mFunction = reinterpret_cast<void (Unknown::*)(Unknown *)>(function);
 }
 
+/**
+ * A template function that takes object and function and stores
+ * 
+ * @param *argument	    is a pointer to argument	
+ */
 template<typename Argument>
 inline void Method::invoke(Argument *argument) const
 {
