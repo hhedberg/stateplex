@@ -69,8 +69,33 @@ public:
 
 namespace Stateplex {
 
+<<<<<<< Updated upstream
+=======
+/**
+ * Constructor that initialize variables 
+ *
+ * @param Running 	is boolean
+ */
+
+inline Dispatcher::Dispatcher()
+	: mRunning(true), mMilliseconds(0), mEpollFd(0)
+{ }
+
+/**
+ * Distructor function
+ *
+ *
+ */
+
+>>>>>>> Stashed changes
 inline Dispatcher::~Dispatcher()
 { }
+
+/**
+ * A function that activate an actor if active is 1
+ *
+ *
+ */
 
 inline void Dispatcher::activateActor(Actor *actor)
 {
@@ -79,6 +104,12 @@ inline void Dispatcher::activateActor(Actor *actor)
 		actor->mActive = 1;
 	}
 }
+
+/**
+ *
+ *
+ *
+ */
 
 inline void Dispatcher::addSource(Source *source)
 {
@@ -89,10 +120,22 @@ inline void Dispatcher::addSource(Source *source)
 	epoll_ctl(mEpollFd, EPOLL_CTL_ADD, source->mFd, &event);
 }
 
+/**
+ * A function that controls the values to be zero aotherwise removes
+ *
+ * @param EPOLL_CTL_DEL        removes the target file discriptor
+ */
+
 inline void Dispatcher::removeSource(Source *source)
 {
 	epoll_ctl(mEpollFd, EPOLL_CTL_DEL, source->mFd, 0);
 }
+
+/**
+ *
+ *
+ * @return        milliseconds is int long value
+ */
 
 inline unsigned long Dispatcher::milliseconds() const
 {

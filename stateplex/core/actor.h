@@ -77,8 +77,8 @@ public:
 namespace Stateplex {
 
 /**
- * Constructor that initialize variable Alive, Active and Dispacther
- *
+ * Constructor that initialize variables 
+ * A function that activates actor 
  * @param *dispatcher 		is a pointer to Dispatcher
  */
 
@@ -100,7 +100,7 @@ inline Actor::~Actor()
 /**
  * A template function thats swithces values between variables
  * Sends message, queue message and receive message
- * @param *message        is pointer ro message
+ * @param *message        is pointer to message
  * @param *sender         is a pointer to sender
  * @param *handlerObject        is a pointer to handlerObject
  * @param *handlerFunction         is a pointer to handlerFunction
