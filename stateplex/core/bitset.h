@@ -30,7 +30,6 @@ namespace Stateplex {
  * Bitset class is used to set specific bits to different values and
  * it is used to search for bits that are set. This class is also
  * used to control the allacation of memory.
- * 
  */
 
 template<Size numberOfBits>
@@ -72,7 +71,7 @@ inline Bitset<numberOfBits>::Bitset(bool setBits)
  * Function that is used to limit the maximum allocation size
  * in Allocator class.
  * 
- * @return		limit for the Allocator.
+ * @return 		limit for the Allocator.
  */
 
 template<Size numberOfBits>

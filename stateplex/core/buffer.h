@@ -90,7 +90,7 @@ namespace Stateplex {
 /**
  * Function that allocates a block.
  * 
- * @return	Allocated block
+ * @return	allocated block
  */
  
 template<Size16 blockSize>
@@ -108,7 +108,7 @@ typename Buffer<blockSize>::Block *Buffer<blockSize>::allocateBlock()
 /**
  * Function that deallocates a specific block.
  * 
- * @param block		Block to deallocate
+ * @param block		block to deallocate
  */
  
 template<Size16 blockSize>
@@ -121,9 +121,9 @@ void Buffer<blockSize>::deallocateBlock(Block *block)
 /**
  * Function that is used to place chars to a specific block.
  * 
- * @param *cString	Chars to be placed
- * @param length	Number of chars to copy
- * @param *block	Target block to push
+ * @param *cString	chars to be placed
+ * @param length	number of chars to copy
+ * @param *block	target block to push
  */
 
 template<Size16 blockSize>
@@ -146,7 +146,6 @@ void Buffer<blockSize>::pushToBlock(const char *cString, Size length, Block *blo
 /**
  * Constructor for class Buffer
  * Initializes a new instance of buffer.
- * 
  */
 
 template<Size16 blockSize>
@@ -157,7 +156,6 @@ Buffer<blockSize>::Buffer()
 /**
  * Constructor for class Buffer.
  * This constructor has an ability to take in a string straight to buffer.
- * 
  */
 
 template<Size16 blockSize>
@@ -171,7 +169,7 @@ Buffer<blockSize>::Buffer(const char *string)
  * Function that takes in another buffer and goes through
  * every block item in the buffer and adds them to this buffer.
  * 
- * @param buffer	Target buffer to be added.
+ * @param buffer	target buffer to be added.
  */
 
 template<Size16 blockSize>
@@ -189,7 +187,7 @@ void Buffer<blockSize>::push(Buffer *buffer)
  * Function that takes in a string and calls push function to place
  * the string to buffer.
  * 
- * @param *string	String to be added
+ * @param *string	string to be added
  */
 
 template<Size16 blockSize>
@@ -203,8 +201,8 @@ void Buffer<blockSize>::push(const char *string)
  * added to block. After this the function calls another function
  * to push the chars to a block.
  * 
- * @param *cString	Chars to be added.
- * @param length	Determines how many chars are to be added.
+ * @param *cString	chars to be added.
+ * @param length	determines how many chars are to be added.
  */
 
 template<Size16 blockSize>
@@ -220,7 +218,7 @@ void Buffer<blockSize>::push(const char *cString, Size length)
  * If there are blocks it ensures that push length is not too big
  * to be allocated.
  * 
- * @param length	Maximum push length.
+ * @param length	maximum push length.
  */
 
 template<Size16 blockSize>
@@ -234,7 +232,7 @@ void Buffer<blockSize>::ensurePushLength(Size16 length)
 /**
  * Function that returns pointer to next of the last block saved.
  * 
- * @return	Pointer to return.
+ * @return	pointer to return.
  */
 
 template<Size16 blockSize>
@@ -247,7 +245,7 @@ char *Buffer<blockSize>::pushPointer()
 /**
  * Function that returns last pushed blocks length.
  * 
- * @return	lenght of the push
+ * @return	lenght of the push.
  */
 
 template<Size16 blockSize>
@@ -262,7 +260,7 @@ Size16 Buffer<blockSize>::pushLength()
  * This function takes a value and adds it to a variable that represends the
  * blocks last address space. Also this value is added to the buffer size.
  * 
- * @param length	Value to be assigned.
+ * @param length	value to be assigned.
  */
 
 template<Size16 blockSize>
@@ -278,7 +276,7 @@ void Buffer<blockSize>::pushed(Size16 length)
  * Calls function popPointer to get the address of the first value in
  * buffer.
  * 
- * @return	Value that has been taken from address which was pointed.
+ * @return	value that has been taken from address which was pointed.
  */
 
 template<Size16 blockSize>
@@ -291,7 +289,7 @@ char Buffer<blockSize>::peek()
  * Function that takes the first value from buffer and stores it
  * to a variable and removes the value from the buffer.
  * 
- * @return	Value that was popped.
+ * @return	value that was popped.
  */
 
 template<Size16 blockSize>
@@ -305,7 +303,7 @@ char Buffer<blockSize>::pop()
 /**
  * Function that returns pointer to the starting point of the first block.
  * 
- * @return	Pointer to return.
+ * @return	pointer to return.
  */
 
 template<Size16 blockSize>
@@ -318,7 +316,7 @@ char *Buffer<blockSize>::popPointer()
 /**
  * Function that returns the length of the first block.
  * 
- * @return	The size of the first block.
+ * @return	the size of the first block.
  */
 
 template<Size16 blockSize>
@@ -332,7 +330,7 @@ Size16 Buffer<blockSize>::popLength()
  * Function that deallocates the first block from the buffer.
  * This function is called when a value has been popped from buffer.
  *
- * @param length	Length of the value that has been popped.
+ * @param length	length of the value that has been popped.
  */
 
 template<Size16 blockSize>
@@ -354,7 +352,7 @@ void Buffer<blockSize>::popped(Size16 length)
 /**
  * Function that returns the total size of buffer.
  * 
- * @return	Total size of buffer.
+ * @return	total size of buffer.
  */
  
 template<Size16 blockSize>
@@ -366,7 +364,7 @@ Size Buffer<blockSize>::size()
 /**
  * Function that returns the value of current position in buffer.
  * 
- * @return	Value of the current position.
+ * @return	value of the current position.
  */
  
 template<Size16 blockSize>
@@ -377,7 +375,6 @@ char Buffer<blockSize>::here()
 
 /**
  * Function that moves to the next position in the buffer.
- * 
  */
 
 template<Size16 blockSize>
@@ -394,7 +391,7 @@ void Buffer<blockSize>::next()
 /**
  * Function that calculates how much there is left to handle in the buffer.
  * 
- * @return	Value left to handle.
+ * @return	value left to handle.
  */
 
 template<Size16 blockSize>
@@ -407,7 +404,6 @@ Size Buffer<blockSize>::left()
  * This function deallocates every block that is behind the current position's
  * block. After this the function calls for function popped and set current position
  * in buffer to current block.
- * 
  */
 
 template<Size16 blockSize>
