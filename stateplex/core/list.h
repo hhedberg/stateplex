@@ -41,6 +41,7 @@ class ListItem {
 
 public:
 	ListItem();
+	virtual ~ListItem();
 
 	void addBefore(ListItem *existing_item);
 	void addAfter(ListItem *existing_item);
@@ -105,12 +106,21 @@ inline ListItem::ListItem()
 	: mNext(this), mPrevious(this)
 { }
 
+/** 
+ * Destructor for class list.
+ * 
+ */
+
+inline ListItem::~ListItem()
+{ }
+
 /**
  * Adds a ListItem to the list between two ListItems
  *
  * @param (*previous) is a pointer to the previous list item
  * @param (*next) is a pointer to the next list item
  */
+ 
 inline void ListItem::addBetween(ListItem *previous, ListItem *next)
 {
 	previous->mNext = this;

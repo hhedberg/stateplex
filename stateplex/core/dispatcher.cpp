@@ -19,6 +19,8 @@
 
 #include <sys/time.h>
 #include <sys/epoll.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 #include "dispatcher.h"
 #include "actor.h"
@@ -30,8 +32,15 @@ namespace Stateplex {
 
 Spinlock Dispatcher::sDispatchLock;
 
+Dispatcher::Dispatcher()
+	: mRunning(true), mMilliseconds(0)
+{
+	mEpollFd = epoll_create(1024);
+}
+
 void Dispatcher::run()
 {
+	bool locked;
 	struct epoll_event events[MAX_EVENTS];
 	int n_events;
 	struct timeval tv;
@@ -39,24 +48,42 @@ void Dispatcher::run()
 	int timeout;
 	
 	while (mRunning) {
+		locked = false;
+		actors.spliceTail(&mActiveActors);
+
 		/* Dispatch outgoing messages with the lock hold */
 		if (!mOutgoingMessages.isEmpty()) {
 			sDispatchLock.lock();
+			locked = true;
 			for (ListIterator<Message> iterator(&mOutgoingMessages); iterator.hasCurrent(); iterator.subsequent()) {
 				Message *message = iterator.current();
 				Actor *receiver = message->receiver;
 				receiver->mQueuedMessages.addTail(message);
 				activateActor(receiver);
 			}
-			sDispatchLock.unlock();
 		}
 
-		/* Start the new cycle */
+		/* Dispatch incoming messages with the lock hold */
+		if (!actors.isEmpty()) {
+			if (!locked) {
+				sDispatchLock.lock();
+				locked = true;
+			}
+			for (ListIterator<Actor> iterator(&actors); iterator.hasCurrent(); iterator.subsequent()) {
+				Actor *actor = iterator.current();
+				actor->mIncomingMessages.spliceTail(&actor->mQueuedMessages);
+			}
+		}
+
+		/* Release the lock if it was acquired in dispatching */
+		if (locked)
+			sDispatchLock.unlock();
+
+		/* Start a new cycle */
 		gettimeofday(&tv, 0);
 		mMilliseconds = tv.tv_sec * 1000 + tv.tv_usec / 1000;
 
-		/* Get the active actors, check when the next waiting actor timeouts, or wait indefinitely */
-		actors.spliceTail(&mActiveActors);
+		/* Do not block, if there are active actors, check when the next waiting actor timeouts, or wait indefinitely */
 		if (!actors.isEmpty())
 			timeout = 0;
 		else if(!mWaitingActors.isEmpty()) {
@@ -66,8 +93,12 @@ void Dispatcher::run()
 		} else
 			timeout = -1;
 
-		/* Receive external events i.e. poll watches */
+		/* Receive external events i.e. poll sources */
 		n_events = epoll_wait(mEpollFd, events, MAX_EVENTS, timeout);
+		if (n_events == -1) {
+			perror("epoll_wait");
+			abort();
+		}
 		for (int i = 0; i < n_events; i++) {
 			Source *source = reinterpret_cast<Source *>(events[i].data.ptr);
 			source->handleReady(events[i].events & EPOLLIN, events[i].events & EPOLLOUT);
@@ -95,13 +126,6 @@ void Dispatcher::run()
 		/* Handle active actors i.e. actors that have incoming messages */
 		for (ListIterator<Actor> iterator(&actors); iterator.hasCurrent(); iterator.subsequent()) {
 			Actor *actor = iterator.current();
-
-			/* Dispatch incoming messges for this actor with the lock hold */
-			if (!actor->mQueuedMessages.isEmpty()) {
-				sDispatchLock.lock();
-				actor->mIncomingMessages.spliceTail(&actor->mQueuedMessages);
-				sDispatchLock.unlock();
-			}
 
 			bool alive = actor->handleMessages(mMilliseconds);
 			if (alive) {
