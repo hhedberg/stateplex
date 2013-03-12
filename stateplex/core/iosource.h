@@ -102,8 +102,8 @@ inline void IoSource::invokeHandler()
 /** 
  * Sets mode based on parameter values.
  *
- * @param readable	desc
- * @param writable	desc
+ * @param readable	true if readable, otherwise false.
+ * @param writable	true if writable, otherwise false.
  */
  
 inline void IoSource::setMode(bool readable, bool writable)
@@ -172,7 +172,6 @@ inline bool IoSource::hasReachedEof() const
  * 
  * @param *handlerObject	desc
  * @param *handlerFunction	function that takes a pointer to IoSource type.
- * @return	true if ready, otherwise false.
  */
  
 template<typename T>
