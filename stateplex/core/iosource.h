@@ -28,18 +28,16 @@ namespace Stateplex {
 class IoSource : public Source {
 	Method mHandler;
 
-	int mReadable : 1;
-	int mWritable : 1;
 	int mReadyToRead : 1;
 	int mReadyToWrite : 1;
 	int mReachedEof : 1;
 
 protected:
-	template<typename T> IoSource(Actor *actor, int fd, T *handlerObject, void (T::*handlerFunction)(Source *source));
+	IoSource(Actor *actor, int fd, bool readable = true, bool writable = true, bool enabled = true);
+	template<typename T> IoSource(Actor *actor, int fd, T* handlerObject, void (T::*handlerFunction)(IoSource *source), bool readable = true, bool writable = true, bool enabled = true);
 
 	void invokeHandler();
 	void handleReady(bool readyToRead, bool readyToWrite);
-	void setMode(bool readable, bool writable);
 
 public:
 	virtual ~IoSource();
@@ -53,6 +51,7 @@ public:
 	Size read(char *data, Size length);
 	Size write(char *data, Size length);
 	template<typename T> void setHandler(T *handlerObject, void (T::*handlerFunction)(IoSource *source));
+	void unsetHandler();
 };
 
 }
@@ -61,9 +60,13 @@ public:
 
 namespace Stateplex {
 
-template<typename T>
-IoSource::IoSource(Actor *actor, int fd, T *handlerObject, void (T::*handlerFunction)(Source *source))
-	: Source(actor, fd, handlerObject, handlerFunction), mReadable(0), mWritable(0), mReadyToRead(0), mReadyToWrite(1), mReachedEof(0)
+
+inline IoSource::IoSource(Actor *actor, int fd, bool readable, bool writable, bool enabled)
+	: Source(actor, fd, readable, writable, enabled, false), mReadyToRead(0), mReadyToWrite(1), mReachedEof(0)
+{ }
+
+template<typename T> IoSource::IoSource(Actor *actor, int fd, T* handlerObject, void (T::*handlerFunction)(IoSource *source), bool readable, bool writable, bool enabled)
+: Source(actor, fd, readable, writable, enabled, true), mHandler(handlerObject, handlerFunction), mReadyToRead(0), mReadyToWrite(1), mReachedEof(0)
 { }
 
 inline IoSource::~IoSource()
@@ -74,29 +77,23 @@ inline void IoSource::invokeHandler()
 	mHandler.invoke(this);
 }
 
-inline void IoSource::setMode(bool readable, bool writable)
-{
-	mReadable = readable ? 1 : 0;
-	mWritable = writable ? 1 : 0;
-}
-
 inline bool IoSource::isReadable() const
 {
-	return !!mReadable;
+	return Source::isReadable();
 }
 inline bool IoSource::isWritable() const
 {
-	return !!mWritable;
+	return Source::isWritable();
 }
 
 inline bool IoSource::isReadyToRead() const
 {
-	return !!mReadable && !!mReadyToRead;
+	return Source::isReadable() && !!mReadyToRead;
 }
 
 inline bool IoSource::isReadyToWrite() const
 {
-	return !!mWritable && !!mReadyToWrite;
+	return Source::isWritable() && !!mReadyToWrite;
 }
 
 inline bool IoSource::hasReachedEof() const
@@ -108,6 +105,12 @@ template<typename T>
 void IoSource::setHandler(T *handlerObject, void (T::*handlerFunction)(IoSource *source))
 {
 	mHandler.set(handlerObject, handlerFunction);
+	setHandled(true);
+}
+
+inline void IoSource::unsetHandler()
+{
+	setHandled(false);
 }
 
 }

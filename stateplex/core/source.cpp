@@ -21,16 +21,18 @@
 
 namespace Stateplex {
 
-void Source::setEnabled(bool enabled)
+void Source::manageDispatching()
 {
-	if (enabled == mEnabled)
+	bool shouldDispatch = mEnabled && mHandled && mFd != -1;
+	if (shouldDispatch == mDispatched)
 		return;
 
-	mEnabled = enabled;
-	if (mEnabled)
+	mDispatched = shouldDispatch;
+	if (mDispatched) {
 		mActor->dispatcher()->addSource(this);
-	else
+	} else {
 		mActor->dispatcher()->removeSource(this);
+	}
 }
 
 }
