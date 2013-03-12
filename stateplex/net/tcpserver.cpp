@@ -21,6 +21,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include <iostream>
@@ -65,6 +66,7 @@ void TcpServer::handleReady(bool /* readyToRead */, bool /* readyToWrite */)
 		TcpConnection *connection = mConnectionFactoryMethod.invoke(&embryo);
 		if (!connection)
 			::close(socket);
+	}
 }
 
 }
