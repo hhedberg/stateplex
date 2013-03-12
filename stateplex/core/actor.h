@@ -79,7 +79,7 @@ namespace Stateplex {
 /**
  * Constructor that initialize variable Alive, Active and Dispacther
  *
- * @param (*dispatcher)	is a pointer to Dispatcher
+ * @param *dispatcher 		is a pointer to Dispatcher
  */
 
 inline Actor::Actor(Dispatcher *dispatcher)
@@ -89,8 +89,8 @@ inline Actor::Actor(Dispatcher *dispatcher)
 }
 
 /**
+ * Distructor function
  *
- * Distructor
  *
  */
 
