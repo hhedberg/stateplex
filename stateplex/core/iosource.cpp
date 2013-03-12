@@ -44,8 +44,8 @@ void IoSource::handleReady(bool readyToRead, bool readyToWrite)
 /** 
  * Reads data from file and returns the amount of bytes read.
  *
- * @param	*data	pointer to array to which the data is written.
- * @param	length	describes the length to be read.
+ * @param *data		pointer to array to which the data is written.
+ * @param length	describes the length to be read.
  * @return			the size in bytes that was read from file.
  */
  
@@ -65,8 +65,8 @@ Size IoSource::read(char *data, Size length)
 /** 
  * Writes data to file and returns the amount of bytes written.
  *
- * @param	*data	pointer to array from which data is written to file.
- * @param	length	describes the length to be written to file.
+ * @param *data		pointer to array from which data is written to file.
+ * @param length	describes the length to be written to file.
  * @return			the size in bytes that was written to file.
  */
  

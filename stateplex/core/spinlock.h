@@ -23,7 +23,7 @@
 namespace Stateplex {
 
 /** 
- * @brief Class Spinlock
+ * @brief Class Spinlock.
  *
  * Class Spinlock is used for handling the locking and releasing
  * of shared data.
@@ -53,7 +53,7 @@ inline Spinlock::Spinlock(bool locked)
 /** 
  * Function that tries to get a lock.
  *
- * @return	true if locking succeeded, otherwise false.
+ * @return		true if locking succeeded, otherwise false.
  */
 
 inline bool Spinlock::tryLock()
@@ -66,7 +66,6 @@ inline bool Spinlock::tryLock()
 /** 
  * Function that tries to get a lock. Waits until lock is available and then
  * tries locking.
- *
  */
 
 inline void Spinlock::lock()
@@ -78,7 +77,6 @@ inline void Spinlock::lock()
 
 /** 
  * Function that releases the lock.
- *
  */
 
 inline void Spinlock::unlock()

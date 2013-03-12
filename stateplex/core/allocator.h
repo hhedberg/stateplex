@@ -32,7 +32,7 @@ void operator delete(void *pointer, Allocator *allocator);
 namespace Stateplex {
 
 /** 
- * @brief Class Allocator
+ * @brief Class Allocator.
  *
  * Class Allocator is used for allocating/deallocating memory.
  */
@@ -98,7 +98,6 @@ namespace Stateplex {
 
 /** 
  * Constructor for Allocator class.
- *
  */
 
 template<typename T, Size multiplier, Size allocationsPerBlock>
@@ -108,7 +107,7 @@ Allocator<T, multiplier, allocationsPerBlock>::Allocator()
 /** 
  * Template function that does the actual allocation of memory.
  *
- * @return	pointer to allocated object.
+ * @return		pointer to allocated object.
  */
 
 template<typename T, Size multiplier, Size allocationsPerBlock>
@@ -127,7 +126,7 @@ T *Allocator<T, multiplier, allocationsPerBlock>::allocate()
  * Template function that allocates new Block and returns it
  * to the caller.
  *
- * @return	returns pointer to newly allocated Block
+ * @return		returns pointer to newly allocated Block.
  */
 
 template<typename T, Size multiplier, Size allocationsPerBlock>

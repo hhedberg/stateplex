@@ -83,7 +83,6 @@ IoSource::IoSource(Actor *actor, int fd, T *handlerObject, void (T::*handlerFunc
 
 /** 
  * Destructor for IoSource class.
- *
  */
  
 inline IoSource::~IoSource()
@@ -91,7 +90,6 @@ inline IoSource::~IoSource()
 
 /** 
  * Invoke
- *
  */
  
 inline void IoSource::invokeHandler()
@@ -115,7 +113,7 @@ inline void IoSource::setMode(bool readable, bool writable)
 /** 
  * Checks if readable.
  *
- * @return	true if readable, otherwise false.
+ * @return		true if readable, otherwise false.
  */
  
 inline bool IoSource::isReadable() const
@@ -126,7 +124,7 @@ inline bool IoSource::isReadable() const
 /** 
  * Checks if writable.
  *
- * @return	true if writable, otherwise false.
+ * @return		true if writable, otherwise false.
  */
  
 inline bool IoSource::isWritable() const
@@ -137,7 +135,7 @@ inline bool IoSource::isWritable() const
 /** 
  * Checks if ready for reading.
  *
- * @return	true if ready, otherwise false.
+ * @return		true if ready, otherwise false.
  */
  
 inline bool IoSource::isReadyToRead() const
@@ -148,7 +146,7 @@ inline bool IoSource::isReadyToRead() const
 /** 
  * Checks if ready for writing.
  *
- * @return	true if ready, otherwise false.
+ * @return		true if ready, otherwise false.
  */
 
 inline bool IoSource::isReadyToWrite() const
@@ -159,7 +157,7 @@ inline bool IoSource::isReadyToWrite() const
 /** 
  * Checks if end-of-file has been reached.
  *
- * @return	true if eof has been reached, otherwise false.
+ * @return		true if eof has been reached, otherwise false.
  */
 
 inline bool IoSource::hasReachedEof() const
