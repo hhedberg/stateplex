@@ -40,6 +40,7 @@ class ListItem {
 
 public:
 	ListItem();
+	virtual ~ListItem();
 
 	void addBefore(ListItem *existing_item);
 	void addAfter(ListItem *existing_item);
@@ -96,6 +97,9 @@ namespace Stateplex {
 
 inline ListItem::ListItem()
 	: mNext(this), mPrevious(this)
+{ }
+
+inline ListItem::~ListItem()
 { }
 
 inline void ListItem::addBetween(ListItem *previous, ListItem *next)

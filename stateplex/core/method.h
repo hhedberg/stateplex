@@ -27,7 +27,11 @@ namespace Stateplex {
 class Method {
 	Unknown *mObject;
 	void (Unknown::*mFunction)(Unknown *argument);
+
+	void warnUninitialisedMethod(Unknown *argument);
 public:
+	Method();
+	template<typename Type, typename Argument> Method(Type *object, void (Type::*function)(Argument *argument));
 	template<typename Type, typename Argument> void set(Type *object, void (Type::*function)(Argument *argument));
 	template<typename Argument> void invoke(Argument *argument) const;
 };
@@ -37,6 +41,15 @@ public:
 /*** Template implementations ***/
 
 namespace Stateplex {
+
+inline Method::Method()
+	: mObject(reinterpret_cast<Unknown *>(this)), mFunction(reinterpret_cast<void (Unknown::*)(Unknown *)>(&Method::warnUninitialisedMethod))
+{ }
+
+template<typename Type, typename Argument>
+inline Method::Method(Type *object, void (Type::*function)(Argument *argument))
+	: mObject(reinterpret_cast<Unknown *>(object)), mFunction(reinterpret_cast<void (Unknown::*)(Unknown *)>(function))
+{ }
 
 template<typename Type, typename Argument>
 inline void Method::set(Type *object, void (Type::*function)(Argument *argument))
