@@ -1,7 +1,7 @@
 /*
  * Stateplex - A server-side actor model library.
  *
- * core/types.h
+ * net/tcpconnection.cpp
  *
  * (c) 2013 Henrik Hedberg <henrik.hedberg@innologies.fi>
  *
@@ -17,21 +17,28 @@
  * Authors: Henrik Hedberg
  */
 
-#ifndef INCLUDED_STATEPLEX_TYPES_H
-#define INCLUDED_STATEPLEX_TYPES_H
+#include <unistd.h>
 
-#include <stdint.h>
-#include <cstddef>
+#include "tcpconnection.h"
+#include "tcpserver.h"
 
 namespace Stateplex {
 
-typedef uint16_t Size16;
-typedef uint32_t Word;
-typedef std::size_t Size;
-typedef ::ssize_t SignedSize;
+int TcpConnection::connect(const struct sockaddr *address, socklen_t length)
+{
+	int fd;
 
-const Size SIZE_ERROR = reinterpret_cast<Size>(-1);
+	fd = socket(AF_INET, SOCK_STREAM, 0);
+	if (fd == -1)
+		return -1;
+	if (bind(fd, address, length) == -1 ||
+	    listen(fd, 128) == -1) {
+	    	::close(fd);
+		return -1;
+	}
+
+	return -1;
+}
 
 }
 
-#endif

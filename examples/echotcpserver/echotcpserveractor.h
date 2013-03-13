@@ -1,7 +1,7 @@
 /*
  * Stateplex - A server-side actor model library.
  *
- * core/types.h
+ * examples/echotcpserver/echotcpserveractor.h
  *
  * (c) 2013 Henrik Hedberg <henrik.hedberg@innologies.fi>
  *
@@ -17,21 +17,21 @@
  * Authors: Henrik Hedberg
  */
 
-#ifndef INCLUDED_STATEPLEX_TYPES_H
-#define INCLUDED_STATEPLEX_TYPES_H
+#ifndef INCLUDED_ECHO_TCP_SERVER_ACTOR_H
+#define INCLUDED_ECHO_TCP_SERVER_ACTOR_H
 
-#include <stdint.h>
-#include <cstddef>
+#include <stateplex/core/actor.h>
+#include <stateplex/net/tcpconnection.h>
 
-namespace Stateplex {
+class EchoTcpServerActor : public Stateplex::Actor {
+	Stateplex::TcpServer *mTcpServer;
 
-typedef uint16_t Size16;
-typedef uint32_t Word;
-typedef std::size_t Size;
-typedef ::ssize_t SignedSize;
+	Stateplex::TcpConnection *instantiateTcpConnection(const Stateplex::TcpConnectionEmbryo *embryo);
+	void handleTcpConnection(Stateplex::IoSource *source);
 
-const Size SIZE_ERROR = reinterpret_cast<Size>(-1);
+public:
+	EchoTcpServerActor(Stateplex::Dispatcher *dispatcher);
 
-}
+};
 
 #endif

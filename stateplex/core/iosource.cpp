@@ -18,6 +18,9 @@
  */
 
 #include <unistd.h>
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "iosource.h"
 
@@ -39,8 +42,16 @@ Size IoSource::read(char *data, Size length)
 		return 0;
 
 	Size size = ::read(fd(), data, length);
-	if (size == 0)
+	if (size == -1) {
+		if (errno == EAGAIN || errno == EWOULDBLOCK) {
+			size = 0;
+		} else {
+			perror("read");
+			abort();
+		}
+	} else if (size == 0) {
 		mReachedEof = 1;
+	}
 	mReadyToRead = 0;
 
 	return size;
@@ -52,6 +63,14 @@ Size IoSource::write(char *data, Size length)
 		return 0;
 
 	Size size = ::write(fd(), data, length);
+	if (size == -1) {
+		if (errno == EAGAIN || errno == EWOULDBLOCK) {
+			size = 0;
+		} else {
+			perror("read");
+			abort();
+		}
+	}
 	mReadyToWrite = 0;
 
 	return size;
