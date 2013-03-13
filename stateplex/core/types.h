@@ -28,6 +28,9 @@ namespace Stateplex {
 typedef uint16_t Size16;
 typedef uint32_t Word;
 typedef std::size_t Size;
+typedef ::ssize_t SignedSize;
+
+const Size SIZE_ERROR = reinterpret_cast<Size>(-1);
 
 }
 
