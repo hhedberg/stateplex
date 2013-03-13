@@ -42,6 +42,7 @@ class Dispatcher {
 	unsigned long mMilliseconds;
 
 	void allocateMemory();
+	void addOrUpdateSource(Source *source, int epollOperation);
 	void waitTimeout(Actor *actor);
 	
 public:
@@ -50,6 +51,7 @@ public:
 	
 	void run();
 	void addSource(Source *source);
+	void updateSource(Source *source);
 	void removeSource(Source *source);
 	void activateActor(Actor *actor);
 	void queueMessage(Message *message);
@@ -69,25 +71,10 @@ public:
 
 namespace Stateplex {
 
-<<<<<<< Updated upstream
-=======
 /**
- * Constructor that initialize variables 
- *
- * @param Running 	is boolean
+ * Destructor function
  */
 
-inline Dispatcher::Dispatcher()
-	: mRunning(true), mMilliseconds(0), mEpollFd(0)
-{ }
-
-/**
- * Distructor function
- *
- *
- */
-
->>>>>>> Stashed changes
 inline Dispatcher::~Dispatcher()
 { }
 
@@ -107,17 +94,25 @@ inline void Dispatcher::activateActor(Actor *actor)
 
 /**
  *
- *
- *
  */
 
-inline void Dispatcher::addSource(Source *source)
+inline void Dispatcher::addOrUpdateSource(Source *source, int epollOperation)
 {
 	struct ::epoll_event event;
 
-	event.events = EPOLLIN | EPOLLOUT | EPOLLET;
+	event.events = (source->mReadable ? EPOLLIN : 0 ) | (source->mWritable ? EPOLLOUT : 0) | EPOLLET;
 	event.data.ptr = source;
-	epoll_ctl(mEpollFd, EPOLL_CTL_ADD, source->mFd, &event);
+	epoll_ctl(mEpollFd, epollOperation, source->mFd, &event);
+}
+
+inline void Dispatcher::addSource(Source *source)
+{
+	addOrUpdateSource(source, EPOLL_CTL_ADD);
+}
+
+inline void Dispatcher::updateSource(Source *source)
+{
+	addOrUpdateSource(source, EPOLL_CTL_MOD);
 }
 
 /**

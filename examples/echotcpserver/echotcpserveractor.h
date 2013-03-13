@@ -1,7 +1,7 @@
 /*
  * Stateplex - A server-side actor model library.
  *
- * core/source.h
+ * examples/echotcpserver/echotcpserveractor.h
  *
  * (c) 2013 Henrik Hedberg <henrik.hedberg@innologies.fi>
  *
@@ -17,29 +17,21 @@
  * Authors: Henrik Hedberg
  */
 
-#include "source.h"
+#ifndef INCLUDED_ECHO_TCP_SERVER_ACTOR_H
+#define INCLUDED_ECHO_TCP_SERVER_ACTOR_H
 
-namespace Stateplex {
-	
-/** 
- * If enabled, adds this source to dispatcher, otherwise removes
- * this source from dispatcher.
- *
- * @param enabled	value that determines if source is to be enabled.
- */
+#include <stateplex/core/actor.h>
+#include <stateplex/net/tcpconnection.h>
 
-void Source::manageDispatching()
-{
-	bool shouldDispatch = mEnabled && mHandled && mFd != -1;
-	if (shouldDispatch == mDispatched)
-		return;
+class EchoTcpServerActor : public Stateplex::Actor {
+	Stateplex::TcpServer *mTcpServer;
 
-	mDispatched = shouldDispatch;
-	if (mDispatched) {
-		mActor->dispatcher()->addSource(this);
-	} else {
-		mActor->dispatcher()->removeSource(this);
-	}
-}
+	Stateplex::TcpConnection *instantiateTcpConnection(const Stateplex::TcpConnectionEmbryo *embryo);
+	void handleTcpConnection(Stateplex::IoSource *source);
 
-}
+public:
+	EchoTcpServerActor(Stateplex::Dispatcher *dispatcher);
+
+};
+
+#endif
