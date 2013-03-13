@@ -23,6 +23,10 @@
 
 namespace Stateplex {
 
+/**
+ * Function that warn and abort if the a method is unintialised.
+ */
+
 void Method::warnUninitialisedMethod(Unknown *argument)
 {
 	abort();
