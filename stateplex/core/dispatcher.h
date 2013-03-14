@@ -69,12 +69,9 @@ public:
 
 namespace Stateplex {
 
-<<<<<<< Updated upstream
-=======
 /**
- * Constructor that initialize variables 
+ * Constructor that initialize variables. 
  *
- * @param Running 	is boolean
  */
 
 inline Dispatcher::Dispatcher()
@@ -82,19 +79,17 @@ inline Dispatcher::Dispatcher()
 { }
 
 /**
- * Distructor function
- *
+ * Distructor function.
  *
  */
 
->>>>>>> Stashed changes
 inline Dispatcher::~Dispatcher()
 { }
 
 /**
- * A function that activate an actor if active is 1
+ * Function that activate an actor if active is 1.
  *
- *
+ * @param *actor        pointer to actor that is used for activating actors.
  */
 
 inline void Dispatcher::activateActor(Actor *actor)
@@ -106,8 +101,7 @@ inline void Dispatcher::activateActor(Actor *actor)
 }
 
 /**
- *
- *
+ * Function that controls interface for an epoll discriptor. 
  *
  */
 
@@ -121,9 +115,9 @@ inline void Dispatcher::addSource(Source *source)
 }
 
 /**
- * A function that controls the values to be zero aotherwise removes
+ * Function that controls the values to be zero otherwise removes.
  *
- * @param EPOLL_CTL_DEL        removes the target file discriptor
+ * @param EPOLL_CTL_DEL        removes the target file discriptor.
  */
 
 inline void Dispatcher::removeSource(Source *source)
@@ -132,9 +126,9 @@ inline void Dispatcher::removeSource(Source *source)
 }
 
 /**
+ * Function that return time in milliseconds.
  *
- *
- * @return        milliseconds is int long value
+ * @return        milliseconds is int long value.
  */
 
 inline unsigned long Dispatcher::milliseconds() const
