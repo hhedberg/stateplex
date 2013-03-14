@@ -30,7 +30,7 @@ typedef uint32_t Word;
 typedef std::size_t Size;
 typedef ::ssize_t SignedSize;
 
-const Size SIZE_ERROR = reinterpret_cast<Size>(-1);
+const Size SIZE_ERROR = static_cast<Size>(-1);
 
 }
 
