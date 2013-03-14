@@ -20,12 +20,64 @@
 #
 
 target=build/debug
+gtest_dir=
 cppflags=-I.
 cxx=g++
 cxxflags=-g
 ld=g++
 ldflags=
 output=Makefile
+doxygen=0
+gtest_installed=0
+
+function check_for_doxygen() {
+        for d in `echo $PATH | sed "s/:/ /g"`; do
+                if [ -r $d/doxygen ]; then
+                        let doxygen=1
+                        break
+                fi
+        done
+}
+
+function check_for_gtest() {
+	if [[ -z "$gtest_dir" ]]; then
+		tmp=$(find /usr/src -name "gtest.h" -printf "%h\n")
+		flag=`echo $tmp | awk '{print match($0,"gtest")}'`
+
+		if [ $flag -gt 0 ]; then
+			gtest_dir=$tmp
+		fi
+	fi
+ 
+	if [ "$flag" == "gtest" ] || [[ ! -z $gtest_dir ]]; then
+		let gtest_installed=1
+	fi
+}
+
+function build_google_tests() {
+	
+	write_line "\t@mkdir -p \$(TARGET)/tests"
+	if [ "$GTEST_DIR" == "/usr/src/gtest/src" ]; then
+		write_line "\t@\$(CXX) -I \$(GTEST_DIR) -c \$(GTEST_DIR)/gtest-all.cc -o \$(TARGET)/stateplex/libgtest.a"
+	else
+		write_line "\t@\$(CXX) -I \$(GTEST_DIR)/../include -I \$(GTEST_DIR)/../ -c \$(GTEST_DIR)/gtest-all.cc -o \$(TARGET)/stateplex/libgtest.a"
+	fi
+
+	for library in $(find tests -mindepth 1 -type d); do
+                name=$(echo $library | tr / _)
+                if [ "$(ls -A $library)" ]; then
+		        write_line "\t@echo Creating $name tests..."
+			
+			if [ "$GTEST_DIR" == "/usr/src/gtest/src" ]; then
+				write_line "\t@\$(CXX) -I \$(GTEST_DIR) $library/*.cpp \$(TARGET)/stateplex/libgtest.a -lpthread -o \$(TARGET)/tests/$name"
+			else
+		         	write_line "\t@\$(CXX) -I \$(GTEST_DIR)/../include $library/*.cpp \$(TARGET)/stateplex/libgtest.a -lpthread -o \$(TARGET)/tests/$name"
+                	fi
+		else
+                        write_line "\t@echo \"There aren't any tests available...\""
+                fi
+	done
+}
 
 function write_line() {
 	text=$1
@@ -143,11 +195,12 @@ function configure_executable() {
 	           "Linking $directory/$executable_name..." \
 	           "\$(LD) -o \$(TARGET)/$directory/$executable_name \$(${name}_OBJECTS) \$(LDFLAGS) \$(${name}_LDFLAGS)"
 }
-
-
+check_for_gtest
+check_for_doxygen
 exec > $output
 
 echo -e "TARGET=$target"
+echo -e "GTEST_DIR=$gtest_dir"
 echo -e "CPPFLAGS=$cppflags"
 echo -e "CXX=$cxx"
 echo -e "CXXFLAGS=$cxxflags"
@@ -163,6 +216,28 @@ echo -e "\trm -Rf build"
 
 echo -e "distclean: clean"
 echo -e "\trm -f Makefile"
+echo -e "\trm -Rf doc/html" 
+
+if [ $gtest_installed == 0 ]; then
+        write_line "test:"
+        write_line "\t@echo \"Google test framework is not installed to your system, you can get it from http://code.google.com/p/googletest/\""
+        write_line ""
+else
+        write_line "test:"
+        build_google_tests
+        write_line ""
+fi
+
+if [ $doxygen == 1 ]; then
+        write_line "docs:"
+        write_line "\t@echo \"Creating Doxygen documentation...\""
+        write_line "\t@doxygen $(pwd)/doc/settings > /dev/null 2> /dev/null "
+        write_line ""
+else
+        write_line "docs:"
+        write_line"\t@echo \"Doxygen is not installed to your system, you can get it from http://www.stack.nl/~dimitri/doxygen/download.html\""
+        write_line ""
+fi
 
 for library in $(find stateplex -mindepth 1 -type d); do
 	echo "Configuring library $library..." >&2
