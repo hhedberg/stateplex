@@ -21,6 +21,12 @@
 
 namespace Stateplex {
 
+/**
+ * Function that handles timeout
+ * 
+ *
+ */
+
 bool Actor::handleTimeouts(unsigned long milliseconds)
 {
 	for (ListIterator<Timeout> iterator(&mTimeouts); iterator.hasCurrent(); iterator.subsequent()) {
@@ -34,6 +40,12 @@ bool Actor::handleTimeouts(unsigned long milliseconds)
 	return mAlive;
 }
 
+/**
+ * Function that handles messages
+ * 
+ *
+ */
+
 bool Actor::handleMessages(unsigned long milliseconds)
 {
 	handleTimeouts(milliseconds);
@@ -46,6 +58,12 @@ bool Actor::handleMessages(unsigned long milliseconds)
 
 	return mAlive;
 }
+
+/**
+ * Function that adds timeout
+ * 
+ *
+ */
 
 void Actor::addTimeout(Timeout *timeout)
 {
