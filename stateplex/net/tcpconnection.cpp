@@ -1,7 +1,7 @@
 /*
  * Stateplex - A server-side actor model library.
  *
- * core/source.h
+ * net/tcpconnection.cpp
  *
  * (c) 2013 Henrik Hedberg <henrik.hedberg@innologies.fi>
  *
@@ -17,29 +17,28 @@
  * Authors: Henrik Hedberg
  */
 
-#include "source.h"
+#include <unistd.h>
+
+#include "tcpconnection.h"
+#include "tcpserver.h"
 
 namespace Stateplex {
-	
-/** 
- * If enabled, adds this source to dispatcher, otherwise removes
- * this source from dispatcher.
- *
- * @param enabled	value that determines if source is to be enabled.
- */
 
-void Source::manageDispatching()
+int TcpConnection::connect(const struct sockaddr *address, socklen_t length)
 {
-	bool shouldDispatch = mEnabled && mHandled && mFd != -1;
-	if (shouldDispatch == mDispatched)
-		return;
+	int fd;
 
-	mDispatched = shouldDispatch;
-	if (mDispatched) {
-		mActor->dispatcher()->addSource(this);
-	} else {
-		mActor->dispatcher()->removeSource(this);
+	fd = socket(AF_INET, SOCK_STREAM, 0);
+	if (fd == -1)
+		return -1;
+	if (bind(fd, address, length) == -1 ||
+	    listen(fd, 128) == -1) {
+	    	::close(fd);
+		return -1;
 	}
+
+	return -1;
 }
 
 }
+
