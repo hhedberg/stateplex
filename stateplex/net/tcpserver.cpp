@@ -30,6 +30,14 @@
 #include "tcpconnection.h"
 
 namespace Stateplex {
+	
+/** 
+ * Creates server socket.
+ *
+ * @param *address	struct that has information about address.
+ * @param length	length of the address.
+ * @return			returns -1 if fails, otherwise an int value other than -1.
+ */
 
 int TcpServer::createServerSocket(const struct sockaddr *address, socklen_t length)
 {
@@ -47,7 +55,13 @@ int TcpServer::createServerSocket(const struct sockaddr *address, socklen_t leng
 	return fd;
 }
 
-
+/** 
+ * Handles TODO.
+ *
+ * @param bool	TODO
+ * @param bool	TODO
+ */
+ 
 void TcpServer::handleReady(bool /* readyToRead */, bool /* readyToWrite */)
 {
 	while (1) {

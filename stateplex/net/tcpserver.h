@@ -31,6 +31,12 @@ namespace Stateplex {
 class TcpConnection;
 class TcpConnectionEmbryo;
 
+/** 
+ * @brief Class TcpServer.
+ *
+ * TcpServer is inherited from class Source.
+ */
+
 class TcpServer : public Source {
 	FactoryMethod<TcpConnection> mConnectionFactoryMethod;
 
@@ -53,6 +59,14 @@ public:
 #include "../core/source.h"
 
 namespace Stateplex {
+	
+/** 
+ * Constructor for TcpServer class.
+ *
+ * @param *actor	TODO
+ * @param *address	TODO
+ * @param length	length of the address.
+ */
 
 inline TcpServer::TcpServer(Actor *actor, const struct sockaddr *address, socklen_t length)
 	: Source(actor, -1, true, false)
@@ -60,9 +74,20 @@ inline TcpServer::TcpServer(Actor *actor, const struct sockaddr *address, sockle
 	setFd(createServerSocket(address, length));
 }
 
+/** 
+ * Destructor for TcpServer class.
+ */
+ 
 inline TcpServer::~TcpServer()
 { }
 
+/** 
+ * Sets TODO.
+ *
+ * @param *object	TODO.
+ * @param *function	function parameter.
+ */
+ 
 template<typename T>
 void TcpServer::setTcpConnectionFactoryMethod(T *object, TcpConnection* (T::*function)(const TcpConnectionEmbryo *embryo))
 {
