@@ -154,7 +154,7 @@ void Dispatcher::run()
 }
 
 /**
- * Function that queue message, activate receiver actor otherwise outgoing messages. 
+ * Function that queue message, activate receiver actor otherwise add to outgoing messages. 
  *
  */
 
