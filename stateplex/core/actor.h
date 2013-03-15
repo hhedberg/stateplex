@@ -77,9 +77,9 @@ public:
 namespace Stateplex {
 
 /**
- * Constructor that initialize variables 
- * A function that activates actor 
- * @param *dispatcher 		is a pointer to Dispatcher
+ * Constructor that initialize variables. 
+ * Function that activates this actor. 
+ * @param *dispatcher 		is a pointer to Dispatcher.
  */
 
 inline Actor::Actor(Dispatcher *dispatcher)
@@ -89,21 +89,18 @@ inline Actor::Actor(Dispatcher *dispatcher)
 }
 
 /**
- * Distructor function
- *
- *
+ * Distructor function.
  */
 
 inline Actor::~Actor()
 { }
 
 /**
- * A template function thats swithces values between variables
- * Sends message, queue message and receive message
- * @param *message        is pointer to message
- * @param *sender         is a pointer to sender
- * @param *handlerObject        is a pointer to handlerObject
- * @param *handlerFunction         is a pointer to handlerFunction
+ * A template function thats swithces values between variables.
+ * Sends message, queue message and receive message.
+ * @param *message        is pointer to message.
+ * @param *sender         is a pointer to sender.
+ * 
  */
 
 template<typename T, typename M>
@@ -116,8 +113,7 @@ inline void Actor::queueMessage(M *message, Actor *sender, T *handlerObject, voi
 }
 
 /**
- * Function that return value to pointer dispatcher
- *
+ * Function that return value to pointer dispatcher.
  *
  */
 
@@ -127,8 +123,7 @@ inline Dispatcher *Actor::dispatcher()
 }
 
 /**
- * Function that returns time out in milliseconds if timeout is set otherwise zero
- *
+ * Function that returns time out in milliseconds if timeout is set otherwise zero.
  *
  */
 
@@ -138,9 +133,9 @@ inline unsigned long Actor::nextTimeoutMilliseconds()
 	return timeout ? timeout->milliseconds() : 0;
 }
 /**
+ * Function that pass values other than pointer Alive.
  *
- *
- * @return 	mAlive integer value
+ * @return 	mAlive integer value.
  */
 inline bool Actor::isAlive()
 {
@@ -148,9 +143,9 @@ inline bool Actor::isAlive()
 }
 
 /**
- * Fucntion that return true 
+ * Fucntion that return true. 
  *
- * @return 	true
+ * @return 	true.
  */
 
 inline bool Actor::isActive(unsigned long milliseconds)
@@ -159,8 +154,7 @@ inline bool Actor::isActive(unsigned long milliseconds)
 }
 
 /**
- * A template function that creates new time out and add it to timeout function
- *
+ * A template function that add new timeout.
  *
  */
 
@@ -172,9 +166,8 @@ Timeout *Actor::addTimeout(unsigned long milliseconds, T *object, void (T::*call
 }
 
 /**
- * A function that delete the timeout
+ * A function that remove, delete timeout.
  * 
- *
  */
 
 inline void Actor::deleteTimeout(Timeout* timeout)
