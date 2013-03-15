@@ -38,6 +38,15 @@ Dispatcher::Dispatcher()
 	mEpollFd = epoll_create(1024);
 }
 
+/**
+ * Function that dispatch incoming and outgoing messages with the lock hold,handles time out for active actors. 
+ * Dispatch outgoing messages with the lock hold
+ * Dispatch incoming messages with the lock hold
+ * Release the lock if it was acquired in dispatching
+ * Handle timeouts for waiting actors
+ * Handle active actors i.e. actors that have incoming messages
+ */
+
 void Dispatcher::run()
 {
 	bool locked;
@@ -144,6 +153,11 @@ void Dispatcher::run()
 	}
 }
 
+/**
+ * Function that queue message, activate receiver actor otherwise outgoing messages. 
+ *
+ */
+
 void Dispatcher::queueMessage(Message *message)
 {
 	if (message->sender && message->sender->mDispatcher == message->receiver->mDispatcher) {
@@ -152,6 +166,11 @@ void Dispatcher::queueMessage(Message *message)
 	} else
 		mOutgoingMessages.addTail(message);
 }
+
+/**
+ * Function that handles time out for waiting actors. 
+ *
+ */
 
 void Dispatcher::waitTimeout(Actor *actor)
 {
