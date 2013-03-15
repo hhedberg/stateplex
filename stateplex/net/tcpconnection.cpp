@@ -24,6 +24,15 @@
 
 namespace Stateplex {
 
+/**
+ * Function that connects to a specified address and socket.
+ * The function takes needed parameters for making a connection.
+ *
+ * @param *address	struct that contains connection information such as ip, socket.
+ * @param length	length of the address.
+ * @return		-1 if fails.
+ */
+
 int TcpConnection::connect(const struct sockaddr *address, socklen_t length)
 {
 	int fd;

@@ -30,6 +30,14 @@ namespace Stateplex {
 class TcpServer;
 class TcpConnectionEmbryo;
 
+/**
+ * @brief Class TcpConnection.
+ *
+ * TcpConnection class is used to 
+ * handle the tcp connection
+ */
+
+
 class TcpConnection : public IoSource {
 	/* TODO: Save the peer address */
 
@@ -39,6 +47,13 @@ public:
 	template<typename T> TcpConnection(Actor *actor, const struct sockaddr *address, socklen_t length, T *handlerObject, void (T::*handlerFunction)(IoSource *source));
 	template<typename T> TcpConnection(Actor *actor, const TcpConnectionEmbryo *embryo, T *handlerObject, void (T::*handlerFunction)(IoSource *source));
 };
+
+/**
+ * @brief Class TcpConnectionEmbryo
+ *
+ * TcpConnectionEmbryo class is used to
+ * TODO
+ */
 
 class TcpConnectionEmbryo {
 	friend class TcpConnection;
@@ -59,6 +74,18 @@ public:
 
 namespace Stateplex {
 
+/**
+ * Constructor for class TcpConnection.
+ * Initializes a new instance of TcpConnection and
+ * also connects to a specified address and socket.
+ * 
+ * @param *actor		TODO
+ * @param *address		the address struct that contains socket, ip etc.
+ * @param length		the length of the address.
+ * @param *handlerObject	TODO
+ * @param *handlerFunction	TODO
+ */
+
 template<typename T> TcpConnection::TcpConnection(Actor *actor, const struct sockaddr *address, socklen_t length, T *handlerObject, void (T::*handlerFunction)(IoSource *source))
 	: IoSource(actor, handlerObject, handlerFunction)
 {
@@ -68,9 +95,29 @@ template<typename T> TcpConnection::TcpConnection(Actor *actor, const struct soc
 	setFd(fd);
 }
 
+/**
+ * Constructor for class TcpConnection.
+ * Initializes a new instance of TcpConnection 
+ *
+ * @param *actor		TODO
+ * @param *embryo		TODO
+ * @param *handlerObject	TODO
+ * @param *handlerFunction	TODO
+ */
+
 template<typename T> TcpConnection::TcpConnection(Actor *actor, const TcpConnectionEmbryo *embryo, T *handlerObject, void (T::*handlerFunction)(IoSource *source))
 		: IoSource(actor, embryo->mFd, handlerObject, handlerFunction)
 { }
+
+/**
+ * Constructor for class TcpConnectionEmbryo.
+ * Initializes a new instance of TcpConnectionEmbryo.
+ *
+ * @param *server		TODO
+ * @param fd			TODO
+ * @param *address		TODO
+ * @param addressLength		the length of the address.
+ */
 
 inline TcpConnectionEmbryo::TcpConnectionEmbryo(TcpServer *server, int fd, const struct sockaddr *address, socklen_t addressLength)
 	: mTcpServer(server), mFd(fd), mAddress(address), mAddressLength(addressLength)
