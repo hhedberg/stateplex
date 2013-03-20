@@ -56,7 +56,7 @@ int TcpServer::createServerSocket(const struct sockaddr *address, socklen_t leng
 }
 
 /** 
- * Handles TODO.
+ * "Creates" outgoing connection from embryo data if tcp information is correct.
  *
  * @param bool	TODO
  * @param bool	TODO

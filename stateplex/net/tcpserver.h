@@ -34,7 +34,8 @@ class TcpConnectionEmbryo;
 /** 
  * @brief Class TcpServer.
  *
- * TcpServer is inherited from class Source.
+ * TcpServer is inherited from class Source. Handles incoming connections and
+ * creates tcp connections.
  */
 
 class TcpServer : public Source {
@@ -63,8 +64,8 @@ namespace Stateplex {
 /** 
  * Constructor for TcpServer class.
  *
- * @param *actor	TODO
- * @param *address	TODO
+ * @param *actor	actor that is part of this server.
+ * @param *address	struct that contains connection information.
  * @param length	length of the address.
  */
 
@@ -82,10 +83,10 @@ inline TcpServer::~TcpServer()
 { }
 
 /** 
- * Sets TODO.
+ * Sets the factory method to be used for tcp connection creation.
  *
- * @param *object	TODO.
- * @param *function	function parameter.
+ * @param *object	handler object.
+ * @param *function	points to function that is used in tcp connection creation.
  */
  
 template<typename T>
