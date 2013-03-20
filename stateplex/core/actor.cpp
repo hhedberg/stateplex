@@ -22,7 +22,7 @@
 namespace Stateplex {
 
 /**
- * Function that handles timeout
+ * Function that handles timeouts
  * 
  *
  */
