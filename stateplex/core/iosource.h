@@ -28,7 +28,7 @@ namespace Stateplex {
 /** 
  * @brief Class IoSource.
  *
- * Class IoSource inherited from class Source. Used for...
+ * Class IoSource inherited from class Source. Used by the net module classes.
  */
  
 class IoSource : public Source {

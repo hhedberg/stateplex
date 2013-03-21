@@ -29,6 +29,12 @@ class Actor;
 class Message;
 class Source;
 
+/** 
+ * @brief Class Dispatcher.
+ *
+ * Class Dispatcher handles message passing between different actors.
+ */
+
 class Dispatcher {
 	static Spinlock sDispatchLock;
 
@@ -79,7 +85,7 @@ inline Dispatcher::Dispatcher()
 { }
 
 /**
- * Distructor function.
+ * Destructor function.
  *
  */
 

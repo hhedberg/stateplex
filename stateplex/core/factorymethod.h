@@ -24,6 +24,12 @@ class Unknown;
 
 namespace Stateplex {
 
+/** 
+ * @brief Class FactoryMethod
+ *
+ * Class FactoryMethod works as a pointer to a member function.
+ */
+ 
 template<typename Return>
 class FactoryMethod {
 	Unknown *mObject;

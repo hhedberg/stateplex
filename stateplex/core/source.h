@@ -30,7 +30,7 @@ class Actor;
 /** 
  * @brief Class Source.
  *
- * Class Source is source.
+ * Class Source is inherited from ListItem. Source is used by the net module.
  */
 
 class Source : public ListItem {

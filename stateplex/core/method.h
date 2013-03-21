@@ -24,6 +24,12 @@ class Unknown;
 
 namespace Stateplex {
 
+/** 
+ * @brief Class Method.
+ *
+ * Class Method is a pointer to a member function.
+ */
+ 
 class Method {
 	Unknown *mObject;
 	void (Unknown::*mFunction)(Unknown *argument);

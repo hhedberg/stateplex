@@ -28,6 +28,13 @@ namespace Stateplex {
 class Dispatcher;
 class Actor;
 
+/** 
+ * @brief Class Message.
+ *
+ * Class Message is inherited from ListItem. It is used by actors to 
+ * send messages between them.
+ */
+
 class Message : public ListItem {
 	friend class Dispatcher;
 	friend class Actor;

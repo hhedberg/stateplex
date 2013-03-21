@@ -29,6 +29,14 @@ class Dispatcher;
 class Source;
 class Timeout;
 
+/** 
+ * @brief Class Actor.
+ *
+ * Class Actor is inherited from ListItem. Actors work like threads. They
+ * handle the actual work with dispatcher between them that handles the message
+ * passing.
+ */
+
 class Actor : public ListItem {
 	friend class Dispatcher;
 
