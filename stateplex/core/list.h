@@ -31,6 +31,11 @@ class List;
 template<typename T>
 class ListIterator;
 
+/**
+ * Class ListItem are stored in to lists and
+ * they behave like normal listitems in a list.
+ */
+
 class ListItem {
 	template<typename T> friend class List;
 
@@ -47,6 +52,11 @@ public:
 	void addAfter(ListItem *existing_item);
 	void remove();
 };
+
+/**
+ * Class List has list items stored inside of it and it can be
+ * iterated with class ListIterator.
+ */
 
 template<typename T>
 class List {
@@ -71,6 +81,12 @@ public:
 
 	bool isEmpty();
 };
+
+/**
+ * Class ListIterator can be assigned to iterate a list.
+ * Iterator goes through the list one list item at time
+ * backwards or forwards.
+ */
 
 template<typename T>
 class ListIterator {
@@ -97,10 +113,7 @@ public:
 namespace Stateplex {
 
 /** 
- * A constructor that initializes mNext and mPrevious
- *
- * @param1 pointer of the using class to a member variable of mNext
- * @param2 pointer of the using class to a member variable of mPrevious
+ * A default constructor that initializes a new instance of class ListItem.
  */
 
 inline ListItem::ListItem()
@@ -108,18 +121,17 @@ inline ListItem::ListItem()
 { }
 
 /** 
- * Destructor for class list.
- * 
+ * Destructor for class ListItem.
  */
 
 inline ListItem::~ListItem()
 { }
 
 /**
- * Adds a ListItem to the list between two ListItems
+ * Adds a ListItem to the list between two list items.
  *
- * @param (*previous) is a pointer to the previous list item
- * @param (*next) is a pointer to the next list item
+ * @param (*previous) is a pointer to the previous list item.
+ * @param (*next) is a pointer to the next list item.
  */
  
 inline void ListItem::addBetween(ListItem *previous, ListItem *next)
@@ -131,9 +143,9 @@ inline void ListItem::addBetween(ListItem *previous, ListItem *next)
 }
 
 /**
- * Adds a ListItem to the list before an existing ListItem
+ * Adds a list item to the list before an existing list item.
  *
- * @param (*existing _item) is a pointer to the existing list item
+ * @param (*existing _item) is a pointer to the existing list item.
  */
 
 inline void ListItem::addBefore(ListItem *existing_item)
@@ -146,9 +158,9 @@ inline void ListItem::addBefore(ListItem *existing_item)
 }
 
 /**
- * Adds a ListItem after an existing ListItem
+ * Adds a list item after an existing list item.
  *
- * @param (existing _item) is a pointer to the existing list item
+ * @param (existing _item) is a pointer to the existing list item.
  */
 
 inline void ListItem::addAfter(ListItem *existing_item)
@@ -161,7 +173,7 @@ inline void ListItem::addAfter(ListItem *existing_item)
 }
 
 /**
- * Removes a ListItem from a list
+ * Removes a list item address from a list.
  */
 
 inline void ListItem::remove()
@@ -173,7 +185,7 @@ inline void ListItem::remove()
 }
 
 /**
- * Default constructor of List class 
+ * Default constructor of List class.
  */
 
 template<typename T>
@@ -181,9 +193,9 @@ List<T>::List()
 { }
 
 /**
- * Returns the first ListItem of a List
+ * Returns the next list item address in a list.
  *
- * @return ListItem or zero
+ * @return T* list item address, else 0.
  */
  
 template<typename T>
@@ -193,9 +205,9 @@ T *List<T>::first()
 }
 
 /**
- * Returns the last ListItem from a List
+ * Returns the previous list item from a List.
  *
- * @return *item or zero
+ * @return T* list item address, else 0.
  *
  */
 
@@ -207,9 +219,10 @@ T *List<T>::last()
 
 
 /**
- * Returns next ListItem from a List
- * @param *item is a ListItem, whose next item will be returned 
- * @return *item or zero
+ * Returns next list items address related to a specified list item.
+ *
+ * @param *item list items, whose next item will be returned.
+ * @return *item or zero.
  */
 
 template<typename T>
@@ -219,9 +232,10 @@ ListItem *List<T>::next(ListItem *item)
 }
 
 /**
- * Returns previous ListItem from a List
- * @param *item is a ListItem, whose previous item will be returned  
- * @return ListItem or zero 
+ * Returns previous ListItem from a List.
+ *
+ * @param *item 	is a ListItem, whose previous item will be returned.
+ * @return mNext	next list item or zero.
  */
 
 template<typename T>
