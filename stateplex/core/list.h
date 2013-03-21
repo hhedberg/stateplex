@@ -101,7 +101,8 @@ namespace Stateplex {
  *
  * @param1 pointer of the using class to a member variable of mNext
  * @param2 pointer of the using class to a member variable of mPrevious
-*/
+ */
+
 inline ListItem::ListItem()
 	: mNext(this), mPrevious(this)
 { }
@@ -133,7 +134,8 @@ inline void ListItem::addBetween(ListItem *previous, ListItem *next)
  * Adds a ListItem to the list before an existing ListItem
  *
  * @param (*existing _item) is a pointer to the existing list item
-*/
+ */
+
 inline void ListItem::addBefore(ListItem *existing_item)
 {
 	ListItem *previous = existing_item->mPrevious;
@@ -147,7 +149,8 @@ inline void ListItem::addBefore(ListItem *existing_item)
  * Adds a ListItem after an existing ListItem
  *
  * @param (existing _item) is a pointer to the existing list item
-*/
+ */
+
 inline void ListItem::addAfter(ListItem *existing_item)
 {
 	ListItem *next = existing_item->mNext;
@@ -159,7 +162,8 @@ inline void ListItem::addAfter(ListItem *existing_item)
 
 /**
  * Removes a ListItem from a list
-*/
+ */
+
 inline void ListItem::remove()
 {
 	mPrevious->mNext = mNext;
@@ -170,7 +174,8 @@ inline void ListItem::remove()
 
 /**
  * Default constructor of List class 
-*/
+ */
+
 template<typename T>
 List<T>::List()
 { }
@@ -179,7 +184,8 @@ List<T>::List()
  * Returns the first ListItem of a List
  *
  * @return ListItem or zero
-*/ 
+ */
+ 
 template<typename T>
 T *List<T>::first()
 {
@@ -191,7 +197,8 @@ T *List<T>::first()
  *
  * @return *item or zero
  *
-*/
+ */
+
 template<typename T>
 T *List<T>::last()
 {
@@ -203,7 +210,8 @@ T *List<T>::last()
  * Returns next ListItem from a List
  * @param *item is a ListItem, whose next item will be returned 
  * @return *item or zero
-*/
+ */
+
 template<typename T>
 ListItem *List<T>::next(ListItem *item)
 {
@@ -213,13 +221,20 @@ ListItem *List<T>::next(ListItem *item)
 /**
  * Returns previous ListItem from a List
  * @param *item is a ListItem, whose previous item will be returned  
- * return ListItem or zero 
-*/
+ * @return ListItem or zero 
+ */
+
 template<typename T>
 ListItem *List<T>::previous(ListItem *item)
 {
 	return (item->mPrevious != &mItems ? item->mPrevious : 0);
 }
+
+/**
+ * Function that adds list item between two specified items.
+ * @param *previous and *next 		pointer adresses to the specified items. 
+ *
+ */
 
 template<typename T>
 void List<T>::addBetween(ListItem *previous, ListItem *next)
@@ -232,11 +247,23 @@ void List<T>::addBetween(ListItem *previous, ListItem *next)
 	mItems.mNext = mItems.mPrevious = &mItems;
 }
 
+/**
+ * Function that adds list's listitem to ahead of a specific listitem.
+ * 
+ * @param *item	ahead of this pointer address is placed another listitem.
+ */
+
 template<typename T>
 void List<T>::addHead(T *item)
 {
 	item->addAfter(&mItems);
 }
+
+/**
+ * Function that adds list's listitem to behind of a specific listitem.
+ * 
+ * @param *item	behind of this pointer address is placed another listitem.
+ */
 
 template<typename T>
 void List<T>::addTail(T *item)
@@ -244,18 +271,36 @@ void List<T>::addTail(T *item)
 	item->addBefore(&mItems);
 }
 
+/**
+ * Function that adds specified list's listitem between
+ * objects listitem and the next listitem.
+ *  
+ * @see List::addBetween.
+ */
+
 template<typename T>
 void List<T>::spliceHead(List<T> *list)
 {
 	list->addBetween(&mItems, mItems.mNext);
 }
 
+/**
+ * Function that adds specified list's listitem beteween
+ * objects previous listitem and the objects listitem.
+ *
+ * @see List::addBetween.
+ */
+
 template<typename T>
 void List<T>::spliceTail(List<T> *list)
 {
 	list->addBetween(mItems.mPrevious, &mItems);
 }
-
+/**
+ * Function that checks it there aren't any listitems to go through.
+ *
+ * @return true if there isn't a next list item, otherwise false.
+ */
 template<typename T>
 bool List<T>::isEmpty()
 {
@@ -277,17 +322,32 @@ ListIterator<T>::ListIterator(List<T> *list, bool backwards)
 	}
 }
 
+/**
+ *
+ *
+ */
+
 template<typename T>
 List<T> *ListIterator<T>::list()
 {
 	return mList;
 }
 
+/**
+ *
+ *
+ */
+
 template<typename T>
 T *ListIterator<T>::current()
 {
 	return static_cast<T *>(mCurrent);
 }
+
+/**
+ *
+ *
+ */
 
 template<typename T>
 T *ListIterator<T>::subsequent()
@@ -299,17 +359,32 @@ T *ListIterator<T>::subsequent()
 	return static_cast<T *>(mCurrent);
 }
 
+/**
+ *
+ *
+ */
+
 template<typename T>
 bool ListIterator<T>::hasCurrent()
 {
 	return mCurrent != 0;
 }
 
+/**
+ *
+ *
+ */
+
 template<typename T>
 bool ListIterator<T>::hasSubsequent()
 {
 	return mSubsequent != 0;
 }
+
+/**
+ *
+ *
+ */
 
 template<typename T>
 bool ListIterator<T>::backwards()
