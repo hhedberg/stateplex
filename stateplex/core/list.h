@@ -307,6 +307,12 @@ bool List<T>::isEmpty()
 	return mItems.mNext == &mItems;
 }
 
+/**
+ * Constructor for class ListIterator.
+ * The constructor initializes a new instance of class ListIterator.
+ * Also sets is the list iterated backwards or not.
+ */
+
 template<typename T>
 ListIterator<T>::ListIterator(List<T> *list, bool backwards)
 	: mList(list), mBackwards(backwards)
@@ -323,8 +329,9 @@ ListIterator<T>::ListIterator(List<T> *list, bool backwards)
 }
 
 /**
+ * Function that returns the list pointer address that is being iterated.
  *
- *
+ * @return mList	pointer to the list being iterated.
  */
 
 template<typename T>
@@ -334,8 +341,9 @@ List<T> *ListIterator<T>::list()
 }
 
 /**
+ * Function that returns the list item that is currently being iterated.
  *
- *
+ * @return mCurrent	current list item iterated.
  */
 
 template<typename T>
@@ -345,8 +353,10 @@ T *ListIterator<T>::current()
 }
 
 /**
+ * Function that returns next item depending 
+ * is the list iterator going through the list backward or forwards.
  *
- *
+ * @return mCurrent	next item to iterate.
  */
 
 template<typename T>
@@ -360,8 +370,9 @@ T *ListIterator<T>::subsequent()
 }
 
 /**
+ * Function that checks if the iterator has a listitem selected.
  *
- *
+ * @return mCurrent	true if iterator has listitem selected, else false.
  */
 
 template<typename T>
@@ -371,8 +382,9 @@ bool ListIterator<T>::hasCurrent()
 }
 
 /**
+ * Function that checks if the iterator has a next item.
  *
- *
+ * @return mSubsequent	true if iterator has next item, else false.
  */
 
 template<typename T>
@@ -382,8 +394,9 @@ bool ListIterator<T>::hasSubsequent()
 }
 
 /**
+ * Function that checks if the iterator is going through the list backwards.
  *
- *
+ * @return mBackwards	true if iterator is going through the list backwards, else false.
  */
 
 template<typename T>

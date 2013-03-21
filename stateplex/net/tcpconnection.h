@@ -34,7 +34,9 @@ class TcpConnectionEmbryo;
  * @brief Class TcpConnection.
  *
  * TcpConnection class is used to 
- * handle the tcp connection
+ * handle the tcp connections. One server can have
+ * multiple tcp connections and one tcp connection has
+ * sender and receiver.
  */
 
 
@@ -51,8 +53,8 @@ public:
 /**
  * @brief Class TcpConnectionEmbryo
  *
- * TcpConnectionEmbryo class is used to
- * TODO
+ * TcpConnectionEmbryo class is used to store data so that the creation of the
+ * tcp connection is possible.
  */
 
 class TcpConnectionEmbryo {
@@ -79,11 +81,11 @@ namespace Stateplex {
  * Initializes a new instance of TcpConnection and
  * also connects to a specified address and socket.
  * 
- * @param *actor		TODO
+ * @param *actor		actor that is part of the connection.
  * @param *address		the address struct that contains socket, ip etc.
  * @param length		the length of the address.
- * @param *handlerObject	TODO
- * @param *handlerFunction	TODO
+ * @param *handlerObject	handler object that is using this constructor.
+ * @param *handlerFunction	given function from handler object.
  */
 
 template<typename T> TcpConnection::TcpConnection(Actor *actor, const struct sockaddr *address, socklen_t length, T *handlerObject, void (T::*handlerFunction)(IoSource *source))
@@ -99,10 +101,10 @@ template<typename T> TcpConnection::TcpConnection(Actor *actor, const struct soc
  * Constructor for class TcpConnection.
  * Initializes a new instance of TcpConnection 
  *
- * @param *actor		TODO
- * @param *embryo		TODO
- * @param *handlerObject	TODO
- * @param *handlerFunction	TODO
+ * @param *actor		actor that is part of the connection.
+ * @param *embryo		data storage for tcp connection.
+ * @param *handlerObject	handler object that is using this constructor.
+ * @param *handlerFunction	given function from handler object.
  */
 
 template<typename T> TcpConnection::TcpConnection(Actor *actor, const TcpConnectionEmbryo *embryo, T *handlerObject, void (T::*handlerFunction)(IoSource *source))
@@ -113,9 +115,9 @@ template<typename T> TcpConnection::TcpConnection(Actor *actor, const TcpConnect
  * Constructor for class TcpConnectionEmbryo.
  * Initializes a new instance of TcpConnectionEmbryo.
  *
- * @param *server		TODO
- * @param fd			TODO
- * @param *address		TODO
+ * @param *server		server that is part of the connection.
+ * @param fd			file descriptor.
+ * @param *address		the address struct that contains socket, ip etc.
  * @param addressLength		the length of the address.
  */
 

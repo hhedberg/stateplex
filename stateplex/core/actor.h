@@ -89,7 +89,7 @@ inline Actor::Actor(Dispatcher *dispatcher)
 }
 
 /**
- * Distructor function.
+ * Destructor for class Actor.
  */
 
 inline Actor::~Actor()
@@ -97,10 +97,9 @@ inline Actor::~Actor()
 
 /**
  * A template function thats swithces values between variables.
- * Sends message, queue message and receive message.
+ * Sends message, queue message and receive message and sets the handler of the message.
  * @param *message        is pointer to message.
  * @param *sender         is a pointer to sender.
- * 
  */
 
 template<typename T, typename M>
@@ -115,6 +114,7 @@ inline void Actor::queueMessage(M *message, Actor *sender, T *handlerObject, voi
 /**
  * Function that return value to pointer dispatcher.
  *
+ * @return mDispatcher	actors dispatcher.
  */
 
 inline Dispatcher *Actor::dispatcher()
@@ -132,20 +132,22 @@ inline unsigned long Actor::nextTimeoutMilliseconds()
 	Timeout *timeout = mTimeouts.first();
 	return timeout ? timeout->milliseconds() : 0;
 }
+
 /**
  * Function that pass values other than pointer Alive.
  *
  * @return 	mAlive integer value.
  */
+
 inline bool Actor::isAlive()
 {
 	return !!mAlive;
 }
 
 /**
- * Fucntion that return true. 
+ * Function that checks if the actor is active.
  *
- * @return 	true.
+ * @return 	true if active, else false.
  */
 
 inline bool Actor::isActive(unsigned long milliseconds)
@@ -154,8 +156,11 @@ inline bool Actor::isActive(unsigned long milliseconds)
 }
 
 /**
- * A template function that add new timeout.
+ * A template function that adds new timeout to actor.
  *
+ * @param millisecond	value of the timeout.
+ * @param *object	handler object where the timeout is added.
+ * @param *callback	callback function.
  */
 
 template<typename T>
@@ -166,8 +171,10 @@ Timeout *Actor::addTimeout(unsigned long milliseconds, T *object, void (T::*call
 }
 
 /**
- * A function that remove, delete timeout.
+ * A function that removes a timeout that has been pointed.
+ * after removing the timeout it deletes the pointer.
  * 
+ * @param timeout	timeout to be removed.
  */
 
 inline void Actor::deleteTimeout(Timeout* timeout)
