@@ -38,9 +38,11 @@ class ListItem {
 
 	void addBetween(ListItem *previous, ListItem *next);
 
+protected:
+	~ListItem();
+
 public:
 	ListItem();
-	virtual ~ListItem();
 
 	void addBefore(ListItem *existing_item);
 	void addAfter(ListItem *existing_item);
