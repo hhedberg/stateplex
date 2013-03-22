@@ -28,9 +28,7 @@ namespace Stateplex {
 class Actor;
 
 /** 
- * @brief Class Source.
- *
- * Class Source is inherited from ListItem. Source is used by the net module.
+ * @brief Inherited from ListItem. Source is used by the net module.
  */
 
 class Source : public ListItem {
@@ -82,7 +80,7 @@ namespace Stateplex {
 /** 
  * Constructor for class Source.
  *
- * @param *actor	actor that uses this source.
+ * @param *actor	pointer to the actor that uses this source.
  * @param fd		file descriptor.
  * @param enabled	this source will be added to dispatcher if true.
  */
@@ -112,9 +110,9 @@ inline int Source::fd() const
 }
 
 /** 
- * Sets parameter as file descriptor.
+ * Sets parameter as file descriptor and check the source that should it be given to dispatcher.
  *
- * @param fd	file descriptor to be set.
+ * @param fd		file descriptor to be set.
  */
  
 inline void Source::setFd(int fd)
@@ -123,11 +121,26 @@ inline void Source::setFd(int fd)
 	manageDispatching();
 }
 
+/**
+ * Function that sets source as handled and calls for the
+ * function that handles source.
+ *
+ * @param handled	boolean value to set.
+ */
+
 inline void Source::setHandled(bool handled)
 {
 	mHandled = handled;
 	manageDispatching();
 }
+
+/**
+ * Function that sets source to be readable and/or writable.
+ * Tells actor's dispatcher to update source after setting readable/writable.
+ *
+ * @param readable	value for readable to set.
+ * @param writable	value for writable to set.
+ */
 
 inline void Source::setMode(bool readable, bool writable)
 {
@@ -183,6 +196,14 @@ inline void Source::close()
 	mFd = -1;
 	manageDispatching();
 }
+
+/**
+ * Function that sets source enabled.
+ * Calls for manageDispatching function to check the source
+ * for modifications.
+ *
+ * @param enabled	boolean value to set.
+ */
 
 inline void Source::setEnabled(bool enabled)
 {

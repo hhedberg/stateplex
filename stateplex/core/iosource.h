@@ -26,9 +26,7 @@
 namespace Stateplex {
 
 /** 
- * @brief Class IoSource.
- *
- * Class IoSource inherited from class Source. Used by the net module classes.
+ * @brief Inherited from class Source. Used by the net module classes.
  */
  
 class IoSource : public Source {
@@ -69,10 +67,10 @@ namespace Stateplex {
 /** 
  * Constructor for IoSource class.
  *
- * @param *actor			desc
- * @param fd				desc
- * @param *handlerObject	desc
- * @param *handlerFunction 	desc
+ * @param *actor		pointer to actor that is using IoSource.
+ * @param fd			file descriptor.
+ * @param *handlerObject	pointer to handler object.
+ * @param *handlerFunction 	pointer to handler function.
  */
 
 
@@ -92,7 +90,7 @@ inline IoSource::~IoSource()
 { }
 
 /** 
- * Invoke
+ * Function that invokes the handler object.
  */
  
 inline void IoSource::invokeHandler()
@@ -101,7 +99,7 @@ inline void IoSource::invokeHandler()
 }
 
 /** 
- * Checks if readable.
+ * Checks if source is readable.
  *
  * @return		true if readable, otherwise false.
  */
@@ -112,7 +110,7 @@ inline bool IoSource::isReadable() const
 }
 
 /** 
- * Checks if writable.
+ * Checks if source writable.
  *
  * @return		true if writable, otherwise false.
  */
@@ -123,7 +121,7 @@ inline bool IoSource::isWritable() const
 }
 
 /** 
- * Checks if ready for reading.
+ * Checks if source ready for reading.
  *
  * @return		true if ready, otherwise false.
  */
@@ -134,7 +132,7 @@ inline bool IoSource::isReadyToRead() const
 }
 
 /** 
- * Checks if ready for writing.
+ * Checks if source ready for writing.
  *
  * @return		true if ready, otherwise false.
  */
@@ -158,8 +156,8 @@ inline bool IoSource::hasReachedEof() const
 /** 
  * Sets handler.
  * 
- * @param *handlerObject	desc
- * @param *handlerFunction	function that takes a pointer to IoSource type.
+ * @param *handlerObject	pointer to the handler object.
+ * @param *handlerFunction	pointer to the handler function.
  */
  
 template<typename T>
@@ -168,6 +166,11 @@ void IoSource::setHandler(T *handlerObject, void (T::*handlerFunction)(IoSource 
 	mHandler.set(handlerObject, handlerFunction);
 	setHandled(true);
 }
+
+/**
+ * Function that sets the state of iosource to not 
+ * have been handled.
+ */
 
 inline void IoSource::unsetHandler()
 {

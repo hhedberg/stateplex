@@ -30,7 +30,7 @@ class Source;
 class Timeout;
 
 /** 
- * @brief Class Actor.
+ * @brief Actors handle the actual work with dispatcher.
  *
  * Class Actor is inherited from ListItem. Actors work like threads. They
  * handle the actual work with dispatcher between them that handles the message
@@ -85,9 +85,10 @@ public:
 namespace Stateplex {
 
 /**
- * Constructor that initialize variables. 
- * Function that activates this actor. 
- * @param *dispatcher 		is a pointer to Dispatcher.
+ * Constructor that initialize a new instance of actor 
+ * Calls for a function in dispatcher to activate this actor. 
+ *
+ * @param *dispatcher 		is a pointer to the Dispatcher.
  */
 
 inline Actor::Actor(Dispatcher *dispatcher)
@@ -97,17 +98,20 @@ inline Actor::Actor(Dispatcher *dispatcher)
 }
 
 /**
- * Destructor for class Actor.
+ * Default destructor for class Actor.
  */
 
 inline Actor::~Actor()
 { }
 
 /**
- * A template function thats swithces values between variables.
- * Sends message, queue message and receive message and sets the handler of the message.
- * @param *message        is pointer to message.
- * @param *sender         is a pointer to sender.
+ * Function that sets message's sender and receiver and also sets the handler object
+ * and handler function and then queues the message to dispatcher.
+ *
+ * @param *message		message to queue.
+ * @param *sender       	is pointer to the sender of the message.
+ * @param *handlerObject        is a pointer to handler object.
+ * @param *handlerFunction	is a pointer to the handler objects function.
  */
 
 template<typename T, typename M>
@@ -120,9 +124,9 @@ inline void Actor::queueMessage(M *message, Actor *sender, T *handlerObject, voi
 }
 
 /**
- * Function that return value to pointer dispatcher.
+ * Function that returns pointer to actors dispatcher.
  *
- * @return mDispatcher	actors dispatcher.
+ * @return	pointer to dispatcher.
  */
 
 inline Dispatcher *Actor::dispatcher()
@@ -131,8 +135,9 @@ inline Dispatcher *Actor::dispatcher()
 }
 
 /**
- * Function that returns time out in milliseconds if timeout is set otherwise zero.
+ * Function that takes the next timeout and returns it in milliseconds.
  *
+ * @return	if timeout is set returns timeout in milliseconds, else 0.
  */
 
 inline unsigned long Actor::nextTimeoutMilliseconds()
@@ -142,9 +147,9 @@ inline unsigned long Actor::nextTimeoutMilliseconds()
 }
 
 /**
- * Function that pass values other than pointer Alive.
+ * Function that checks that is the actor alive.
  *
- * @return 	mAlive integer value.
+ * @return 	true if alive, else false.
  */
 
 inline bool Actor::isAlive()
@@ -164,7 +169,7 @@ inline bool Actor::isActive(unsigned long milliseconds)
 }
 
 /**
- * A template function that adds new timeout to actor.
+ * Function that adds new timeout to actor.
  *
  * @param millisecond	value of the timeout.
  * @param *object	handler object where the timeout is added.
@@ -182,7 +187,7 @@ Timeout *Actor::addTimeout(unsigned long milliseconds, T *object, void (T::*call
  * A function that removes a timeout that has been pointed.
  * after removing the timeout it deletes the pointer.
  * 
- * @param timeout	timeout to be removed.
+ * @param timeout	timeout to be deleted.
  */
 
 inline void Actor::deleteTimeout(Timeout* timeout)

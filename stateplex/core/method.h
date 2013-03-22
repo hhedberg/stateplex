@@ -25,9 +25,7 @@ class Unknown;
 namespace Stateplex {
 
 /** 
- * @brief Class Method.
- *
- * Class Method is a pointer to a member function.
+ * @brief Is a pointer to a member function.
  */
  
 class Method {
@@ -49,8 +47,7 @@ public:
 namespace Stateplex {
 
 /** 
- * Constructor that initialize variables. 
- *
+ * Constructor that initializes a new instance of class method. 
  */
 
 inline Method::Method()
@@ -58,8 +55,10 @@ inline Method::Method()
 { }
 
 /** 
- * A template function for constructor Method class.
- *
+ * Constructor that initializes a new instance of class method. 
+ * 
+ * @param *object		pointer address to the handler object.
+ * @param *function		pointer address to the handler function.
  */
 
 template<typename Type, typename Argument>
@@ -68,9 +67,10 @@ inline Method::Method(Type *object, void (Type::*function)(Argument *argument))
 { }
 
 /**
- * A template fucntion that sets any pointer to be converted to any other type pointer.
+ * Function that sets handler object and handler function.
  *
- * @param mFunction	      is a member function.
+ * @param *object		pointer address to the handler object.
+ * @param *function	      pointer address to the handler function.
  */
  
 template<typename Type, typename Argument>
@@ -81,9 +81,9 @@ inline void Method::set(Type *object, void (Type::*function)(Argument *argument)
 }
 
 /**
- * A template function that takes object and function and stores.
+ * Function that executes handler object's function.
  * 
- * @param *argument	    is a pointer to argument.	
+ * @param *argument	    is a pointer to argument given to handler function.	
  */
 template<typename Argument>
 inline void Method::invoke(Argument *argument) const

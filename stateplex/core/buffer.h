@@ -27,7 +27,8 @@
 namespace Stateplex {
 
 /**
- * Receives/pushes data to blocks and then consumes then. 
+ * @brief Receives/pushes data to blocks and then consumes then.
+ *
  * This makes it possible to receive/pop messages fast and then we can “consume” the data as fast as we can process it.
  * The data just stays in the buffer block for the time it takes to consume them.
  */
@@ -87,10 +88,11 @@ public:
 #include <string.h>
 
 namespace Stateplex {
+
 /**
  * Function that allocates a block.
  * 
- * @return	allocated block
+ * @return		allocated block
  */
  
 template<Size16 blockSize>
@@ -105,6 +107,7 @@ typename Buffer<blockSize>::Block *Buffer<blockSize>::allocateBlock()
 
 	return block;
 }
+
 /**
  * Function that deallocates a specific block.
  * 
@@ -144,7 +147,7 @@ void Buffer<blockSize>::pushToBlock(const char *cString, Size length, Block *blo
 }
 
 /**
- * Constructor for class Buffer
+ * Default constructor for class Buffer.
  * Initializes a new instance of buffer.
  */
 
@@ -156,6 +159,8 @@ Buffer<blockSize>::Buffer()
 /**
  * Constructor for class Buffer.
  * This constructor has an ability to take in a string straight to buffer.
+ * 
+ * @param *string	string to put into the buffer.
  */
 
 template<Size16 blockSize>

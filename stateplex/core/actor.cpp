@@ -22,12 +22,12 @@
 namespace Stateplex {
 
 /**
- * Function that checks if the timeout on a actor is largers than the given milliseconds.
- * If the milliseconds are not bigger the function calls for a function that has been set earlier.
- * to handle the timeouts and removes timeouts.
+ * Function that checks if the timeout on a actor is larger than the given milliseconds.
+ * If the milliseconds is not larger, the function calls for object handlers function and
+ * then removes the timeout.
  * 
  * @param milliseconds	milliseconds that are used for comparison.
- * @return mAlive	true, if the actors is still alive after the handling, else false.
+ * @return	true, if the actors is still alive after the handling, else false.
  */
 
 bool Actor::handleTimeouts(unsigned long milliseconds)
@@ -45,10 +45,10 @@ bool Actor::handleTimeouts(unsigned long milliseconds)
 
 /**
  * Function that goes through all incoming messages and 
- * calls for a function that earlier to handle the messages and removes messages.
+ * calls for a object handlers function that to handle the messages and then removes the messages.
  * 
- * @param milliseconds
- * @return mAlive	true, if the actors is still alive after the handling, else false.
+ * @param milliseconds	milliseconds used for handling timeouts.
+ * @return	true, if the actors is still alive after the handling, else false.
  */
 
 bool Actor::handleMessages(unsigned long milliseconds)
@@ -65,9 +65,11 @@ bool Actor::handleMessages(unsigned long milliseconds)
 }
 
 /**
- * Function that adds timeout to a list.
+ * Function that adds specific timeout to the end of actors timeout list.
  * 
  * @param *timeout	pointer to a timeout to be added.
+ * @return		returns void if timeout is smaller that the existing timeout, else returns void at the
+ * 			end of the function.
  */
 
 void Actor::addTimeout(Timeout *timeout)

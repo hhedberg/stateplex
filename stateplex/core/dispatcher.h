@@ -30,9 +30,7 @@ class Message;
 class Source;
 
 /** 
- * @brief Class Dispatcher.
- *
- * Class Dispatcher handles message passing between different actors.
+ * @brief Handles message passing between different actors.
  */
 
 class Dispatcher {
@@ -76,8 +74,7 @@ public:
 namespace Stateplex {
 
 /**
- * Constructor that initialize variables. 
- *
+ * Default constructor that initializes a new instance of dispatcher.
  */
 
 inline Dispatcher::Dispatcher()
@@ -85,17 +82,17 @@ inline Dispatcher::Dispatcher()
 { }
 
 /**
- * Destructor function.
- *
+ * Default destructor for dispatcher.
  */
 
 inline Dispatcher::~Dispatcher()
 { }
 
 /**
- * Function that activate an actor if active is 1.
+ * Function that activates an actor if not already activated and
+ * adds it to the list of activated actors.
  *
- * @param *actor        pointer to actor that is used for activating actors.
+ * @param *actor        pointer to actor that is the target.
  */
 
 inline void Dispatcher::activateActor(Actor *actor)
@@ -107,7 +104,7 @@ inline void Dispatcher::activateActor(Actor *actor)
 }
 
 /**
- * Function that controls interface for an epoll discriptor. 
+ * Function that controls interface for an epoll descriptor. 
  *
  */
 
@@ -121,9 +118,9 @@ inline void Dispatcher::addSource(Source *source)
 }
 
 /**
- * Function that controls the values to be zero otherwise removes.
+ * Function that removes the source.
  *
- * @param EPOLL_CTL_DEL        removes the target file discriptor.
+ * @param EPOLL_CTL_DEL        removes the target source.
  */
 
 inline void Dispatcher::removeSource(Source *source)
@@ -132,9 +129,9 @@ inline void Dispatcher::removeSource(Source *source)
 }
 
 /**
- * Function that return time in milliseconds.
+ * Function that returns milliseconds.
  *
- * @return        milliseconds is int long value.
+ * @return        milliseconds
  */
 
 inline unsigned long Dispatcher::milliseconds() const

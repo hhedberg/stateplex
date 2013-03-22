@@ -29,9 +29,7 @@ class Dispatcher;
 class Actor;
 
 /** 
- * @brief Class Message.
- *
- * Class Message is inherited from ListItem. It is used by actors to 
+ * @brief Inherited from ListItem. It is used by actors to 
  * send messages between them.
  */
 
@@ -57,9 +55,7 @@ namespace Stateplex {
 
 
 /**
- *
- *A function that calls the event handler
- *
+ * Function that calls the handler object.
  */
 
 inline void Message::invokeHandler()

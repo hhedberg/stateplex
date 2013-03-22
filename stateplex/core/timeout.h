@@ -26,9 +26,7 @@
 namespace Stateplex {
 
 /**
- * Class Timeout.
- *
- * Timeouts are used to control actors behavior in a way
+ * @brief Used to control actors behavior in a way
  * that it can be given a timeout to not act for a specific time.
  */
 
@@ -54,8 +52,7 @@ public:
 namespace Stateplex {
 
 /**
- * Constructor for class Timeout.
- * The constructor initializes a new instance of class bitset.
+ * Constructor for class Timeout that initializes a new instance of class timeout.
  *
  * @param milliseconds		time in milliseconds for the timeout object.
  * @param *handlerObject	pointer to the object that handles this timeout.
@@ -100,7 +97,7 @@ inline void Timeout::invokeHandler()
 /**
  * Function that returns the timeouts milliseconds.
  *
- * @return milliseconds of the timeout.
+ * @return 	milliseconds of the timeout.
  */
 
 inline unsigned long Timeout::milliseconds() const

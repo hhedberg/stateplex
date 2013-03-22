@@ -27,9 +27,10 @@ namespace Stateplex {
 #define STATEPLEX_BITSET_WORD_SIZE ((numberOfBits - 1) / sizeof(Word) + 1)
 
 /**
- * Bitset class is used to set specific bits to different values and
- * it is used to search for bits that are set. This class is also
- * used to control the allacation of memory.
+ * @brief Used to set specific bits to different values.
+ *
+ * Bitset class can also be used to search for bits that are set. This class can 
+ * also be used to control the allocation of memory.
  */
 
 template<Size numberOfBits>
@@ -56,7 +57,7 @@ namespace Stateplex {
 /**
  * Constructor for class Bitset.
  * The constructor initializes a new instance of class bitset.
- * Also fills bits with ones or zeros.
+ * Also fills it's memory space bits with ones or zeros.
  * 
  * @param setBits	boolean that determines the values for bits
  */
@@ -83,7 +84,7 @@ inline Size Bitset<numberOfBits>::size()
 /**
  * Function that sets specific bit to one.
  * 
- * @param bit	target bit to set.
+ * @param bit		target bit to set.
  */
 
 template<Size numberOfBits>
@@ -95,7 +96,7 @@ inline void Bitset<numberOfBits>::setBit(Size bit)
 /**
  * Function that unsets specific bit.
  * 
- * @param bit	target bit to unset.
+ * @param bit		target bit to unset.
  */
 	
 template <Size numberOfBits>
@@ -107,7 +108,7 @@ void Bitset<numberOfBits>::unsetBit(Size bit)
 /**
  * Function that checks if specific bit is set.
  * 
- * @param bit	target bit to check.
+ * @param bit		target bit to check.
  * @return		true if set, otherwise false.
  */
 
@@ -122,7 +123,7 @@ bool Bitset<numberOfBits>::isBitSet(Size bit)
  * Function that checks for first set bit.
  * 
  * @return		numberOfBits if bits are not set, else return place of first
- * set bit.
+ * 			set bit.
  */
 
 template <Size numberOfBits>

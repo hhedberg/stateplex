@@ -32,11 +32,11 @@
 namespace Stateplex {
 	
 /** 
- * Creates server socket.
+ * Function that creates a server socket.
  *
  * @param *address	struct that has information about address.
  * @param length	length of the address.
- * @return			returns -1 if fails, otherwise an int value other than -1.
+ * @return		returns -1 if fails, otherwise an int value other than -1.
  */
 
 int TcpServer::createServerSocket(const struct sockaddr *address, socklen_t length)
@@ -58,8 +58,8 @@ int TcpServer::createServerSocket(const struct sockaddr *address, socklen_t leng
 /** 
  * "Creates" outgoing connection from embryo data if tcp information is correct.
  *
- * @param bool	TODO
- * @param bool	TODO
+ * @param bool	not yet done.
+ * @param bool	not yet done.
  */
  
 void TcpServer::handleReady(bool /* readyToRead */, bool /* readyToWrite */)

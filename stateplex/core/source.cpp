@@ -22,10 +22,8 @@
 namespace Stateplex {
 	
 /** 
- * If enabled, adds this source to dispatcher, otherwise removes
- * this source from dispatcher.
- *
- * @param enabled	value that determines if source is to be enabled.
+ * Function that checks if a dispatcher is using source, if not set source to a dispatcher.
+ * If the source has not been dispatched then it will be removed.
  */
 
 void Source::manageDispatching()

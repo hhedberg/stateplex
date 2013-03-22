@@ -23,9 +23,7 @@
 namespace Stateplex {
 
 /** 
- * @brief Class Spinlock.
- *
- * Class Spinlock is used for handling the locking and releasing
+ * @brief Used for handling the locking and releasing
  * of shared data.
  */
  
@@ -51,7 +49,7 @@ inline Spinlock::Spinlock(bool locked)
 { }
 
 /** 
- * Function that tries to get a lock.
+ * Function that tries to reserve a lock.
  *
  * @return		true if locking succeeded, otherwise false.
  */

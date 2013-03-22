@@ -25,9 +25,7 @@ class Unknown;
 namespace Stateplex {
 
 /** 
- * @brief Class FactoryMethod
- *
- * Class FactoryMethod works as a pointer to a member function.
+ * @brief Works as a pointer to a member function.
  */
  
 template<typename Return>
@@ -54,7 +52,8 @@ public:
 namespace Stateplex {
 
 /** 
- * A template function for constructor FactoryMethod class and handles conversation between unrelated types
+ * Constructor for FactoryMethod class.
+ * Initializes a new instance of class FactoryMethod.
  * 
  */
 
@@ -64,7 +63,12 @@ FactoryMethod<Return>::FactoryMethod()
 { }
 
 /** 
- * A template function for constructor FactoryMethod class.
+ * Constructor for FactoryMethod class.
+ * Initializes a new instance of class FactoryMethod.
+ * Values for handler object and handler function can be given with arguments.
+ *
+ * @param *object		pointer to handler object.
+ * @param *function		pointer to handler function.
  */
 
 template<typename Return> template<typename Type, typename Argument>
@@ -73,9 +77,10 @@ FactoryMethod<Return>::FactoryMethod(Type *object, Return *(Type::*function)(Arg
 { }
 
 /**
- * A template fucntion that sets any pointer to be converted to any other type pointer.
+ * Function that can be used to set the handler object and handler function.
  *
- * @param mFunction	      is a member function.
+ * @param *object		pointer to handler object.
+ * @param *function		pointer to handler function.
  */
 
 template<typename Return> template<typename Type, typename Argument>
@@ -86,10 +91,10 @@ inline void FactoryMethod<Return>::set(Type *object, Return *(Type::*function)(A
 }
 
 /**
- * A template function that takes object and function and stores.
+ * Function that invokes handler object.
  *
- * @param mFunction	      is a member function.
- * 
+ * @param *argument		pointer to the object that the handler needs. 
+ * @return			returns what handler object returns.
  */
 
 template<typename Return> template<typename Argument>

@@ -32,6 +32,11 @@ namespace Stateplex {
 
 Spinlock Dispatcher::sDispatchLock;
 
+/**
+ * Default constructor for dispatcher.
+ * Also creates the epoll file discriptor.
+ */
+
 Dispatcher::Dispatcher()
 	: mRunning(true), mMilliseconds(0)
 {
@@ -154,8 +159,9 @@ void Dispatcher::run()
 }
 
 /**
- * Function that queue message, activate receiver actor otherwise add to outgoing messages. 
- *
+ * Function that queues message, activates message receiver actor if
+ * message sender is set and message senders dispatcher is the same as the receivers,
+ * otherwise adds to outgoing messages list. 
  */
 
 void Dispatcher::queueMessage(Message *message)
@@ -168,8 +174,9 @@ void Dispatcher::queueMessage(Message *message)
 }
 
 /**
- * Function that handles time out for waiting actors. 
+ * Function that handles timeout for waiting actors.
  *
+ * @return		void if existing timeout is larger that the specified actor's timeout.
  */
 
 void Dispatcher::waitTimeout(Actor *actor)

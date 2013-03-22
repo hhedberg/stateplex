@@ -32,9 +32,7 @@ class TcpConnection;
 class TcpConnectionEmbryo;
 
 /** 
- * @brief Class TcpServer.
- *
- * TcpServer is inherited from class Source. Handles incoming connections and
+ * @brief Inherited from class Source. Handles incoming connections and
  * creates tcp connections.
  */
 
@@ -76,7 +74,7 @@ inline TcpServer::TcpServer(Actor *actor, const struct sockaddr *address, sockle
 }
 
 /** 
- * Destructor for TcpServer class.
+ * Destructor for class TcpServer.
  */
  
 inline TcpServer::~TcpServer()
@@ -85,8 +83,8 @@ inline TcpServer::~TcpServer()
 /** 
  * Sets the factory method to be used for tcp connection creation.
  *
- * @param *object	handler object.
- * @param *function	points to function that is used in tcp connection creation.
+ * @param *object	pointer to handler object.
+ * @param *function	pointer to handler function.
  */
  
 template<typename T>
