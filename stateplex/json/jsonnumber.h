@@ -1,16 +1,17 @@
 #ifndef JSONNUMBER_H
 #define JSONNUMBER_H
 
-#include <JsonItem.h>
+#include <jsonitem.h>
 
 
 class JsonNumber : public JsonItem
 {
-        public:
-                JsonNumber();
-                virtual ~JsonNumber();
-        protected:
-        private:
+	
+protected:
+
+public:
+		JsonNumber();
+		virtual ~JsonNumber();
 };
 
 #endif // JSONNUMBER_H

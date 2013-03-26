@@ -4,11 +4,12 @@
 
 class JsonItem
 {
-        public:
-                JsonItem();
-                virtual ~JsonItem();
-        protected:
-        private:
+	
+protected:
+
+public:
+		JsonItem();
+		virtual ~JsonItem();
 };
 
 #endif // JSONITEM_H

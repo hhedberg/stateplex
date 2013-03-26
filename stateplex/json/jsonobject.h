@@ -1,16 +1,17 @@
 #ifndef JSONOBJECT_H
 #define JSONOBJECT_H
 
-#include <JsonItem.h>
+#include <jsonitem.h>
 
 
 class JsonObject : public JsonItem
 {
-        public:
-                JsonObject();
-                virtual ~JsonObject();
-        protected:
-        private:
+
+protected:
+
+public:
+		JsonObject();
+		virtual ~JsonObject();
 };
 
 #endif // JSONOBJECT_H
