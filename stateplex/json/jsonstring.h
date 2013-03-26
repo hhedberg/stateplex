@@ -1,16 +1,21 @@
 #ifndef JSONSTRING_H
 #define JSONSTRING_H
 
-#include <JsonItem.h>
-
+#include "jsonitem.h"
+#include <string>
+#include <iostream>
 
 class JsonString : public JsonItem
 {
-        public:
-                JsonString();
-                virtual ~JsonString();
-        protected:
-        private:
+public:
+	JsonString();
+	JsonString(std::string value);
+        virtual ~JsonString();
+	void traverse();
+protected:
+private:
+	std::string mString;
+
 };
 
 #endif // JSONSTRING_H

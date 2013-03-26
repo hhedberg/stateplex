@@ -1,4 +1,4 @@
-#include "JsonItem.h"
+#include "jsonitem.h"
 
 JsonItem::JsonItem()
 {
