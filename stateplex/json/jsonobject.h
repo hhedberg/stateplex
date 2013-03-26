@@ -3,7 +3,6 @@
 
 #include "jsonitem.h"
 
-
 class JsonObject : public JsonItem
 {
 public:

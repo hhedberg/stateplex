@@ -12,7 +12,6 @@ public:
 
 protected:
 private:
-
 };
 
 #endif // JSONITEM_H

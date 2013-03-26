@@ -15,7 +15,6 @@ public:
 protected:
 private:
 	std::string mString;
-
 };
 
 #endif // JSONSTRING_H
