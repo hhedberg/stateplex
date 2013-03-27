@@ -46,6 +46,7 @@ class Dispatcher {
 	unsigned long mMilliseconds;
 
 	void allocateMemory();
+	void addOrUpdateSource(Source *source, int epollOperation);
 	void waitTimeout(Actor *actor);
 	
 public:
@@ -54,6 +55,7 @@ public:
 	
 	void run();
 	void addSource(Source *source);
+	void updateSource(Source *source);
 	void removeSource(Source *source);
 	void activateActor(Actor *actor);
 	void queueMessage(Message *message);
@@ -74,17 +76,9 @@ public:
 namespace Stateplex {
 
 /**
- * Default constructor that initializes a new instance of dispatcher.
- */
-
-inline Dispatcher::Dispatcher()
-	: mRunning(true), mMilliseconds(0), mEpollFd(0)
-{ }
-
-/**
  * Default destructor for dispatcher.
  */
-
+ 
 inline Dispatcher::~Dispatcher()
 { }
 
@@ -94,7 +88,7 @@ inline Dispatcher::~Dispatcher()
  *
  * @param *actor        pointer to actor that is the target.
  */
-
+ 
 inline void Dispatcher::activateActor(Actor *actor)
 {
 	if (!actor->mActive) {
@@ -104,25 +98,49 @@ inline void Dispatcher::activateActor(Actor *actor)
 }
 
 /**
- * Function that controls interface for an epoll descriptor. 
+ * Function that adds or updates source.
  *
+ * @param *source        target source to add or update.
+ * @param epollOperation command for epoll.										
  */
 
-inline void Dispatcher::addSource(Source *source)
+inline void Dispatcher::addOrUpdateSource(Source *source, int epollOperation)
 {
 	struct ::epoll_event event;
 
-	event.events = EPOLLIN | EPOLLOUT | EPOLLET;
+	event.events = (source->mReadable ? EPOLLIN : 0 ) | (source->mWritable ? EPOLLOUT : 0) | EPOLLET;
 	event.data.ptr = source;
-	epoll_ctl(mEpollFd, EPOLL_CTL_ADD, source->mFd, &event);
+	epoll_ctl(mEpollFd, epollOperation, source->mFd, &event);
+}
+
+/**
+ * Function that adds source. 
+ *
+ * @param *source	target source to add.
+ */
+ 
+inline void Dispatcher::addSource(Source *source)
+{
+	addOrUpdateSource(source, EPOLL_CTL_ADD);
+}
+
+/**
+ * Function that updates the source.
+ *
+ * @param *source        target source to update.
+ */
+ 
+inline void Dispatcher::updateSource(Source *source)
+{
+	addOrUpdateSource(source, EPOLL_CTL_MOD);
 }
 
 /**
  * Function that removes the source.
  *
- * @param EPOLL_CTL_DEL        removes the target source.
+ * @param *source        target source to remove.
  */
-
+ 
 inline void Dispatcher::removeSource(Source *source)
 {
 	epoll_ctl(mEpollFd, EPOLL_CTL_DEL, source->mFd, 0);
@@ -133,7 +151,7 @@ inline void Dispatcher::removeSource(Source *source)
  *
  * @return        milliseconds
  */
-
+ 
 inline unsigned long Dispatcher::milliseconds() const
 {
 	return mMilliseconds;
