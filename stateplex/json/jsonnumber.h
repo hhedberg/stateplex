@@ -10,9 +10,11 @@ public:
 	JsonNumber(const char *key, int number);
         virtual ~JsonNumber();
 	void traverse();
+	const char *key();
+	int value();
 protected:
 private:
-	int mNumber;
+	int mValue;
 	const char *mKey;
 };
 

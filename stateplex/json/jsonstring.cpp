@@ -5,14 +5,25 @@ JsonString::JsonString()
         //ctor
 }
 
-JsonString::JsonString(std::string value)
+JsonString::JsonString(const char *key, const char *value)
 {
-	mString = value;
+	mKey = key;
+	mValue = value;
 }
 
 void JsonString::traverse()
 {
-	std::cout << mString << ' ';
+	std::cout << mValue << ' ';
+}
+
+const char *JsonString::value()
+{
+	return mValue;
+}
+
+const char *JsonString::key()
+{
+	return mKey;
 }
 
 JsonString::~JsonString()

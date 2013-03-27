@@ -9,12 +9,15 @@ class JsonString : public JsonItem
 {
 public:
 	JsonString();
-	JsonString(std::string value);
+	JsonString(const char *key, const char *value);
         virtual ~JsonString();
 	void traverse();
+	const char *key();
+	const char *value();
 protected:
 private:
-	std::string mString;
+	const char *mValue;
+	const char *mKey;
 };
 
 #endif // JSONSTRING_H

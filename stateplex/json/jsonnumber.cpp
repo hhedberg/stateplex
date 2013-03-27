@@ -6,15 +6,25 @@ JsonNumber::JsonNumber()
         //ctor
 }
 
-JsonNumber::JsonNumber(const char* key, int number)
+JsonNumber::JsonNumber(const char *key, int number)
 {
 	mKey = key;
-	mNumber = number;
+	mValue = number;
 }
 
 void JsonNumber::traverse()
 {
-	std::cout << mKey << " : " << mNumber << std::endl;
+	std::cout << "\t" << '"' << mKey << '"' << " : " << mValue << std::endl;
+}
+
+int JsonNumber::value()
+{
+	return mValue;
+}
+
+const char *JsonNumber::key()
+{
+	return mKey;
 }
 
 JsonNumber::~JsonNumber()

@@ -2,18 +2,23 @@
 #define JSONOBJECT_H
 
 #include "jsonitem.h"
+#include "jsonnumber.h"
 
 class JsonObject : public JsonItem
 {
 public:
-        JsonObject();
+        JsonObject(const char *key);
         virtual ~JsonObject();
 	void add(JsonItem *item);
 	void traverse();
 	void freeItems();
+	//JsonNumber *nextJson();
+	Stateplex::List<JsonItem> *getList();
+	const char *key();
 protected:
 private:
-	Stateplex::List<JsonItem> mItems;
+	Stateplex::List<JsonItem> *mItems;
+	const char *mKey;
 };
 
 #endif // JSONOBJECT_H
