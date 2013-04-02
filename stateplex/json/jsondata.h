@@ -11,7 +11,8 @@ class JsonData : public JsonItem
 public:
 	JsonData();
 	JsonData(const char *key, const T *value);
-        virtual ~JsonData();
+	JsonData(const char *key, T value);
+    virtual ~JsonData();
 	void traverse();
 	const char *key();
 	const T *value();
@@ -31,6 +32,11 @@ template<typename T>
 JsonData<T>::JsonData(const char *key, const T *value)
 	: mKey(key), mValue(value)
 { }
+
+template<typename T>
+JsonData<T>::JsonData(const char *key, T value)
+	: mKey(key), mValue(&value)
+{ std::cout << *mValue; }
 
 template<typename T>
 void JsonData<T>::traverse()
