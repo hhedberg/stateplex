@@ -10,7 +10,8 @@ int main()
 	JsonObject mJohn("REINO");
 
 	JsonData<char> stringi("stringi", "kaalimato");
-	JsonData<int> intti("intti", 17);
+	int number = 17;
+	JsonData<int> intti("intti", &number);
 
 
 	for (int i = 0; i < 12; i++) {
@@ -57,7 +58,7 @@ int main()
 	std::cout << std::endl;
 
 	std::cout << "JSONDATA_STRING: " << stringi.key() << " " << stringi.value() << std::endl;
-	std::cout << "JSONDATA_INTTI: " << intti.key() << " " << intti.value();	
+	std::cout << "JSONDATA_INTTI: " << intti.key() << " " << *(intti.value());	
 	
 	for (Stateplex::ListIterator<JsonObject> iterator(&mList); iterator.hasCurrent(); iterator.subsequent()) {
 			JsonObject *item = iterator.current();
