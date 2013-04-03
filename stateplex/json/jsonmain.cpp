@@ -1,5 +1,6 @@
 #include "jsonitem.h"
 #include "jsonnumber.h"
+#include "jsonstring.h"
 #include "jsonobject.h"
 #include "jsondata.h"
 
@@ -22,6 +23,8 @@ int main()
 		mSecond.add(new JsonNumber("key", y * 43));	
 	}
 
+	mSecond.add(new JsonString("key", "test jsonString"));
+
 	mList.addTail(&mFirst);
 	mList.addTail(&mSecond);
 
@@ -36,14 +39,14 @@ int main()
 		
 		for(Stateplex::ListIterator<JsonItem> mIterator(item->getList()); mIterator.hasCurrent(); mIterator.subsequent()) {
 			
-			JsonNumber *number = reinterpret_cast<JsonNumber *>(mIterator.current());
+			//JsonNumber *number = reinterpret_cast<JsonNumber *>(mIterator.current());
 			
 			std::cout << "\t" << '"';
-			std::cout << number->key();
+			std::cout << mIterator.current()->key();
 			std::cout << '"';
 
 			std::cout << " : ";
-			std::cout << number->value();
+			std::cout << mIterator.current()->value();
 
 			if(mIterator.hasSubsequent()) {
 				std::cout << ",";
