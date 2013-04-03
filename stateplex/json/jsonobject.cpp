@@ -8,7 +8,8 @@ JsonObject::JsonObject(const char *key)
 
 JsonObject::~JsonObject()
 {
-        //dtor
+        freeItems();
+	delete mItems;
 }
 
 void JsonObject::add(JsonItem *item)

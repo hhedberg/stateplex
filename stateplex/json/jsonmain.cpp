@@ -6,24 +6,24 @@
 int main()
 {
 	Stateplex::List<JsonObject> mList;
-	JsonObject mObjects("TARMO");
-	JsonObject mJohn("REINO");
+	JsonObject mFirst("mFirst");
+	JsonObject mSecond("mSecond");
 
-	JsonData<char> stringi("stringi", "kaalimato");
+	JsonData<char> jsonChar("key", "value");
 	int number = 17;
-	JsonData<int> intti("intti", &number);
+	JsonData<int> integer("key", &number);
 
 
 	for (int i = 0; i < 12; i++) {
-		mObjects.add(new JsonNumber("seppo", i*3));
+		mFirst.add(new JsonNumber("key", i*3));
 	}
 
 	for (int y = 0; y < 7; y++) {
-		mJohn.add(new JsonNumber("jukka", y * 43));	
+		mSecond.add(new JsonNumber("key", y * 43));	
 	}
 
-	mList.addTail(&mObjects);
-	mList.addTail(&mJohn);
+	mList.addTail(&mFirst);
+	mList.addTail(&mSecond);
 
 	for (Stateplex::ListIterator<JsonObject> iterator(&mList); iterator.hasCurrent(); iterator.subsequent()) {
 		JsonObject *item = iterator.current();
@@ -57,13 +57,8 @@ int main()
 
 	std::cout << std::endl;
 
-	std::cout << "JSONDATA_STRING: " << stringi.key() << " " << stringi.value() << std::endl;
-	std::cout << "JSONDATA_INTTI: " << intti.key() << " " << *(intti.value());	
-	
-	for (Stateplex::ListIterator<JsonObject> iterator(&mList); iterator.hasCurrent(); iterator.subsequent()) {
-			JsonObject *item = iterator.current();
-			item->freeItems();
-	}
+	std::cout << "JSONDATA_CHAR: " << jsonChar.key() << " " << jsonChar.value() << std::endl;
+	std::cout << "JSONDATA_INT: " << integer.key() << " " << *(integer.value()) << std::endl;	
 
   return 0;
 }
