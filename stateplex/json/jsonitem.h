@@ -2,6 +2,7 @@
 #define JSONITEM_H
 
 #include "../core/list.h"
+#include <string>
 
 class JsonItem : public Stateplex::ListItem
 {
