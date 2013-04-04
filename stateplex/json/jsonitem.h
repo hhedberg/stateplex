@@ -9,10 +9,8 @@ public:
 	JsonItem();
 	virtual ~JsonItem();
 	virtual void traverse() = 0;
-	virtual Json *data() = 0;
 
 protected:
-	Json data;
 private:
 };
 

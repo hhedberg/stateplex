@@ -39,14 +39,14 @@ int main()
 		
 		for(Stateplex::ListIterator<JsonItem> mIterator(item->getList()); mIterator.hasCurrent(); mIterator.subsequent()) {
 			
-			//JsonNumber *number = reinterpret_cast<JsonNumber *>(mIterator.current());
+			JsonNumber *number = reinterpret_cast<JsonNumber *>(mIterator.current());
 			
 			std::cout << "\t" << '"';
-			std::cout << mIterator.current()->key();
+			std::cout << number->key();
 			std::cout << '"';
 
 			std::cout << " : ";
-			std::cout << mIterator.current()->value();
+			std::cout << number->value();
 
 			if(mIterator.hasSubsequent()) {
 				std::cout << ",";
@@ -55,7 +55,7 @@ int main()
 		}		
 		std::cout << "}";
 			
-			std::cout << std::endl;
+		std::cout << std::endl;
 	}
 
 	std::cout << std::endl;
