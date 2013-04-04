@@ -1,4 +1,5 @@
 #include "jsonobject.h"
+#include <iostream>
 
 JsonObject::JsonObject(const char *key)
 {
@@ -19,6 +20,7 @@ void JsonObject::add(JsonItem *item)
 
 void JsonObject::traverse()
 {
+	std::cout << '"' <<  key() << '"' << ":" << std::endl;
 	for (Stateplex::ListIterator<JsonItem> iterator(mItems); iterator.hasCurrent(); iterator.subsequent()) {
 		JsonObject *item = reinterpret_cast<JsonObject *>(iterator.current());
 		item->traverse();
@@ -48,4 +50,28 @@ void JsonObject::freeItems()
 		delete item;
 	}
 
+}
+
+JsonItem *JsonObject::find(const char *target)
+{
+	JsonItem *item;
+	for (Stateplex::ListIterator<JsonItem> iterator(mItems); iterator.hasCurrent(); iterator.subsequent()) {
+		if(strcmp(iterator.current()->key(), target)) {
+			item = iterator.current();
+		}
+	}
+
+	return item;
+}
+
+JsonObject *JsonObject::findObject(const char *target)
+{
+	JsonObject *item;
+	for (Stateplex::ListIterator<JsonItem> iterator(mItems); iterator.hasCurrent(); iterator.subsequent()) {
+		if(strcmp(iterator.current()->key(), target) == 0) {
+			item = reinterpret_cast<JsonObject *> (iterator.current());
+		}
+	}
+
+	return item;
 }

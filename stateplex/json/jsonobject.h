@@ -13,7 +13,8 @@ public:
 	void traverse();
 	//JsonNumber *nextJson();
 	Stateplex::List<JsonItem> *getList();
-	JsonItem *getJson(const char *target);
+	JsonItem *find(const char *target);
+	JsonObject *findObject(const char *target);
 	const char *key();
 protected:
 private:
