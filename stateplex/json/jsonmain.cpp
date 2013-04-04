@@ -18,7 +18,7 @@ int main()
 	company.findObject("Employee")->findObject("Juha")->add(new JsonNumber("Age", 24));
 	company.findObject("Employee")->findObject("Tapio")->add(new JsonNumber("Age", 24));
 
-	JsonData<char> jsonChar("key", "value");
+	JsonData<const char> jsonChar("key", "value");
 	int number = 17;
 	JsonData<int> integer("key", &number);
 
@@ -48,7 +48,7 @@ int main()
 			
 			//JsonNumber *number = reinterpret_cast<JsonNumber *>(mIterator.current());
 			
-			// NOTE: best solution eu
+			// NOTE: probably not the best solution
 			JsonNumber *number = dynamic_cast<JsonNumber *>(mIterator.current());
 			
 			if (number) {
