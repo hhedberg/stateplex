@@ -11,12 +11,13 @@ public:
         virtual ~JsonObject();
 	void add(JsonItem *item);
 	void traverse();
-	void freeItems();
 	//JsonNumber *nextJson();
 	Stateplex::List<JsonItem> *getList();
 	const char *key();
 protected:
 private:
+	void freeItems();
+	
 	Stateplex::List<JsonItem> *mItems;
 	const char *mKey;
 };

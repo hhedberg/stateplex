@@ -9,14 +9,10 @@ public:
 	JsonItem();
 	virtual ~JsonItem();
 	virtual void traverse() = 0;
+	virtual const char *key() = 0;
 
 protected:
-private:
-};
-
-
-class Storage
-{
+	const char *mKey;
 private:
 	
 };

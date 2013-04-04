@@ -17,7 +17,7 @@ public:
 protected:
 private:
 	const char *mValue;
-	const char *mKey;
+	//const char *mKey;
 };
 
 #endif // JSONSTRING_H
