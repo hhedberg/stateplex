@@ -10,14 +10,14 @@ class JsonData : public JsonItem
 {
 public:
 	JsonData();
-	JsonData(char *key, T *value);
+	JsonData(const char *key, T *value);
     virtual ~JsonData();
 	void traverse();
 	const char *key();
 	const T *value();
 protected:
 private:
-	char *mKey;
+	//char *mKey;
 	T *mValue;
 };
 
@@ -28,9 +28,11 @@ JsonData<T>::JsonData()
 }
 
 template<typename T>
-JsonData<T>::JsonData(char *key, T *value)
-	: mKey(key), mValue(value)
-{ }
+JsonData<T>::JsonData(const char *key, T *value)
+{ 
+	mKey = key;
+	mValue = value;
+}
 
 template<typename T>
 void JsonData<T>::traverse()
