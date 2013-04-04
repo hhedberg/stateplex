@@ -20,10 +20,9 @@ int main()
 	}
 
 	for (int y = 0; y < 7; y++) {
-		mSecond.add(new JsonNumber("key", y * 43));	
+		mSecond.add(new JsonNumber("key", y * 43));
+		mSecond.add(new JsonString("strKey", "strTest"));	
 	}
-
-	mSecond.add(new JsonString("key", "test jsonString"));
 
 	mList.addTail(&mFirst);
 	mList.addTail(&mSecond);
@@ -39,17 +38,38 @@ int main()
 		
 		for(Stateplex::ListIterator<JsonItem> mIterator(item->getList()); mIterator.hasCurrent(); mIterator.subsequent()) {
 			
-			JsonNumber *number = reinterpret_cast<JsonNumber *>(mIterator.current());
+			//JsonNumber *number = reinterpret_cast<JsonNumber *>(mIterator.current());
 			
-			std::cout << "\t" << '"';
-			std::cout << number->key();
-			std::cout << '"';
+			// NOTE: best solution eu
+			JsonNumber *number = dynamic_cast<JsonNumber *>(mIterator.current());
+			
+			if (number) {
+				std::cout << "\t" << '"';
+				std::cout << number->key();
+				std::cout << '"';
 
-			std::cout << " : ";
-			std::cout << number->value();
+				std::cout << " : ";
+				std::cout << number->value();
 
-			if(mIterator.hasSubsequent()) {
-				std::cout << ",";
+				if(mIterator.hasSubsequent()) {
+					std::cout << ",";
+				}
+			}
+			else {
+				JsonString *string = dynamic_cast<JsonString *>(mIterator.current());
+				
+				if (string) {
+					std::cout << "\t" << '"';
+					std::cout << string->key();
+					std::cout << '"';
+
+					std::cout << " : ";
+					std::cout << string->value();
+
+					if(mIterator.hasSubsequent()) {
+						std::cout << ",";
+					}
+				}
 			}
 			std::cout << std::endl;
 		}		
