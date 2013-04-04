@@ -25,6 +25,11 @@
 
 namespace Stateplex {
 
+/**
+ * @brief Used to control actors behavior in a way
+ * that it can be given a timeout to not act for a specific time.
+ */
+
 class Timeout : public ListItem {
 	friend class Actor;
 
@@ -46,10 +51,25 @@ public:
 
 namespace Stateplex {
 
+/**
+ * Constructor for class Timeout that initializes a new instance of class timeout.
+ *
+ * @param milliseconds		time in milliseconds for the timeout object.
+ * @param *handlerObject	pointer to the object that handles this timeout.
+ * @param *handlerFunction	pointer to the handler objects member function.
+ */
+
 template<typename T>
 Timeout::Timeout(unsigned long milliseconds, T *handlerObject, void (T::*handlerFunction)(Timeout *timeout))
 	: mMilliseconds(milliseconds), mHandler(handlerObject, handlerFunction)
 { }
+
+/**
+ * Function that sets the timeout's handler and function to the pointed one.
+ *
+ * @param *handlerObject	pointer to the handler of the timeout.
+ * @param *handlerFunction	pointer to the member function of the handlers.
+ */
 
 template<typename T>
 inline void Timeout::setHandler(T *handlerObject, void (T::*handlerFunction)(Timeout *timeout))
@@ -63,10 +83,22 @@ inline void Timeout::setHandler(T *handlerObject, void (T::*handlerFunction)(Tim
 
 namespace Stateplex {
 
+/**
+ * Function that calls timeout's method handler and gives itself as argument.
+ * timeout is then used to get the handler functions object and member function
+ * and after that the function is executed.
+ */
+
 inline void Timeout::invokeHandler()
 {
 	mHandler.invoke(this);
 }
+
+/**
+ * Function that returns the timeouts milliseconds.
+ *
+ * @return 	milliseconds of the timeout.
+ */
 
 inline unsigned long Timeout::milliseconds() const
 {

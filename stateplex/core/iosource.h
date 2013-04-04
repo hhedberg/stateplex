@@ -25,6 +25,10 @@
 
 namespace Stateplex {
 
+/** 
+ * @brief Inherited from class Source. Used by the net module classes.
+ */
+ 
 class IoSource : public Source {
 	Method mHandler;
 
@@ -59,6 +63,15 @@ public:
 /*** Inline implementations ***/
 
 namespace Stateplex {
+	
+/** 
+ * Constructor for IoSource class.
+ *
+ * @param *actor		pointer to actor that is using IoSource.
+ * @param fd			file descriptor.
+ * @param *handlerObject	pointer to handler object.
+ * @param *handlerFunction 	pointer to handler function.
+ */
 
 
 inline IoSource::IoSource(Actor *actor, int fd, bool readable, bool writable, bool enabled)
@@ -69,44 +82,95 @@ template<typename T> IoSource::IoSource(Actor *actor, int fd, T* handlerObject, 
 : Source(actor, fd, readable, writable, enabled, true), mHandler(handlerObject, handlerFunction), mReadyToRead(0), mReadyToWrite(1), mReachedEof(0)
 { }
 
+/** 
+ * Destructor for IoSource class.
+ */
+ 
 inline IoSource::~IoSource()
 { }
 
+/** 
+ * Function that invokes the handler object.
+ */
+ 
 inline void IoSource::invokeHandler()
 {
 	mHandler.invoke(this);
 }
 
+/** 
+ * Checks if source is readable.
+ *
+ * @return		true if readable, otherwise false.
+ */
+ 
 inline bool IoSource::isReadable() const
 {
 	return Source::isReadable();
 }
+
+/** 
+ * Checks if source writable.
+ *
+ * @return		true if writable, otherwise false.
+ */
+ 
 inline bool IoSource::isWritable() const
 {
 	return Source::isWritable();
 }
 
+/** 
+ * Checks if source ready for reading.
+ *
+ * @return		true if ready, otherwise false.
+ */
+ 
 inline bool IoSource::isReadyToRead() const
 {
 	return Source::isReadable() && !!mReadyToRead;
 }
+
+/** 
+ * Checks if source ready for writing.
+ *
+ * @return		true if ready, otherwise false.
+ */
 
 inline bool IoSource::isReadyToWrite() const
 {
 	return Source::isWritable() && !!mReadyToWrite;
 }
 
+/** 
+ * Checks if end-of-file has been reached.
+ *
+ * @return		true if eof has been reached, otherwise false.
+ */
+
 inline bool IoSource::hasReachedEof() const
 {
 	return !!mReachedEof;
 }
 
+/** 
+ * Sets handler.
+ * 
+ * @param *handlerObject	pointer to the handler object.
+ * @param *handlerFunction	pointer to the handler function.
+ */
+ 
 template<typename T>
 void IoSource::setHandler(T *handlerObject, void (T::*handlerFunction)(IoSource *source))
 {
 	mHandler.set(handlerObject, handlerFunction);
 	setHandled(true);
 }
+
+/**
+ * Function that sets the state of iosource to not 
+ * have been handled.
+ */
 
 inline void IoSource::unsetHandler()
 {

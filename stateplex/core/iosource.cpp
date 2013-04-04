@@ -25,6 +25,14 @@
 #include "iosource.h"
 
 namespace Stateplex {
+	
+/** 
+ * Sets ready to read and write based on given parameters and
+ * invokes handler function.
+ *
+ * @param readyToRead	true if ready for reading, otherwise false.
+ * @param readyToWrite 	true if ready for writing, otherwise false.
+ */
 
 void IoSource::handleReady(bool readyToRead, bool readyToWrite)
 {
@@ -36,6 +44,14 @@ void IoSource::handleReady(bool readyToRead, bool readyToWrite)
 	invokeHandler();
 }
 
+/** 
+ * Reads data from file descriptor and returns the amount of bytes read.
+ *
+ * @param *data		pointer to array to which the data is written.
+ * @param length	describes the length to be read.
+ * @return		the size in bytes that was read from file.
+ */
+ 
 Size IoSource::read(char *data, Size length)
 {
 	if (!mReadyToRead)
@@ -57,6 +73,14 @@ Size IoSource::read(char *data, Size length)
 	return size;
 }
 
+/** 
+ * Writes data to file descriptor and returns the amount of bytes written.
+ *
+ * @param *data		pointer to array from which data is written to file.
+ * @param length	describes the length to be written to file.
+ * @return		the size in bytes that was written to file.
+ */
+ 
 Size IoSource::write(char *data, Size length)
 {
 	if (!mReadyToWrite)

@@ -30,6 +30,13 @@ namespace Stateplex {
 class TcpServer;
 class TcpConnectionEmbryo;
 
+/**
+ * @brief Used to handle the tcp connections.
+ *
+ * One server can have multiple tcp connections and one tcp connection has
+ * sender and receiver.
+ */
+
 class TcpConnection : public IoSource {
 	/* TODO: Save the peer address */
 
@@ -39,6 +46,11 @@ public:
 	template<typename T> TcpConnection(Actor *actor, const struct sockaddr *address, socklen_t length, T *handlerObject, void (T::*handlerFunction)(IoSource *source));
 	template<typename T> TcpConnection(Actor *actor, const TcpConnectionEmbryo *embryo, T *handlerObject, void (T::*handlerFunction)(IoSource *source));
 };
+
+/**
+ * @brief Used to store data so that the creation of the
+ * tcp connection is possible.
+ */
 
 class TcpConnectionEmbryo {
 	friend class TcpConnection;
@@ -59,6 +71,17 @@ public:
 
 namespace Stateplex {
 
+/**
+ * Constructor for class TcpConnection that initializes a new instance of TcpConnection and
+ * also connects to a specified address and socket.
+ * 
+ * @param *actor		actor that is part of the connection.
+ * @param *address		the address struct that contains socket, ip etc.
+ * @param length		the length of the address.
+ * @param *handlerObject	handler object that is using this constructor.
+ * @param *handlerFunction	given function from handler object.
+ */
+
 template<typename T> TcpConnection::TcpConnection(Actor *actor, const struct sockaddr *address, socklen_t length, T *handlerObject, void (T::*handlerFunction)(IoSource *source))
 	: IoSource(actor, handlerObject, handlerFunction)
 {
@@ -68,9 +91,27 @@ template<typename T> TcpConnection::TcpConnection(Actor *actor, const struct soc
 	setFd(fd);
 }
 
+/**
+ * Constructor for class TcpConnection that initializes a new instance of TcpConnection.
+ *
+ * @param *actor		actor that is part of the connection.
+ * @param *embryo		data storage for tcp connection.
+ * @param *handlerObject	handler object that is using this constructor.
+ * @param *handlerFunction	given function from handler object.
+ */
+
 template<typename T> TcpConnection::TcpConnection(Actor *actor, const TcpConnectionEmbryo *embryo, T *handlerObject, void (T::*handlerFunction)(IoSource *source))
 		: IoSource(actor, embryo->mFd, handlerObject, handlerFunction)
 { }
+
+/**
+ * Constructor for class TcpConnectionEmbryo that initializes a new instance of TcpConnectionEmbryo.
+ *
+ * @param *server		server that is part of the connection.
+ * @param fd			file descriptor.
+ * @param *address		the address struct that contains socket, ip etc.
+ * @param addressLength		the length of the address.
+ */
 
 inline TcpConnectionEmbryo::TcpConnectionEmbryo(TcpServer *server, int fd, const struct sockaddr *address, socklen_t addressLength)
 	: mTcpServer(server), mFd(fd), mAddress(address), mAddressLength(addressLength)

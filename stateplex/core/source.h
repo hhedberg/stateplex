@@ -27,6 +27,10 @@ namespace Stateplex {
 
 class Actor;
 
+/** 
+ * @brief Inherited from ListItem. Source is used by the net module.
+ */
+
 class Source : public ListItem {
 	friend class Dispatcher;
 
@@ -72,6 +76,14 @@ public:
 #include "actor.h"
 
 namespace Stateplex {
+	
+/** 
+ * Constructor for class Source.
+ *
+ * @param *actor	pointer to the actor that uses this source.
+ * @param fd		file descriptor.
+ * @param enabled	this source will be added to dispatcher if true.
+ */
 
 inline Source::Source(Actor *actor, int fd, bool readable, bool writable, bool enabled, bool handled)
 	: mActor(actor), mFd(fd), mReadable(readable), mWritable(writable), mEnabled(enabled), mHandled(handled), mDispatched(0)
@@ -79,25 +91,56 @@ inline Source::Source(Actor *actor, int fd, bool readable, bool writable, bool e
 	manageDispatching();
 }
 
+/** 
+ * Destructor for class Source.
+ */
+ 
 inline Source::~Source()
 { }
 
+/** 
+ * Returns file descriptor.
+ *
+ * @return		file descriptor to be returned.
+ */
+ 
 inline int Source::fd() const
 {
 	return mFd;
 }
 
+/** 
+ * Sets parameter as file descriptor and check the source that should it be given to dispatcher.
+ *
+ * @param fd		file descriptor to be set.
+ */
+ 
 inline void Source::setFd(int fd)
 {
 	mFd = fd;
 	manageDispatching();
 }
 
+/**
+ * Function that sets source as handled and calls for the
+ * function that handles source.
+ *
+ * @param handled	boolean value to set.
+ */
+
 inline void Source::setHandled(bool handled)
 {
 	mHandled = handled;
 	manageDispatching();
 }
+
+/**
+ * Function that sets source to be readable and/or writable.
+ * Tells actor's dispatcher to update source after setting readable/writable.
+ *
+ * @param readable	value for readable to set.
+ * @param writable	value for writable to set.
+ */
 
 inline void Source::setMode(bool readable, bool writable)
 {
@@ -110,27 +153,57 @@ inline void Source::setMode(bool readable, bool writable)
 		actor()->dispatcher()->updateSource(this);
 }
 
+/** 
+ * Returns the address of the actor that uses this source.
+ *
+ * @return		pointer to actor to be returned.
+ */
+ 
 inline Actor *Source::actor() const
 {
 	return mActor;
 }
 
+/** 
+ * Checks if file descriptor is open.
+ *
+ * @return		true if open, otherwise false.
+ */
+ 
 inline bool Source::isOpen() const
 {
 	return (mFd != -1 ? true : false);
 }
 
+/** 
+ * Checks if source is enabled.
+ *
+ * @return		true if enabled, otherwise false.
+ */
+ 
 inline bool Source::isEnabled() const
 {
 	return !!mEnabled;
 }
 
+/** 
+ * Closes file descriptor.
+ */
+ 
 inline void Source::close()
 {
 	::close(mFd);
 	mFd = -1;
 	manageDispatching();
 }
+
+/**
+ * Function that sets source enabled.
+ * Calls for manageDispatching function to check the source
+ * for modifications.
+ *
+ * @param enabled	boolean value to set.
+ */
 
 inline void Source::setEnabled(bool enabled)
 {

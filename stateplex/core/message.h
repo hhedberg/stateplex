@@ -28,6 +28,11 @@ namespace Stateplex {
 class Dispatcher;
 class Actor;
 
+/** 
+ * @brief Inherited from ListItem. It is used by actors to 
+ * send messages between them.
+ */
+
 class Message : public ListItem {
 	friend class Dispatcher;
 	friend class Actor;
@@ -47,6 +52,11 @@ public:
 /*** Inline implementations ***/
 
 namespace Stateplex {
+
+
+/**
+ * Function that calls the handler object.
+ */
 
 inline void Message::invokeHandler()
 {
