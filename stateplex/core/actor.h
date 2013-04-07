@@ -20,14 +20,15 @@
 #ifndef INCLUDED_STATEPLEX_ACTOR_H
 #define INCLUDED_STATEPLEX_ACTOR_H
 
+#include "object.h"
 #include "list.h"
-#include "message.h"
 
 namespace Stateplex {
 
 class Dispatcher;
 class Source;
 class Timeout;
+class Message;
 
 /** 
  * @brief Actors handle the actual work with dispatcher.
@@ -37,7 +38,7 @@ class Timeout;
  * passing.
  */
 
-class Actor : public ListItem {
+class Actor : public Object, public ListItem {
 	friend class Dispatcher;
 
 	Dispatcher *mDispatcher;
@@ -92,9 +93,9 @@ namespace Stateplex {
  */
 
 inline Actor::Actor(Dispatcher *dispatcher)
-	: mAlive(1), mActive(0), mDispatcher(dispatcher)
+	: Object(this), mAlive(1), mActive(0), mDispatcher(dispatcher)
 {
-	dispatcher->activateActor(this);
+	// dispatcher->activateActor(this);
 }
 
 /**
