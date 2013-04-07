@@ -28,6 +28,7 @@ namespace Stateplex {
 class Actor;
 class Message;
 class Source;
+class Allocator;
 
 /** 
  * @brief Handles message passing between different actors.
@@ -35,16 +36,20 @@ class Source;
 
 class Dispatcher {
 	static Spinlock sDispatchLock;
+	static Allocator *sRecycledAllocator;
+	static __thread Dispatcher *sCurrentDispatcher;
 
 	int mEpollFd;
 	List<Actor> mActiveActors;
 	List<Actor> mWaitingActors;
 	List<Actor> mPassiveActors;
 	List<Message> mOutgoingMessages;
+	Allocator *mAllocator;
 	
 	bool mRunning;
 	unsigned long mMilliseconds;
 
+	void activateActor(Actor *actor);
 	void allocateMemory();
 	void addOrUpdateSource(Source *source, int epollOperation);
 	void waitTimeout(Actor *actor);
@@ -54,14 +59,15 @@ public:
 	~Dispatcher();
 	
 	void run();
+	Allocator *allocator() const;
 	void addSource(Source *source);
 	void updateSource(Source *source);
 	void removeSource(Source *source);
-	void activateActor(Actor *actor);
 	void queueMessage(Message *message);
 	unsigned long milliseconds() const;
 
 	static Dispatcher *leastLoaded();
+	static Dispatcher *current();
 };
 
 }
@@ -82,19 +88,9 @@ namespace Stateplex {
 inline Dispatcher::~Dispatcher()
 { }
 
-/**
- * Function that activates an actor if not already activated and
- * adds it to the list of activated actors.
- *
- * @param *actor        pointer to actor that is the target.
- */
- 
-inline void Dispatcher::activateActor(Actor *actor)
+inline Allocator *Dispatcher::allocator() const
 {
-	if (!actor->mActive) {
-		mActiveActors.addTail(actor);
-		actor->mActive = 1;
-	}
+	return mAllocator;
 }
 
 /**
@@ -155,6 +151,11 @@ inline void Dispatcher::removeSource(Source *source)
 inline unsigned long Dispatcher::milliseconds() const
 {
 	return mMilliseconds;
+}
+
+inline Dispatcher *Dispatcher::current()
+{
+	return sCurrentDispatcher;
 }
 
 }

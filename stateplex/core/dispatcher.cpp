@@ -24,6 +24,7 @@
 
 #include "dispatcher.h"
 #include "actor.h"
+#include "allocator.h"
 
 /* TODO: Parametrise this */
 #define MAX_EVENTS 10
@@ -31,6 +32,8 @@
 namespace Stateplex {
 
 Spinlock Dispatcher::sDispatchLock;
+Allocator *Dispatcher::sRecycledAllocator;
+__thread Dispatcher *Dispatcher::sCurrentDispatcher;
 
 /**
  * Default constructor for dispatcher.
@@ -40,7 +43,25 @@ Spinlock Dispatcher::sDispatchLock;
 Dispatcher::Dispatcher()
 	: mRunning(true), mMilliseconds(0)
 {
+	if (sCurrentDispatcher)
+		abort();
+	sCurrentDispatcher = this;
+
 	mEpollFd = epoll_create(1024);
+	mAllocator = new Allocator();
+
+	sDispatchLock.lock();
+	if (!sRecycledAllocator)
+		sRecycledAllocator = new Allocator();
+	sDispatchLock.unlock();
+}
+
+void Dispatcher::activateActor(Actor *actor)
+{
+	if (!actor->mActive) {
+		mActiveActors.addTail(actor);
+		actor->mActive = 1;
+	}
 }
 
 /**
@@ -89,9 +110,14 @@ void Dispatcher::run()
 			}
 		}
 
-		/* Release the lock if it was acquired in dispatching */
-		if (locked)
+		/* Recycle allocators and release the lock if the lock was acquired in dispatching */
+		if (locked) {
+			Allocator *allocator = sRecycledAllocator;
+			sRecycledAllocator = mAllocator;
+			mAllocator = allocator;
+
 			sDispatchLock.unlock();
+		}
 
 		/* Start a new cycle */
 		gettimeofday(&tv, 0);
