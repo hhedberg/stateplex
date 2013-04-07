@@ -93,8 +93,8 @@ public:
 template<typename T>
 class ListIterator {
 	List<T> *mList;
-	ListItem *mCurrent;
-	ListItem *mSubsequent;
+	T *mCurrent;
+	T *mSubsequent;
 	bool mBackwards;
 	
 public:
@@ -371,7 +371,7 @@ List<T> *ListIterator<T>::list() const
 template<typename T>
 T *ListIterator<T>::current() const
 {
-	return static_cast<T *>(mCurrent);
+	return mCurrent;
 }
 
 /**
@@ -388,7 +388,7 @@ T *ListIterator<T>::subsequent()
 	if (mCurrent)
 		mSubsequent = (!mBackwards ? mList->next(mCurrent) : mList->previous(mCurrent));
 
-	return static_cast<T *>(mCurrent);
+	return mCurrent;
 }
 
 /**
