@@ -49,13 +49,17 @@ EchoTcpServerActor::EchoTcpServerActor(Stateplex::Dispatcher *dispatcher)
 
 Stateplex::TcpConnection *EchoTcpServerActor::instantiateTcpConnection(const Stateplex::TcpConnectionEmbryo *embryo)
 {
-	return new Stateplex::TcpConnection(this, embryo, this, &EchoTcpServerActor::handleTcpConnection);
+	return new EchoTcpConnection(this, embryo);
 }
 
-void EchoTcpServerActor::handleTcpConnection(Stateplex::IoSource *source)
+EchoTcpConnection::EchoTcpConnection(Stateplex::Actor* actor, const Stateplex::TcpConnectionEmbryo* embryo)
+	: TcpConnection(actor, embryo)
+{ }
+
+void EchoTcpConnection::handleReady(bool readyRead, bool readyWrite)
 {
 	char buffer[1024];
 	Stateplex::Size length;
-	length = source->read(buffer, 1024);
-	source->write(buffer, length);
+	length = read(buffer, 1024);
+	write(buffer, length);
 }

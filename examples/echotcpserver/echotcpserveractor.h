@@ -34,4 +34,12 @@ public:
 
 };
 
+class EchoTcpConnection : public Stateplex::TcpConnection {
+protected:
+	virtual void handleReady(bool readyRead, bool readyWrite);
+
+public:
+	EchoTcpConnection(Stateplex::Actor *actor, const Stateplex::TcpConnectionEmbryo *embryo);
+};
+
 #endif

@@ -27,24 +27,6 @@
 namespace Stateplex {
 	
 /** 
- * Sets ready to read and write based on given parameters and
- * invokes handler function.
- *
- * @param readyToRead	true if ready for reading, otherwise false.
- * @param readyToWrite 	true if ready for writing, otherwise false.
- */
-
-void IoSource::handleReady(bool readyToRead, bool readyToWrite)
-{
-	if (readyToRead)
-		mReadyToRead = 1;
-	if (readyToWrite)
-		mReadyToWrite = 1;
-
-	invokeHandler();
-}
-
-/** 
  * Reads data from file descriptor and returns the amount of bytes read.
  *
  * @param *data		pointer to array to which the data is written.
@@ -68,8 +50,16 @@ Size IoSource::read(char *data, Size length)
 	} else if (size == 0) {
 		mReachedEof = 1;
 	}
-	mReadyToRead = 0;
+	mReadyToRead = 1;
 
+	return size;
+}
+
+Size IoSource::read(Buffer<> *buffer)
+{
+	buffer->ensurePushLength(buffer->maximumPushLength() / 4);
+	Size size = read(buffer->pushPointer(), buffer->pushLength());
+	buffer->pushed(size);
 	return size;
 }
 
@@ -81,10 +71,12 @@ Size IoSource::read(char *data, Size length)
  * @return		the size in bytes that was written to file.
  */
  
-Size IoSource::write(char *data, Size length)
+void IoSource::write(const char *data, Size length)
 {
-	if (!mReadyToWrite)
-		return 0;
+	if (mOutputBuffer) {
+		/* TODO: Buffer */
+		return;
+	}
 
 	Size size = ::write(fd(), data, length);
 	if (size == -1) {
@@ -94,10 +86,15 @@ Size IoSource::write(char *data, Size length)
 			perror("read");
 			abort();
 		}
+	} else if (size != length) {
+		/* TODO: Buffer */
 	}
-	mReadyToWrite = 0;
-
-	return size;
 }
+
+void IoSource::write(const Buffer<> *buffer)
+{
+
+}
+void write(const String *string);
 
 }

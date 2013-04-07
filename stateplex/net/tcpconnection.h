@@ -43,8 +43,8 @@ class TcpConnection : public IoSource {
 	int connect(const struct sockaddr *address, socklen_t length);
 
 public:
-	template<typename T> TcpConnection(Actor *actor, const struct sockaddr *address, socklen_t length, T *handlerObject, void (T::*handlerFunction)(IoSource *source));
-	template<typename T> TcpConnection(Actor *actor, const TcpConnectionEmbryo *embryo, T *handlerObject, void (T::*handlerFunction)(IoSource *source));
+	TcpConnection(Actor *actor, const struct sockaddr *address, socklen_t length);
+	TcpConnection(Actor *actor, const TcpConnectionEmbryo *embryo);
 };
 
 /**
@@ -78,12 +78,10 @@ namespace Stateplex {
  * @param *actor		actor that is part of the connection.
  * @param *address		the address struct that contains socket, ip etc.
  * @param length		the length of the address.
- * @param *handlerObject	handler object that is using this constructor.
- * @param *handlerFunction	given function from handler object.
  */
 
-template<typename T> TcpConnection::TcpConnection(Actor *actor, const struct sockaddr *address, socklen_t length, T *handlerObject, void (T::*handlerFunction)(IoSource *source))
-	: IoSource(actor, handlerObject, handlerFunction)
+inline TcpConnection::TcpConnection(Actor *actor, const struct sockaddr *address, socklen_t length)
+	: IoSource(actor)
 {
 	int fd;
 
@@ -96,12 +94,9 @@ template<typename T> TcpConnection::TcpConnection(Actor *actor, const struct soc
  *
  * @param *actor		actor that is part of the connection.
  * @param *embryo		data storage for tcp connection.
- * @param *handlerObject	handler object that is using this constructor.
- * @param *handlerFunction	given function from handler object.
  */
-
-template<typename T> TcpConnection::TcpConnection(Actor *actor, const TcpConnectionEmbryo *embryo, T *handlerObject, void (T::*handlerFunction)(IoSource *source))
-		: IoSource(actor, embryo->mFd, handlerObject, handlerFunction)
+inline TcpConnection::TcpConnection(Actor *actor, const TcpConnectionEmbryo *embryo)
+		: IoSource(actor, embryo->mFd)
 { }
 
 /**
