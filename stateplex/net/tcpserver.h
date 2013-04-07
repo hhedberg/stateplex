@@ -37,7 +37,7 @@ class TcpConnectionEmbryo;
  */
 
 class TcpServer : public Source {
-	FactoryMethod<TcpConnection> mConnectionFactoryMethod;
+	FactoryMethod<TcpConnection, TcpConnectionEmbryo> mConnectionFactoryMethod;
 
 	int createServerSocket(const struct sockaddr *address, socklen_t length);
 
@@ -91,7 +91,6 @@ template<typename T>
 void TcpServer::setTcpConnectionFactoryMethod(T *object, TcpConnection* (T::*function)(const TcpConnectionEmbryo *embryo))
 {
 	mConnectionFactoryMethod.set(object, function);
-	setHandled(true);
 }
 
 }
