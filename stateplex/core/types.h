@@ -26,6 +26,7 @@
 
 namespace Stateplex {
 
+typedef uint8_t Size8;
 typedef uint16_t Size16;
 typedef uint32_t Size32;
 typedef uint32_t Word;
