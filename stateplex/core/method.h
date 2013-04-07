@@ -24,6 +24,10 @@ class Unknown;
 
 namespace Stateplex {
 
+/** 
+ * @brief Is a pointer to a member function.
+ */
+ 
 class Method {
 	Unknown *mObject;
 	void (Unknown::*mFunction)(Unknown *argument);
@@ -42,15 +46,33 @@ public:
 
 namespace Stateplex {
 
+/** 
+ * Constructor that initializes a new instance of class method. 
+ */
+
 inline Method::Method()
 	: mObject(reinterpret_cast<Unknown *>(this)), mFunction(reinterpret_cast<void (Unknown::*)(Unknown *)>(&Method::warnUninitialisedMethod))
 { }
+
+/** 
+ * Constructor that initializes a new instance of class method. 
+ * 
+ * @param *object		pointer address to the handler object.
+ * @param *function		pointer address to the handler function.
+ */
 
 template<typename Type, typename Argument>
 inline Method::Method(Type *object, void (Type::*function)(Argument *argument))
 	: mObject(reinterpret_cast<Unknown *>(object)), mFunction(reinterpret_cast<void (Unknown::*)(Unknown *)>(function))
 { }
 
+/**
+ * Function that sets handler object and handler function.
+ *
+ * @param *object		pointer address to the handler object.
+ * @param *function	      pointer address to the handler function.
+ */
+ 
 template<typename Type, typename Argument>
 inline void Method::set(Type *object, void (Type::*function)(Argument *argument))
 {
@@ -58,6 +80,11 @@ inline void Method::set(Type *object, void (Type::*function)(Argument *argument)
 	mFunction = reinterpret_cast<void (Unknown::*)(Unknown *)>(function);
 }
 
+/**
+ * Function that executes handler object's function.
+ * 
+ * @param *argument	    is a pointer to argument given to handler function.	
+ */
 template<typename Argument>
 inline void Method::invoke(Argument *argument) const
 {

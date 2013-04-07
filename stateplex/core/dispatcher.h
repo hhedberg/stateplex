@@ -29,6 +29,10 @@ class Actor;
 class Message;
 class Source;
 
+/** 
+ * @brief Handles message passing between different actors.
+ */
+
 class Dispatcher {
 	static Spinlock sDispatchLock;
 
@@ -71,9 +75,20 @@ public:
 
 namespace Stateplex {
 
+/**
+ * Default destructor for dispatcher.
+ */
+ 
 inline Dispatcher::~Dispatcher()
 { }
 
+/**
+ * Function that activates an actor if not already activated and
+ * adds it to the list of activated actors.
+ *
+ * @param *actor        pointer to actor that is the target.
+ */
+ 
 inline void Dispatcher::activateActor(Actor *actor)
 {
 	if (!actor->mActive) {
@@ -81,6 +96,13 @@ inline void Dispatcher::activateActor(Actor *actor)
 		actor->mActive = 1;
 	}
 }
+
+/**
+ * Function that adds or updates source.
+ *
+ * @param *source        target source to add or update.
+ * @param epollOperation command for epoll.										
+ */
 
 inline void Dispatcher::addOrUpdateSource(Source *source, int epollOperation)
 {
@@ -91,21 +113,45 @@ inline void Dispatcher::addOrUpdateSource(Source *source, int epollOperation)
 	epoll_ctl(mEpollFd, epollOperation, source->mFd, &event);
 }
 
+/**
+ * Function that adds source. 
+ *
+ * @param *source	target source to add.
+ */
+ 
 inline void Dispatcher::addSource(Source *source)
 {
 	addOrUpdateSource(source, EPOLL_CTL_ADD);
 }
 
+/**
+ * Function that updates the source.
+ *
+ * @param *source        target source to update.
+ */
+ 
 inline void Dispatcher::updateSource(Source *source)
 {
 	addOrUpdateSource(source, EPOLL_CTL_MOD);
 }
 
+/**
+ * Function that removes the source.
+ *
+ * @param *source        target source to remove.
+ */
+ 
 inline void Dispatcher::removeSource(Source *source)
 {
 	epoll_ctl(mEpollFd, EPOLL_CTL_DEL, source->mFd, 0);
 }
 
+/**
+ * Function that returns milliseconds.
+ *
+ * @return        milliseconds
+ */
+ 
 inline unsigned long Dispatcher::milliseconds() const
 {
 	return mMilliseconds;

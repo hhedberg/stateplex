@@ -32,11 +32,25 @@ namespace Stateplex {
 
 Spinlock Dispatcher::sDispatchLock;
 
+/**
+ * Default constructor for dispatcher.
+ * Also creates the epoll file discriptor.
+ */
+
 Dispatcher::Dispatcher()
 	: mRunning(true), mMilliseconds(0)
 {
 	mEpollFd = epoll_create(1024);
 }
+
+/**
+ * Function that dispatch incoming and outgoing messages with the lock hold,handles time out for active actors. 
+ * Dispatch outgoing messages with the lock hold
+ * Dispatch incoming messages with the lock hold
+ * Release the lock if it was acquired in dispatching
+ * Handle timeouts for waiting actors
+ * Handle active actors i.e. actors that have incoming messages
+ */
 
 void Dispatcher::run()
 {
@@ -144,6 +158,12 @@ void Dispatcher::run()
 	}
 }
 
+/**
+ * Function that queues message, activates message receiver actor if
+ * message sender is set and message senders dispatcher is the same as the receivers,
+ * otherwise adds to outgoing messages list. 
+ */
+
 void Dispatcher::queueMessage(Message *message)
 {
 	if (message->sender && message->sender->mDispatcher == message->receiver->mDispatcher) {
@@ -152,6 +172,12 @@ void Dispatcher::queueMessage(Message *message)
 	} else
 		mOutgoingMessages.addTail(message);
 }
+
+/**
+ * Function that handles timeout for waiting actors.
+ *
+ * @return		void if existing timeout is larger that the specified actor's timeout.
+ */
 
 void Dispatcher::waitTimeout(Actor *actor)
 {

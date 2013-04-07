@@ -20,6 +20,11 @@
 #include "source.h"
 
 namespace Stateplex {
+	
+/** 
+ * Function that checks if a dispatcher is using source, if not set source to a dispatcher.
+ * If the source has not been dispatched then it will be removed.
+ */
 
 void Source::manageDispatching()
 {
