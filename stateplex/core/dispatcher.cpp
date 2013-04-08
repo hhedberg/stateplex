@@ -84,7 +84,6 @@ void Dispatcher::run()
 	
 	while (mRunning) {
 		locked = false;
-		actors.spliceTail(&mActiveActors);
 
 		/* Dispatch outgoing messages with the lock hold */
 		if (!mOutgoingMessages.isEmpty()) {
@@ -99,6 +98,7 @@ void Dispatcher::run()
 		}
 
 		/* Dispatch incoming messages with the lock hold */
+		actors.spliceTail(&mActiveActors);
 		if (!actors.isEmpty()) {
 			if (!locked) {
 				sDispatchLock.lock();
