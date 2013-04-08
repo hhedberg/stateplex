@@ -23,30 +23,31 @@
 #include <stateplex/core/actor.h>
 #include <stateplex/core/message.h>
 
-struct GreetingMessage : public Stateplex::Message {
-	const char *mText;
-
-	explicit GreetingMessage(const char *text);
-	void greet() const;
-};
-
 class GreeterActor : public Stateplex::Actor {
+	class GreetingMessage : public Stateplex::Message {
+		const char *mText;
 
-	void handleGreet(GreetingMessage *greeting);
+	protected:
+		void handle(Actor *sender, Actor *receiver);
+
+	public:
+		explicit GreetingMessage(Actor *sender, Actor *receiver, const char *text);
+	};
+
 public:
 	GreeterActor(Stateplex::Dispatcher *dispatcher);
-	void greet(GreetingMessage *greeting, Stateplex::Actor *sender);
+	void greet(Stateplex::Actor *sender, const char *text);
 };
 
 /*** Inline implementations ***/
 
 #include <iostream>
 
-GreetingMessage::GreetingMessage(const char *text)
-	: mText(text)
+GreeterActor::GreetingMessage::GreetingMessage(Actor *sender, Actor *receiver, const char *text)
+	: Message(sender, receiver), mText(text)
 { }
 
-void GreetingMessage::greet() const
+void GreeterActor::GreetingMessage::handle(Actor *sender, Actor *receiver)
 {
 	std::cout << mText;
 }
@@ -55,14 +56,10 @@ GreeterActor::GreeterActor(Stateplex::Dispatcher *dispatcher)
 	: Actor(dispatcher)
 { }
 
-void GreeterActor::handleGreet(GreetingMessage *greeting)
+void GreeterActor::greet(Stateplex::Actor *sender, const char *text)
 {
-	greeting->greet();
-}
-
-void GreeterActor::greet(GreetingMessage *greeting, Stateplex::Actor *sender)
-{
-	queueMessage(greeting, sender, this, &GreeterActor::handleGreet);
+	GreetingMessage *greeting = new GreetingMessage(sender, this, text);
+	queueMessage(greeting);
 }
 
 #endif

@@ -92,7 +92,7 @@ void Dispatcher::run()
 			locked = true;
 			for (ListIterator<Message> iterator(&mOutgoingMessages); iterator.hasCurrent(); iterator.subsequent()) {
 				Message *message = iterator.current();
-				Actor *receiver = message->receiver;
+				Actor *receiver = message->mReceiver;
 				receiver->mQueuedMessages.addTail(message);
 				activateActor(receiver);
 			}
@@ -192,9 +192,9 @@ void Dispatcher::run()
 
 void Dispatcher::queueMessage(Message *message)
 {
-	if (message->sender && message->sender->mDispatcher == message->receiver->mDispatcher) {
-		message->receiver->mIncomingMessages.addTail(message);
-		activateActor(message->receiver);
+	if (message->actor() && message->actor()->mDispatcher == message->mReceiver->mDispatcher) {
+		message->mReceiver->mIncomingMessages.addTail(message);
+		activateActor(message->mReceiver);
 	} else
 		mOutgoingMessages.addTail(message);
 }

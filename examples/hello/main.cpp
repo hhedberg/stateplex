@@ -25,8 +25,7 @@ int main(void)
 	Stateplex::Dispatcher dispatcher;
 
 	GreeterActor greeter(&dispatcher);
-	GreetingMessage greeting("Hello, actors!\n");
-	greeter.greet(&greeting, 0);
+	greeter.greet(0, "Hello, actors!\n");
 
 	dispatcher.run();
 

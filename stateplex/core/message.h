@@ -33,18 +33,19 @@ class Actor;
  * send messages between them.
  */
 
-class Message : public ListItem {
+class Message : public Object, public ListItem {
 	friend class Dispatcher;
 	friend class Actor;
 	
-	Actor *receiver;
-	Actor *sender;
+	Actor *mReceiver;
+
+protected:
+	Message(Actor *sender, Actor *receiver);
+
+	virtual void handle(Actor *sender, Actor *receiver) = 0;
 
 public:
-	Method handler;
-	Method callback;
-
-	void invokeHandler();
+	virtual ~Message();
 };
 
 }
@@ -53,15 +54,12 @@ public:
 
 namespace Stateplex {
 
+inline Message::Message(Actor *sender, Actor *receiver)
+	: Object(sender), mReceiver(receiver)
+{ }
 
-/**
- * Function that calls the handler object.
- */
-
-inline void Message::invokeHandler()
-{
-	handler.invoke(this);
-}
+inline Message::~Message()
+{ }
 
 }
 

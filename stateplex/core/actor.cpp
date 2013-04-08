@@ -57,7 +57,7 @@ bool Actor::handleMessages(unsigned long milliseconds)
 
 	for (ListIterator<Message> iterator(&mIncomingMessages); iterator.hasCurrent(); iterator.subsequent()) {
 		Message *message = iterator.current();
-		message->invokeHandler();
+		message->handle(message->actor(), message->mReceiver);
 		message->remove();
 	}
 
