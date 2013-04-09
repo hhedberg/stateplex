@@ -24,19 +24,23 @@ class Unknown;
 
 namespace Stateplex {
 
-template<typename Return>
+/** 
+ * @brief Works as a pointer to a member function.
+ */
+ 
+template<typename Return, typename Argument>
 class FactoryMethod {
 	Unknown *mObject;
-	Return *(Unknown::*mFunction)(Unknown *argument);
+	Return *(Unknown::*mFunction)(const Argument *argument);
 
-	Return *warnUninitialisedMethod(Unknown *argument);
+	Return *warnUninitialisedMethod(const Argument *argument);
 
 public:
 	FactoryMethod();
-	template<typename Type, typename Argument> FactoryMethod(Type *object, Return *(Type::*function)(Argument *argument));
+	template<typename Type> FactoryMethod(Type *object, Return *(Type::*function)(const Argument *argument));
 
-	template<typename Type, typename Argument> void set(Type *object, Return *(Type::*function)(Argument *argument));
-	template<typename Argument> Return *invoke(Argument *argument) const;
+	template<typename Type> void set(Type *object, Return *(Type::*function)(const Argument *argument));
+	Return *invoke(const Argument *argument) const;
 };
 
 }
@@ -47,27 +51,56 @@ public:
 
 namespace Stateplex {
 
-template<typename Return>
-FactoryMethod<Return>::FactoryMethod()
-	: mObject(reinterpret_cast<Unknown *>(this)), mFunction(reinterpret_cast<Return *(Unknown::*)(Unknown *)>(&Method::warnUninitialisedMethod))
+/** 
+ * Constructor for FactoryMethod class.
+ * Initializes a new instance of class FactoryMethod.
+ * 
+ */
+
+template<typename Return, typename Argument>
+FactoryMethod<Return, Argument>::FactoryMethod()
+	: mObject(reinterpret_cast<Unknown *>(this)), mFunction(reinterpret_cast<Return *(Unknown::*)(const Argument *)>(&Method::warnUninitialisedMethod))
 { }
 
-template<typename Return> template<typename Type, typename Argument>
-FactoryMethod<Return>::FactoryMethod(Type *object, Return *(Type::*function)(Argument *argument))
+/** 
+ * Constructor for FactoryMethod class.
+ * Initializes a new instance of class FactoryMethod.
+ * Values for handler object and handler function can be given with arguments.
+ *
+ * @param *object		pointer to handler object.
+ * @param *function		pointer to handler function.
+ */
+
+template<typename Return, typename Argument> template<typename Type>
+FactoryMethod<Return, Argument>::FactoryMethod(Type *object, Return *(Type::*function)(const Argument *argument))
 	: mObject(reinterpret_cast<Unknown *>(object)), mFunction(reinterpret_cast<Return *(Unknown::*)(Unknown *)>(function))
 { }
 
-template<typename Return> template<typename Type, typename Argument>
-inline void FactoryMethod<Return>::set(Type *object, Return *(Type::*function)(Argument *argument))
+/**
+ * Function that can be used to set the handler object and handler function.
+ *
+ * @param *object		pointer to handler object.
+ * @param *function		pointer to handler function.
+ */
+
+template<typename Return, typename Argument> template<typename Type>
+inline void FactoryMethod<Return, Argument>::set(Type *object, Return *(Type::*function)(const Argument *argument))
 {
 	mObject = reinterpret_cast<Unknown *>(object);
-	mFunction = reinterpret_cast<Return *(Unknown::*)(Unknown *)>(function);
+	mFunction = reinterpret_cast<Return *(Unknown::*)(const Argument *)>(function);
 }
 
-template<typename Return> template<typename Argument>
-inline Return *FactoryMethod<Return>::invoke(Argument *argument) const
+/**
+ * Function that invokes handler object.
+ *
+ * @param *argument		pointer to the object that the handler needs. 
+ * @return			returns what handler object returns.
+ */
+
+template<typename Return, typename Argument>
+inline Return *FactoryMethod<Return, Argument>::invoke(const Argument *argument) const
 {
-	return (mObject->*mFunction)(reinterpret_cast<Unknown *>(argument));
+	return (mObject->*mFunction)(argument);
 }
 
 }

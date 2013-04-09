@@ -25,14 +25,17 @@
 
 #include "../core/source.h"
 #include "../core/factorymethod.h"
+#include "tcpconnection.h"
 
 namespace Stateplex {
 
-class TcpConnection;
-class TcpConnectionEmbryo;
+/** 
+ * @brief Inherited from class Source. Handles incoming connections and
+ * creates tcp connections.
+ */
 
 class TcpServer : public Source {
-	FactoryMethod<TcpConnection> mConnectionFactoryMethod;
+	FactoryMethod<TcpConnection, TcpConnection::Embryo> mConnectionFactoryMethod;
 
 	int createServerSocket(const struct sockaddr *address, socklen_t length);
 
@@ -43,7 +46,7 @@ public:
 	TcpServer(Actor *actor, const struct sockaddr *address, socklen_t length);
 	virtual ~TcpServer();
 
-	template<typename T> void setTcpConnectionFactoryMethod(T *object, TcpConnection* (T::*function)(const TcpConnectionEmbryo *embryo) = 0);
+	template<typename T> void setTcpConnectionFactoryMethod(T *object, TcpConnection* (T::*function)(const TcpConnection::Embryo *embryo) = 0);
 };
 
 }
@@ -53,6 +56,14 @@ public:
 #include "../core/source.h"
 
 namespace Stateplex {
+	
+/** 
+ * Constructor for TcpServer class.
+ *
+ * @param *actor	actor that is part of this server.
+ * @param *address	struct that contains connection information.
+ * @param length	length of the address.
+ */
 
 inline TcpServer::TcpServer(Actor *actor, const struct sockaddr *address, socklen_t length)
 	: Source(actor, -1, true, false)
@@ -60,14 +71,24 @@ inline TcpServer::TcpServer(Actor *actor, const struct sockaddr *address, sockle
 	setFd(createServerSocket(address, length));
 }
 
+/** 
+ * Destructor for class TcpServer.
+ */
+ 
 inline TcpServer::~TcpServer()
 { }
 
+/** 
+ * Sets the factory method to be used for tcp connection creation.
+ *
+ * @param *object	pointer to handler object.
+ * @param *function	pointer to handler function.
+ */
+ 
 template<typename T>
-void TcpServer::setTcpConnectionFactoryMethod(T *object, TcpConnection* (T::*function)(const TcpConnectionEmbryo *embryo))
+void TcpServer::setTcpConnectionFactoryMethod(T *object, TcpConnection* (T::*function)(const TcpConnection::Embryo *embryo))
 {
 	mConnectionFactoryMethod.set(object, function);
-	setHandled(true);
 }
 
 }

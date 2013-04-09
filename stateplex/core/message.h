@@ -28,18 +28,27 @@ namespace Stateplex {
 class Dispatcher;
 class Actor;
 
-class Message : public ListItem {
+/** 
+ * @brief Inherited from ListItem. It is used by actors to 
+ * send messages between them.
+ */
+
+template<typename Receiver>
+class Message : public Object, public ListItem {
 	friend class Dispatcher;
 	friend class Actor;
 	
-	Actor *receiver;
-	Actor *sender;
+	Receiver *mReceiver;
+
+protected:
+	Message(Actor *sender, Receiver *receiver);
+
+	virtual void handle(Actor *sender, Receiver *receiver) = 0;
 
 public:
-	Method handler;
-	Method callback;
+	virtual ~Message();
 
-	void invokeHandler();
+	Actor *receiver() const;
 };
 
 }
@@ -48,9 +57,19 @@ public:
 
 namespace Stateplex {
 
-inline void Message::invokeHandler()
+template<typename Receiver>
+inline Message<Receiver>::Message(Actor *sender, Receiver *receiver)
+	: Object(sender), mReceiver(receiver)
+{ }
+
+template<typename Receiver>
+inline Message<Receiver>::~Message()
+{ }
+
+template<typename Receiver>
+inline Actor *Message<Receiver>::receiver() const
 {
-	handler.invoke(this);
+	return static_cast<Actor *>(mReceiver);
 }
 
 }

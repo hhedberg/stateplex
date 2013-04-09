@@ -24,6 +24,7 @@
 
 #include "dispatcher.h"
 #include "actor.h"
+#include "allocator.h"
 
 /* TODO: Parametrise this */
 #define MAX_EVENTS 10
@@ -31,12 +32,46 @@
 namespace Stateplex {
 
 Spinlock Dispatcher::sDispatchLock;
+Allocator *Dispatcher::sRecycledAllocator;
+__thread Dispatcher *Dispatcher::sCurrentDispatcher;
+
+/**
+ * Default constructor for dispatcher.
+ * Also creates the epoll file discriptor.
+ */
 
 Dispatcher::Dispatcher()
 	: mRunning(true), mMilliseconds(0)
 {
+	if (sCurrentDispatcher)
+		abort();
+	sCurrentDispatcher = this;
+
 	mEpollFd = epoll_create(1024);
+	mAllocator = new Allocator();
+
+	sDispatchLock.lock();
+	if (!sRecycledAllocator)
+		sRecycledAllocator = new Allocator();
+	sDispatchLock.unlock();
 }
+
+void Dispatcher::activateActor(Actor *actor)
+{
+	if (!actor->mActive) {
+		mActiveActors.addTail(actor);
+		actor->mActive = 1;
+	}
+}
+
+/**
+ * Function that dispatch incoming and outgoing messages with the lock hold,handles time out for active actors. 
+ * Dispatch outgoing messages with the lock hold
+ * Dispatch incoming messages with the lock hold
+ * Release the lock if it was acquired in dispatching
+ * Handle timeouts for waiting actors
+ * Handle active actors i.e. actors that have incoming messages
+ */
 
 void Dispatcher::run()
 {
@@ -49,21 +84,21 @@ void Dispatcher::run()
 	
 	while (mRunning) {
 		locked = false;
-		actors.spliceTail(&mActiveActors);
 
 		/* Dispatch outgoing messages with the lock hold */
 		if (!mOutgoingMessages.isEmpty()) {
 			sDispatchLock.lock();
 			locked = true;
-			for (ListIterator<Message> iterator(&mOutgoingMessages); iterator.hasCurrent(); iterator.subsequent()) {
-				Message *message = iterator.current();
-				Actor *receiver = message->receiver;
+			for (ListIterator<Message<Actor> > iterator(&mOutgoingMessages); iterator.hasCurrent(); iterator.subsequent()) {
+				Message<Actor> *message = iterator.current();
+				Actor *receiver = message->mReceiver;
 				receiver->mQueuedMessages.addTail(message);
 				activateActor(receiver);
 			}
 		}
 
 		/* Dispatch incoming messages with the lock hold */
+		actors.spliceTail(&mActiveActors);
 		if (!actors.isEmpty()) {
 			if (!locked) {
 				sDispatchLock.lock();
@@ -75,9 +110,14 @@ void Dispatcher::run()
 			}
 		}
 
-		/* Release the lock if it was acquired in dispatching */
-		if (locked)
+		/* Recycle allocators and release the lock if the lock was acquired in dispatching */
+		if (locked) {
+			Allocator *allocator = sRecycledAllocator;
+			sRecycledAllocator = mAllocator;
+			mAllocator = allocator;
+
 			sDispatchLock.unlock();
+		}
 
 		/* Start a new cycle */
 		gettimeofday(&tv, 0);
@@ -144,14 +184,11 @@ void Dispatcher::run()
 	}
 }
 
-void Dispatcher::queueMessage(Message *message)
-{
-	if (message->sender && message->sender->mDispatcher == message->receiver->mDispatcher) {
-		message->receiver->mIncomingMessages.addTail(message);
-		activateActor(message->receiver);
-	} else
-		mOutgoingMessages.addTail(message);
-}
+/**
+ * Function that handles timeout for waiting actors.
+ *
+ * @return		void if existing timeout is larger that the specified actor's timeout.
+ */
 
 void Dispatcher::waitTimeout(Actor *actor)
 {

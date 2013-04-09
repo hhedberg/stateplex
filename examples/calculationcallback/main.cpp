@@ -18,14 +18,16 @@
  */
 
 #include <stateplex/core/dispatcher.h>
-#include "greeteractor.h"
+#include "calculatoractor.h"
+#include "clientactor.h"
 
 int main(void)
 {
 	Stateplex::Dispatcher dispatcher;
 
-	GreeterActor greeter(&dispatcher);
-	greeter.greet(0, "Hello, actors!\n");
+	CalculatorActor calculator(&dispatcher);
+	ClientActor client(&dispatcher);
+	calculator.calculateSum(&client, 1, 2, &ClientActor::showResult);
 
 	dispatcher.run();
 

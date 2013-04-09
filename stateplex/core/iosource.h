@@ -22,22 +22,26 @@
 
 #include "source.h"
 #include "../core/types.h"
+#include "../core/buffer.h"
 
 namespace Stateplex {
 
+/** 
+ * @brief Inherited from class Source. Used by the net module classes.
+ */
+ 
+class String;
+
 class IoSource : public Source {
-	Method mHandler;
+	Buffer<> *mOutputBuffer;
 
 	int mReadyToRead : 1;
-	int mReadyToWrite : 1;
 	int mReachedEof : 1;
 
 protected:
-	IoSource(Actor *actor, int fd, bool readable = true, bool writable = true, bool enabled = true);
-	template<typename T> IoSource(Actor *actor, int fd, T* handlerObject, void (T::*handlerFunction)(IoSource *source), bool readable = true, bool writable = true, bool enabled = true);
+	IoSource(Actor *actor, int fd = -1, bool readable = true, bool writable = true, bool enabled = true);
 
-	void invokeHandler();
-	void handleReady(bool readyToRead, bool readyToWrite);
+	void setFd(int fd);
 
 public:
 	virtual ~IoSource();
@@ -49,9 +53,10 @@ public:
 	bool hasReachedEof() const;
 
 	Size read(char *data, Size length);
-	Size write(char *data, Size length);
-	template<typename T> void setHandler(T *handlerObject, void (T::*handlerFunction)(IoSource *source));
-	void unsetHandler();
+	Size read(Buffer<> *buffer);
+	void write(const char *data, Size length);
+	void write(const Buffer<> *buffer);
+	void write(const String *string);
 };
 
 }
@@ -59,58 +64,74 @@ public:
 /*** Inline implementations ***/
 
 namespace Stateplex {
-
+	
+/** 
+ * Constructor for IoSource class.
+ *
+ * @param *actor		pointer to actor that is using IoSource.
+ * @param fd			file descriptor.
+ * @param *handlerObject	pointer to handler object.
+ * @param *handlerFunction 	pointer to handler function.
+ */
 
 inline IoSource::IoSource(Actor *actor, int fd, bool readable, bool writable, bool enabled)
-	: Source(actor, fd, readable, writable, enabled, false), mReadyToRead(0), mReadyToWrite(1), mReachedEof(0)
+	: Source(actor, fd, readable, writable, enabled, false), mOutputBuffer(0), mReadyToRead(1), mReachedEof(0)
 { }
 
-template<typename T> IoSource::IoSource(Actor *actor, int fd, T* handlerObject, void (T::*handlerFunction)(IoSource *source), bool readable, bool writable, bool enabled)
-: Source(actor, fd, readable, writable, enabled, true), mHandler(handlerObject, handlerFunction), mReadyToRead(0), mReadyToWrite(1), mReachedEof(0)
-{ }
-
+/** 
+ * Destructor for IoSource class.
+ */
+ 
 inline IoSource::~IoSource()
 { }
-
-inline void IoSource::invokeHandler()
-{
-	mHandler.invoke(this);
-}
 
 inline bool IoSource::isReadable() const
 {
 	return Source::isReadable();
 }
+
+/** 
+ * Checks if source writable.
+ *
+ * @return		true if writable, otherwise false.
+ */
+ 
 inline bool IoSource::isWritable() const
 {
 	return Source::isWritable();
 }
 
+/** 
+ * Checks if source ready for reading.
+ *
+ * @return		true if ready, otherwise false.
+ */
+ 
 inline bool IoSource::isReadyToRead() const
 {
 	return Source::isReadable() && !!mReadyToRead;
 }
 
+/** 
+ * Checks if source ready for writing.
+ *
+ * @return		true if ready, otherwise false.
+ */
+
 inline bool IoSource::isReadyToWrite() const
 {
-	return Source::isWritable() && !!mReadyToWrite;
+	return Source::isWritable() && !mOutputBuffer;
 }
+
+/** 
+ * Checks if end-of-file has been reached.
+ *
+ * @return		true if eof has been reached, otherwise false.
+ */
 
 inline bool IoSource::hasReachedEof() const
 {
 	return !!mReachedEof;
-}
-
-template<typename T>
-void IoSource::setHandler(T *handlerObject, void (T::*handlerFunction)(IoSource *source))
-{
-	mHandler.set(handlerObject, handlerFunction);
-	setHandled(true);
-}
-
-inline void IoSource::unsetHandler()
-{
-	setHandled(false);
 }
 
 }

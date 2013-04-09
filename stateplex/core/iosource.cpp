@@ -25,17 +25,15 @@
 #include "iosource.h"
 
 namespace Stateplex {
-
-void IoSource::handleReady(bool readyToRead, bool readyToWrite)
-{
-	if (readyToRead)
-		mReadyToRead = 1;
-	if (readyToWrite)
-		mReadyToWrite = 1;
-
-	invokeHandler();
-}
-
+	
+/** 
+ * Reads data from file descriptor and returns the amount of bytes read.
+ *
+ * @param *data		pointer to array to which the data is written.
+ * @param length	describes the length to be read.
+ * @return		the size in bytes that was read from file.
+ */
+ 
 Size IoSource::read(char *data, Size length)
 {
 	if (!mReadyToRead)
@@ -52,15 +50,33 @@ Size IoSource::read(char *data, Size length)
 	} else if (size == 0) {
 		mReachedEof = 1;
 	}
-	mReadyToRead = 0;
+	mReadyToRead = 1;
 
 	return size;
 }
 
-Size IoSource::write(char *data, Size length)
+Size IoSource::read(Buffer<> *buffer)
 {
-	if (!mReadyToWrite)
-		return 0;
+	buffer->ensurePushLength(buffer->maximumPushLength() / 4);
+	Size size = read(buffer->pushPointer(), buffer->pushLength());
+	buffer->pushed(size);
+	return size;
+}
+
+/** 
+ * Writes data to file descriptor and returns the amount of bytes written.
+ *
+ * @param *data		pointer to array from which data is written to file.
+ * @param length	describes the length to be written to file.
+ * @return		the size in bytes that was written to file.
+ */
+ 
+void IoSource::write(const char *data, Size length)
+{
+	if (mOutputBuffer) {
+		/* TODO: Buffer */
+		return;
+	}
 
 	Size size = ::write(fd(), data, length);
 	if (size == -1) {
@@ -70,10 +86,15 @@ Size IoSource::write(char *data, Size length)
 			perror("read");
 			abort();
 		}
+	} else if (size != length) {
+		/* TODO: Buffer */
 	}
-	mReadyToWrite = 0;
-
-	return size;
 }
+
+void IoSource::write(const Buffer<> *buffer)
+{
+
+}
+void write(const String *string);
 
 }

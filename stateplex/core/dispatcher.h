@@ -26,21 +26,30 @@
 namespace Stateplex {
 
 class Actor;
-class Message;
+template<typename T> class Message;
 class Source;
+class Allocator;
+
+/** 
+ * @brief Handles message passing between different actors.
+ */
 
 class Dispatcher {
 	static Spinlock sDispatchLock;
+	static Allocator *sRecycledAllocator;
+	static __thread Dispatcher *sCurrentDispatcher;
 
 	int mEpollFd;
 	List<Actor> mActiveActors;
 	List<Actor> mWaitingActors;
 	List<Actor> mPassiveActors;
-	List<Message> mOutgoingMessages;
+	List<Message<Actor> > mOutgoingMessages;
+	Allocator *mAllocator;
 	
 	bool mRunning;
 	unsigned long mMilliseconds;
 
+	void activateActor(Actor *actor);
 	void allocateMemory();
 	void addOrUpdateSource(Source *source, int epollOperation);
 	void waitTimeout(Actor *actor);
@@ -50,14 +59,15 @@ public:
 	~Dispatcher();
 	
 	void run();
+	Allocator *allocator() const;
 	void addSource(Source *source);
 	void updateSource(Source *source);
 	void removeSource(Source *source);
-	void activateActor(Actor *actor);
-	void queueMessage(Message *message);
+	template<typename T> void queueMessage(Message<T> *message);
 	unsigned long milliseconds() const;
 
 	static Dispatcher *leastLoaded();
+	static Dispatcher *current();
 };
 
 }
@@ -71,16 +81,24 @@ public:
 
 namespace Stateplex {
 
+/**
+ * Default destructor for dispatcher.
+ */
+ 
 inline Dispatcher::~Dispatcher()
 { }
 
-inline void Dispatcher::activateActor(Actor *actor)
+inline Allocator *Dispatcher::allocator() const
 {
-	if (!actor->mActive) {
-		mActiveActors.addTail(actor);
-		actor->mActive = 1;
-	}
+	return mAllocator;
 }
+
+/**
+ * Function that adds or updates source.
+ *
+ * @param *source        target source to add or update.
+ * @param epollOperation command for epoll.										
+ */
 
 inline void Dispatcher::addOrUpdateSource(Source *source, int epollOperation)
 {
@@ -91,24 +109,68 @@ inline void Dispatcher::addOrUpdateSource(Source *source, int epollOperation)
 	epoll_ctl(mEpollFd, epollOperation, source->mFd, &event);
 }
 
+/**
+ * Function that adds source. 
+ *
+ * @param *source	target source to add.
+ */
+ 
 inline void Dispatcher::addSource(Source *source)
 {
 	addOrUpdateSource(source, EPOLL_CTL_ADD);
 }
 
+/**
+ * Function that updates the source.
+ *
+ * @param *source        target source to update.
+ */
+ 
 inline void Dispatcher::updateSource(Source *source)
 {
 	addOrUpdateSource(source, EPOLL_CTL_MOD);
 }
 
+/**
+ * Function that removes the source.
+ *
+ * @param *source        target source to remove.
+ */
+ 
 inline void Dispatcher::removeSource(Source *source)
 {
 	epoll_ctl(mEpollFd, EPOLL_CTL_DEL, source->mFd, 0);
 }
 
+/**
+ * Queues the given message to be handled by the receiving actor.
+ */
+
+template<typename T>
+void Dispatcher::queueMessage(Message<T> *message)
+{
+	Message<Actor> *m = reinterpret_cast<Message<Actor> *>(message);
+	if (message->actor() && message->actor()->mDispatcher == message->receiver()->mDispatcher) {
+		message->receiver()->mIncomingMessages.addTail(m);
+		activateActor(message->mReceiver);
+	} else
+		mOutgoingMessages.addTail(m);
+}
+
+/**
+ * Function that returns milliseconds.
+ *
+ * @return        milliseconds
+ */
+ 
 inline unsigned long Dispatcher::milliseconds() const
 {
 	return mMilliseconds;
+}
+
+inline Dispatcher *Dispatcher::current()
+{
+	return sCurrentDispatcher;
 }
 
 }

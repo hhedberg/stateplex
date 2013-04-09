@@ -20,10 +20,15 @@
 #include "source.h"
 
 namespace Stateplex {
+	
+/** 
+ * Function that checks if a dispatcher is using source, if not set source to a dispatcher.
+ * If the source has not been dispatched then it will be removed.
+ */
 
 void Source::manageDispatching()
 {
-	bool shouldDispatch = mEnabled && mHandled && mFd != -1;
+	bool shouldDispatch = mEnabled && mFd != -1;
 	if (shouldDispatch == mDispatched)
 		return;
 
@@ -33,6 +38,17 @@ void Source::manageDispatching()
 	} else {
 		mActor->dispatcher()->removeSource(this);
 	}
+}
+
+void Source::setMode(bool readable, bool writable)
+{
+	if (mReadable == readable && mWritable == writable)
+		return;
+
+	mReadable = readable;
+	mWritable = writable;
+	if (mDispatched)
+		actor()->dispatcher()->updateSource(this);
 }
 
 }

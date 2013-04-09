@@ -27,13 +27,21 @@
 #include <iostream>
 
 #include "tcpserver.h"
-#include "tcpconnection.h"
 
 namespace Stateplex {
+	
+/** 
+ * Function that creates a server socket.
+ *
+ * @param *address	struct that has information about address.
+ * @param length	length of the address.
+ * @return		returns -1 if fails, otherwise an int value other than -1.
+ */
 
 int TcpServer::createServerSocket(const struct sockaddr *address, socklen_t length)
 {
 	int fd;
+	int flags;
 
 	fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (fd == -1)
@@ -47,7 +55,13 @@ int TcpServer::createServerSocket(const struct sockaddr *address, socklen_t leng
 	return fd;
 }
 
-
+/** 
+ * "Creates" outgoing connection from embryo data if tcp information is correct.
+ *
+ * @param bool	not yet done.
+ * @param bool	not yet done.
+ */
+ 
 void TcpServer::handleReady(bool /* readyToRead */, bool /* readyToWrite */)
 {
 	while (1) {
@@ -62,7 +76,7 @@ void TcpServer::handleReady(bool /* readyToRead */, bool /* readyToWrite */)
 				abort();
 			}
 		}
-		TcpConnectionEmbryo embryo(this, socket, reinterpret_cast<struct sockaddr *>(&address), length);
+		TcpConnection::Embryo embryo(this, socket, reinterpret_cast<struct sockaddr *>(&address), length);
 		TcpConnection *connection = mConnectionFactoryMethod.invoke(&embryo);
 		if (!connection)
 			::close(socket);

@@ -20,17 +20,52 @@
 #ifndef INCLUDED_STATEPLEX_BUFFER_H
 #define INCLUDED_STATEPLEX_BUFFER_H
 
+#include "object.h"
 #include "list.h"
 #include "types.h"
-#include "allocator.h"
 
 namespace Stateplex {
 
-template<Size16 blockSize = 4096>
-class Buffer {
-	struct Block : public ListItem<Block> {
+/**
+ * @brief Receives/pushes data to blocks and then consumes then.
+ *
+ * This makes it possible to receive/pop messages fast and then we can “consume” the data as fast as we can process it.
+ * The data just stays in the buffer block for the time it takes to consume them.
+ */
+
+class Allocator;
+class String;
+
+template<Size16 blockSize = 1024>
+class Buffer : public Object {
+	class Block : public ListItem {
+		struct Bytes {
+			Size32 mReferenceCount;
+			Size16 mStart;
+			Size16 mEnd;
+		};
+
+		Bytes *mBytes;
 		Size16 mStart;
 		Size16 mEnd;
+
+	public:
+		Block(Allocator *allocator);
+		Block(Allocator *allocator, Block *block);
+		Block(Allocator *allocator, Block *block, Size16 offset, Size16 length);
+		~Block();
+
+		char *start() const;
+		char *end() const;
+		char *position(Size16 offset) const;
+		Size16 size() const;
+		Size16 room() const;
+		int compare(Size16 myOffset, const Block *block, Size16 offset, Size16 length) const;
+		void copyFrom(const char *cString, Size16 length);
+		void copyTo(char *string, Size16 offset, Size16 length);
+		void pushed(Size16 length);
+		void popped(Size16 length);
+		void split(Allocator *allocator, Size16 offset);
 	};
 
 	List<Block> mBlocks;
@@ -40,38 +75,62 @@ class Buffer {
 	Size16 mPosition;
 	Size mOffset;
 
-	Block *allocateBlock();
-	void deallocateBlock(Block *block);
+	Block *allocateBlock(Block *previousBlock);
+	Block *refBlock(Block *block);
+	void unrefBlock(Block *block);
+	Block *ensurePush(Block *block, Size length);
 	void pushToBlock(const char *cString, Size length, Block *block);
+	Block *blockByOffset(Size *offset);
+	Block *splitBlock(Size offset);
 
 public:
-	Buffer();
-	Buffer(const char *string);
+	Buffer(Actor *actor);
+	Buffer(Actor *actor, const char *cString);
 
-	void push(Buffer *buffer);
-	void push(const char *cString);
-	void push(const char *cString, Size length);
+	void append(Buffer *buffer);
+	void append(const char *cString);
+	void append(const char *cString, Size length);
 
 	void ensurePushLength(Size16 length);
-	char *pushPointer();
-	Size16 pushLength();
+	char *pushPointer() const;
+	Size16 pushLength() const;
 	void pushed(Size16 length);
 
-	char peek();
+	char peek() const;
 	char pop();
 
-	char *popPointer();
-	Size16 popLength();
+	const char *popPointer() const;
+	Size16 popLength() const;
 	void popped(Size16 length);
 
-	Size size();
+	Size size() const;
 
-	char here();
+	char here() const;
 	void next();
-	Size left();
+	Size left() const;
 	void popHere();
 
-	void compress();
+	char charAt(Size offset) const;
+	String *asString() const;
+	String *asString(Size length) const;
+	String *asString(Size offset, Size length) const;
+
+	int compare(const char *cString) const;
+	int compare(const char *cString, Size length) const;
+	int compare(const String *string) const;
+	int compare(const Buffer *buffer) const;
+	bool equals(const char *cString) const;
+	bool equals(const char *cString, Size length) const;
+	bool equals(const String *string) const;
+	bool equals(const Buffer *buffer) const;
+
+	Buffer *region(Size offset, Size length);
+	void insert(Size offset, Buffer *buffer);
+	void insert(Size insertOffset, Buffer *buffer, Size offset, Size length);
+	void insert(Size offset, const char *cString);
+	void insert(Size offset, const char *cString, Size length);
+
+	Size16 maximumPushLength() const;
 };
 
 }
@@ -79,117 +138,356 @@ public:
 /*** Template implementations ***/
 
 #include <string.h>
+#include <stdlib.h>
+
+#include "allocator.h"
+#include "string.h"
 
 namespace Stateplex {
 
+/**
+ * Function that allocates a block.
+ * 
+ * @return		allocated block
+ */
+ 
 template<Size16 blockSize>
-typename Buffer<blockSize>::Block *Buffer<blockSize>::allocateBlock()
+Buffer<blockSize>::Block::Block(Allocator *allocator)
+	: mStart(0), mEnd(0)
 {
-	Block *block;
-	/* TODO: Allocate */
-	mBlocks.addTail(block);
+	mBytes = reinterpret_cast<Bytes *>(allocator->allocate(sizeof(Bytes) + blockSize));
+	mBytes->mReferenceCount = 0;
+	mBytes->mStart = mBytes->mEnd = 0;
+}
 
-	if (!mHere)
+template<Size16 blockSize>
+Buffer<blockSize>::Block::Block(Allocator *allocator, Block *block)
+	: mBytes(block->mBytes), mStart(block->mStart), mEnd(block->mEnd)
+{
+	mBytes->mReferenceCount++;
+}
+
+template<Size16 blockSize>
+Buffer<blockSize>::Block::Block(Allocator *allocator, Block *block, Size16 offset, Size16 length)
+	: mBytes(block->mBytes), mStart(block->mStart + offset), mEnd(block->mStart + offset + length)
+{
+	mBytes->mReferenceCount++;
+}
+
+template<Size16 blockSize>
+Buffer<blockSize>::Block::~Block()
+{
+	mBytes->mReferenceCount--;
+	if (mBytes->mReferenceCount == 0)
+		Dispatcher::current()->allocator()->deallocate(mBytes, sizeof(Bytes) + blockSize);
+}
+
+template<Size16 blockSize>
+char *Buffer<blockSize>::Block::start() const
+{
+	return reinterpret_cast<char *>(mBytes) + sizeof(Bytes) + mStart;
+}
+
+template<Size16 blockSize>
+char *Buffer<blockSize>::Block::end() const
+{
+	return reinterpret_cast<char *>(mBytes) + sizeof(Bytes) + mEnd;
+}
+
+template<Size16 blockSize>
+char *Buffer<blockSize>::Block::position(Size16 offset) const
+{
+	return reinterpret_cast<char *>(mBytes) + sizeof(Bytes) + mStart + offset;
+}
+
+template<Size16 blockSize>
+Size16 Buffer<blockSize>::Block::size() const
+{
+	return mEnd - mStart;
+}
+
+template<Size16 blockSize>
+Size16 Buffer<blockSize>::Block::room() const
+{
+	return mEnd == mBytes->mEnd ? blockSize - mEnd : 0;
+}
+
+template<Size16 blockSize>
+int Buffer<blockSize>::Block::compare(Size16 myOffset, const Block *block, Size16 offset, Size16 length) const
+{
+	return memcmp(position(myOffset), block->position(offset), length);
+}
+
+template<Size16 blockSize>
+void Buffer<blockSize>::Block::copyFrom(const char *cString, Size16 length)
+{
+	memcpy(end(), cString, length);
+	mBytes->mEnd = mEnd += length;
+}
+
+template<Size16 blockSize>
+void Buffer<blockSize>::Block::copyTo(char *cString, Size16 offset, Size16 length)
+{
+	memcpy(cString, start() + offset, length);
+}
+
+template<Size16 blockSize>
+void Buffer<blockSize>::Block::pushed(Size16 length)
+{
+	mEnd += length;
+}
+
+template<Size16 blockSize>
+void Buffer<blockSize>::Block::popped(Size16 length)
+{
+	mStart += length;
+}
+
+template<Size16 blockSize>
+void Buffer<blockSize>::Block::split(Allocator *allocator, Size16 offset)
+{
+	Block *block = new(allocator) Block(allocator, this, offset, size() - offset);
+	block->addAfter(this);
+	mEnd = mStart + offset;
+}
+
+template<Size16 blockSize>
+typename Buffer<blockSize>::Block *Buffer<blockSize>::allocateBlock(Block *previousBlock)
+{
+	Block *block = new(allocator()) Block(allocator());
+	if (previousBlock)
+		block->addAfter(previousBlock);
+	else
+		mBlocks.addHead(block);
+
+	if (!mHere) {
 		mHere = block;
+		mPosition = 0;
+		mOffset = 0;
+	}
 
 	return block;
 }
 
+/**
+ * Function that deallocates a specific block.
+ * 
+ * @param block		block to deallocate
+ */
+ 
 template<Size16 blockSize>
-void Buffer<blockSize>::deallocateBlock(Block *block)
+typename Buffer<blockSize>::Block *Buffer<blockSize>::ensurePush(Block *block, Size length)
 {
-	block->remove();
-	/* TODO: deallocate */
+	if (!block || length < block->room())
+		allocateBlock(block);
 }
+
+/**
+ * Function that is used to place chars to a specific block.
+ * 
+ * @param *cString	chars to be placed
+ * @param length	number of chars to copy
+ * @param *block	target block to push
+ */
 
 template<Size16 blockSize>
 void Buffer<blockSize>::pushToBlock(const char *cString, Size length, Block *block)
 {
-	if (!block ||block->mEnd == blockSize)
-		block = allocateBlock();
-
-	char *pointer = reinterpret_cast<char *>(block) + sizeof(Block);
-	Size16 room = blockSize - block->mEnd;
+	block = ensurePush(block, 1);
+	Size16 room = block->room();
 	if (length < room) {
-		memcpy(pointer + block->mEnd, cString, length);
-		block->mEnd += length;
+		block->copyFrom(cString, length);
+		mSize += length;
 	} else {
-		memcpy(pointer + block->mEnd, cString, room);
-		pushToBlock(cString + room, length - room, 0);
+		block->copyFrom(cString, room);
+		mSize += room;
+
+		pushToBlock(cString + room, length - room, block);
 	}
 }
 
+/**
+ * Default constructor for class Buffer.
+ * Initializes a new instance of buffer.
+ */
+
 template<Size16 blockSize>
-Buffer<blockSize>::Buffer()
-	: mSize(0), mHere(0), mPosition(0), mOffset(0)
+typename Buffer<blockSize>::Block *Buffer<blockSize>::blockByOffset(Size *offset)
+{
+	for (Block *block = mBlocks.first(); block; block = mBlocks.next(block)) {
+		Size16 size = block->size();
+		if (*offset < size)
+			return block;
+		*offset -= size;
+	}
+
+	return 0;
+}
+
+template<Size16 blockSize>
+typename Buffer<blockSize>::Block *Buffer<blockSize>::splitBlock(Size offset)
+{
+	if (offset == 0)
+		return 0;
+
+	Allocator *allocator = actor()->dispatcher()->allocator();
+	for (Block *block = mBlocks.first(); block; block = mBlocks.next(block)) {
+		Size16 size = block->size();
+		if (offset <= size) {
+			if (offset > 0 && offset < size)
+				block->split(allocator, offset);
+			return block;
+		}
+		offset -= size;
+	}
+
+	return 0;
+}
+
+template<Size16 blockSize>
+Buffer<blockSize>::Buffer(Actor *actor)
+	: Object(actor), mSize(0), mHere(0), mPosition(0), mOffset(0)
 { }
 
-template<Size16 blockSize>
-Buffer<blockSize>::Buffer(const char *string)
-	: mSize(0), mHere(0), mPosition(0), mOffset(0)
-{
-	push(string);
-}
+/**
+ * Constructor for class Buffer.
+ * This constructor has an ability to take in a string straight to buffer.
+ * 
+ * @param *string	string to put into the buffer.
+ */
 
 template<Size16 blockSize>
-void Buffer<blockSize>::push(Buffer *buffer)
+Buffer<blockSize>::Buffer(Actor *actor, const char *cString)
+	: Object(actor), mSize(0), mHere(0), mPosition(0), mOffset(0)
 {
-	for (ListItem<Block> *item = buffer->mBlocks; item; item = buffer->mBlocks.next(item)) {
-		Block *block = static_cast<Block *>(item);
-		mBlocks.addTail(item);
-		mSize += block->mEnd - block->mStart;
+	append(cString);
+}
+
+/**
+ * Function that takes in another buffer and goes through
+ * every block item in the buffer and adds them to this buffer.
+ * 
+ * @param buffer	target buffer to be added.
+ */
+
+template<Size16 blockSize>
+void Buffer<blockSize>::append(Buffer *buffer)
+{
+	Allocator *allocator = actor()->dispatcher()->allocator();
+	Block *previousBlock = mBlocks.last();
+	for (ListIterator<Block> iterator(&buffer->mBlocks); iterator.hasCurrent(); iterator.subsequent()) {
+		Block *block = new(allocator) Block(iterator.current());
+		block->addAfter(previousBlock);
+		mSize += block->size();
+		previousBlock = block;
 	}
-	buffer->mSize = 0;
 }
 
-template<Size16 blockSize>
-void Buffer<blockSize>::push(const char *string)
-{
-	push(string, strlen(string));
-}
+/**
+ * Function that takes in a string and calls push function to place
+ * the string to buffer.
+ * 
+ * @param *string	string to be added
+ */
 
 template<Size16 blockSize>
-void Buffer<blockSize>::push(const char *cString, Size length)
+void Buffer<blockSize>::append(const char *cString)
 {
-	pushToBlock(cString, length, static_cast<Block *>(mBlocks.last()));
-	mSize += length;
+	append(cString, strlen(cString));
 }
+
+/**
+ * Function that takes in chars and a value how many chars are to be
+ * added to block. After this the function calls another function
+ * to push the chars to a block.
+ * 
+ * @param *cString	chars to be added.
+ * @param length	determines how many chars are to be added.
+ */
+
+template<Size16 blockSize>
+void Buffer<blockSize>::append(const char *cString, Size length)
+{
+	pushToBlock(cString, length, mBlocks.last());
+}
+
+/**
+ * Function that ensures push length.
+ * It check that there are blocks if none allocates a new one.
+ * If there are blocks it ensures that push length is not too big
+ * to be allocated.
+ * 
+ * @param length	maximum push length.
+ */
 
 template<Size16 blockSize>
 void Buffer<blockSize>::ensurePushLength(Size16 length)
 {
-	Block *block = mBlocks.last();
-	if (!block || blockSize - block->mEnd < length)
-		allocateBlock();
+	ensurePush(mBlocks.last(), length);
 }
 
-template<Size16 blockSize>
-char *Buffer<blockSize>::pushPointer()
-{
-	Block *block = mBlocks.last();
-	return reinterpret_cast<char *>(block) + sizeof(Block) + block->mEnd;
-}
+/**
+ * Function that returns pointer to next of the last block saved.
+ * 
+ * @return	pointer to return.
+ */
 
 template<Size16 blockSize>
-Size16 Buffer<blockSize>::pushLength()
+char *Buffer<blockSize>::pushPointer() const
 {
 	Block *block = mBlocks.last();
-	return blockSize - block->mEnd;
+	return block->end();
 }
+
+/**
+ * Function that returns last pushed blocks length.
+ * 
+ * @return	lenght of the push.
+ */
+
+template<Size16 blockSize>
+Size16 Buffer<blockSize>::pushLength() const
+{
+	Block *block = mBlocks.last();
+	return block->room();
+}
+
+/**
+ * Function that is called when a new block is added to buffer.
+ * This function takes a value and adds it to a variable that represends the
+ * blocks last address space. Also this value is added to the buffer size.
+ * 
+ * @param length	value to be assigned.
+ */
 
 template<Size16 blockSize>
 void Buffer<blockSize>::pushed(Size16 length)
 {
 	Block *block = mBlocks.last();
-	block->mEnd += length;
+	block->pushed(length);
 	mSize += length;
 }
 
+/**
+ * Function that peeks at the value of first block in buffer.
+ * Calls function popPointer to get the address of the first value in
+ * buffer.
+ * 
+ * @return	value that has been taken from address which was pointed.
+ */
+
 template<Size16 blockSize>
-char Buffer<blockSize>::peek()
+char Buffer<blockSize>::peek() const
 {
 	return *popPointer();
 }
+
+/**
+ * Function that takes the first value from buffer and stores it
+ * to a variable and removes the value from the buffer.
+ * 
+ * @return	value that was popped.
+ */
 
 template<Size16 blockSize>
 char Buffer<blockSize>::pop()
@@ -199,72 +497,122 @@ char Buffer<blockSize>::pop()
 	return c;
 }
 
+/**
+ * Function that returns pointer to the starting point of the first block.
+ * 
+ * @return	pointer to return.
+ */
+
 template<Size16 blockSize>
-char *Buffer<blockSize>::popPointer()
+const char *Buffer<blockSize>::popPointer() const
 {
 	Block *block = mBlocks.first();
 	return reinterpret_cast<char *>(block) + sizeof(Block) + block->mStart;
 }
 
+/**
+ * Function that returns the length of the first block.
+ * 
+ * @return	the size of the first block.
+ */
+
 template<Size16 blockSize>
-Size16 Buffer<blockSize>::popLength()
+Size16 Buffer<blockSize>::popLength() const
 {
 	Block *block = mBlocks.first();
 	return block->mEnd - block->mStart;
 }
 
+/**
+ * Function that deallocates the first block from the buffer.
+ * This function is called when a value has been popped from buffer.
+ *
+ * @param length	length of the value that has been popped.
+ */
+
 template<Size16 blockSize>
 void Buffer<blockSize>::popped(Size16 length)
 {
-	ListItem<Block> *item = mBlocks.first();
-	Block *block = static_cast<Block *>(item);
-	block->mStart += length;
-	if (block->mStart >= block->mEnd) {
-		if (mBlocks.next(item))
-			deallocateBlock(block);
-		else
-			block->mStart = block->mEnd = 0;
+	for (ListIterator<Block> iterator(&mBlocks); iterator.hasCurrent(); iterator.subsequent()) {
+		Block *block = iterator.current();
+		Size16 size = block->size();
+		if (size > length) {
+			block->popped(length);
+			break;
+		} else {
+			block->remove();
+			delete block;
+			length -= size;
+		}
 	}
 	mSize -= length;
 	/* TODO: Here */
 }
 
+/**
+ * Function that returns the total size of buffer.
+ * 
+ * @return	total size of buffer.
+ */
+ 
 template<Size16 blockSize>
-Size Buffer<blockSize>::size()
+Size Buffer<blockSize>::size() const
 {
 	return mSize;
 }
 
+/**
+ * Function that returns the value of current position in buffer.
+ * 
+ * @return	value of the current position.
+ */
+ 
 template<Size16 blockSize>
-char Buffer<blockSize>::here()
+char Buffer<blockSize>::here() const
 {
-	return *reinterpret_cast<char *>(mHere) + sizeof(Block) + mPosition;
+	return *mHere->position(mPosition);
 }
+
+/**
+ * Function that moves to the next position in the buffer.
+ */
 
 template<Size16 blockSize>
 void Buffer<blockSize>::next()
 {
 	mPosition++;
-	if (mPosition >= mHere->mEnd) {
-		mHere = static_cast<Block *>(mBlocks.next(mHere));
-		mPosition = mHere->mStart;
+	if (mPosition >= mHere->size()) {
+		mHere = mBlocks.next(mHere);
+		mPosition = 0;
 	}
 	mOffset++;
 }
 
+/**
+ * Function that calculates how much there is left to handle in the buffer.
+ * 
+ * @return	value left to handle.
+ */
+
 template<Size16 blockSize>
-Size Buffer<blockSize>::left()
+Size Buffer<blockSize>::left() const
 {
 	return mSize - mOffset;
 }
 
+/**
+ * This function deallocates every block that is behind the current position's
+ * block. After this the function calls for function popped and set current position
+ * in buffer to current block.
+ */
+
 template<Size16 blockSize>
 void Buffer<blockSize>::popHere()
 {
-	for (ListItem<Block> *item = mBlocks.previous(mHere); item; item = mBlocks.previous(item)) {
+	for (ListItem *item = mBlocks.previous(mHere); item; item = mBlocks.previous(item)) {
 		Block *block = static_cast<Block *>(item);
 		mSize -= block->mEnd - block->mStart;
-		deallocateBlock(block);
+		delete block;
 	}
 	popped(mPosition - mHere->mStart);
 
@@ -274,9 +622,183 @@ void Buffer<blockSize>::popHere()
 }
 
 template<Size16 blockSize>
-void Buffer<blockSize>::compress()
+char Buffer<blockSize>::charAt(Size offset) const
 {
-	/* TODO: Not implemented */
+	for (ListIterator<Block> iterator(&mBlocks); iterator.hasCurrent(); iterator.subsequent()) {
+		Block *block = iterator.current();
+		Size16 size = block->size();
+		if (offset < size)
+			return *block->position(offset);
+		offset -= size;
+	}
+
+	return 0;
+}
+
+template<Size16 blockSize>
+String *Buffer<blockSize>::asString() const
+{
+	String *string = String::uninitialised(allocator(), mSize);
+	char *p = string->chars();
+	for (Block *block = mBlocks.first(); block; block = mBlocks.next(block)) {
+		Size16 size = block->size();
+		block->copyTo(p, 0, size);
+		p += size;
+	}
+
+	return string;
+}
+
+template<Size16 blockSize>
+String *Buffer<blockSize>::asString(Size length) const
+{
+	return asString(0, length);
+}
+
+template<Size16 blockSize>
+String *Buffer<blockSize>::asString(Size offset, Size length) const
+{
+	String *string = String::uninitialised(allocator(), mSize);
+	char *p = string->chars();
+	for (Block *block = blockByOffset(&offset); block; block = mBlocks.next(block)) {
+		Size16 size = block->size();
+		if (offset + length < size) {
+			block->copyTo(p, offset, length);
+			p += length;
+			break;
+		} else {
+			block->copyTo(p, offset, size);
+			p += size;
+		}
+		offset = 0;
+		length -= size;
+	}
+
+	return string;
+}
+
+template<Size16 blockSize>
+int Buffer<blockSize>::compare(const char *cString) const
+{
+
+}
+
+template<Size16 blockSize>
+int Buffer<blockSize>::compare(const char *cString, Size length) const
+{
+
+}
+
+template<Size16 blockSize>
+int Buffer<blockSize>::compare(const String *string) const
+{
+
+}
+
+template<Size16 blockSize>
+int Buffer<blockSize>::compare(const Buffer *buffer) const
+{
+
+}
+
+template<Size16 blockSize>
+bool Buffer<blockSize>::equals(const char *cString) const
+{
+	return compare(cString) == 0;
+}
+template<Size16 blockSize>
+bool Buffer<blockSize>::equals(const char *cString, Size length) const
+{
+	return compare(cString, length) == 0;
+}
+
+template<Size16 blockSize>
+bool Buffer<blockSize>::equals(const String *string) const
+{
+	return compare(string) == 0;
+}
+
+template<Size16 blockSize>
+bool Buffer<blockSize>::equals(const Buffer *buffer) const
+{
+	return compare(buffer) == 0;
+}
+
+template<Size16 blockSize>
+Buffer<blockSize> *Buffer<blockSize>::region(Size offset, Size length)
+{
+	Allocator *allocator = actor()->dispatcher()->allocator();
+	Buffer *buffer = new Buffer(actor());
+	for (Block *block = blockByOffset(&offset); block; block = mBlocks.next(block)) {
+		Size16 size = block->size();
+		if (offset + length < size) {
+			buffer->mBlocks.addTail(new(allocator) Block(allocator, block, offset, length));
+			buffer->mSize += length;
+			break;
+		} else {
+			buffer->mBlocks.addTail(new(allocator) Block(allocator, block, offset, size));
+			buffer->mSize += size;
+		}
+		offset = 0;
+		length -= size;
+	}
+}
+
+template<Size16 blockSize>
+void Buffer<blockSize>::insert(Size offset, Buffer *buffer)
+{
+	Allocator *allocator = actor()->dispatcher()->allocator();
+	Block *previousBlock = splitBlock(offset);
+	for (ListIterator<Block> iterator(&buffer->mBlocks); iterator.hasCurrent(); iterator.subsequent()) {
+		Block *block = new(allocator) Block(iterator.current());
+		if (previousBlock)
+			block->addAfter(previousBlock);
+		else
+			mBlocks.addHead(block);
+		mSize += block->size();
+		previousBlock = block;
+	}
+}
+
+template<Size16 blockSize>
+void Buffer<blockSize>::insert(Size insertOffset, Buffer *buffer, Size offset, Size length)
+{
+	Allocator *allocator = actor()->dispatcher()->allocator();
+	Block *previousBlock = splitBlock(insertOffset);
+	for (Block *block = blockByOffset(&offset); block && length; block = mBlocks.next(block)) {
+		Size size;
+		if (offset + length < block->size())
+			size = length;
+		else
+			size = block->size();
+		Block *newBlock = new(allocator) Block(allocator, block, offset, size);
+		if (previousBlock)
+			block->addAfter(previousBlock);
+		else
+			mBlocks.addHead(block);
+		mSize += size;
+		length -= size;
+		previousBlock = block;
+	}
+}
+
+template<Size16 blockSize>
+void Buffer<blockSize>::insert(Size offset, const char *cString)
+{
+	insert(offset, cString, strlen(cString));
+}
+
+template<Size16 blockSize>
+void Buffer<blockSize>::insert(Size offset, const char *cString, Size length)
+{
+	Block *previousBlock = splitBlock(offset);
+	pushToBlock(cString, strlen(cString), previousBlock);
+}
+
+template<Size16 blockSize>
+Size16 Buffer<blockSize>::maximumPushLength() const
+{
+	return blockSize;
 }
 
 }
