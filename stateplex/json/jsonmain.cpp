@@ -12,6 +12,7 @@ int main()
 	JsonObject company("Stateplex");
 
 	company.add(new JsonObject("Employee"));
+	company.findObject("Employee");
 	company.findObject("Employee")->add(new JsonObject("Juha"));
 	company.findObject("Employee")->add(new JsonObject("Tapio"));
 
@@ -92,7 +93,7 @@ int main()
 	std::cout << "JSONDATA_CHAR: " << jsonChar.key() << " " << jsonChar.value() << std::endl;
 	std::cout << "JSONDATA_INT: " << integer.key() << " " << *(integer.value()) << std::endl;
 
-	std::cout << "JSON SEARCH: " << mSecond.find("strkey")->key() << std::endl;
+	std::cout << "JSON SEARCH: " << mSecond.find("strkey")->type() << std::endl;
 
 	company.traverse();
 

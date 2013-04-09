@@ -67,7 +67,7 @@ JsonItem *JsonObject::find(const char *target)
 {
 	JsonItem *item;
 	for (Stateplex::ListIterator<JsonItem> iterator(mItems); iterator.hasCurrent(); iterator.subsequent()) {
-		if(strcmp(iterator.current()->key(), target)) {
+		if(strcmp(iterator.current()->key(), target) == 0) {
 			item = iterator.current();
 		}
 	}
@@ -77,10 +77,11 @@ JsonItem *JsonObject::find(const char *target)
 
 JsonObject *JsonObject::findObject(const char *target)
 {
-	JsonObject *item = static_cast<JsonObject *> (find(target));
-	if(!(strcmp(item->type(), "JSON_OBJECT"))) {
+	JsonItem *item = find(target);
+
+	if(strcmp(item->type(), "JSON_OBJECT") != 0) {
 		return 0;
 	}
 
-	return item;
+	return reinterpret_cast<JsonObject *> (item);
 }
