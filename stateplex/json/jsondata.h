@@ -14,7 +14,7 @@ public:
     virtual ~JsonData();
 	void traverse();
 	const char *key();
-	const char *type();
+	JsonType type();
 	const T *value();
 protected:
 private:
@@ -33,7 +33,7 @@ JsonData<T>::JsonData(const char *key, T *value)
 { 
 	mKey = key;
 	mValue = value;
-	mType = "JSON_DATA";
+	mType = JSON_DATA;
 }
 
 template<typename T>
@@ -55,7 +55,7 @@ const char *JsonData<T>::key()
 }
 
 template<typename T>
-const char *JsonData<T>::type()
+JsonType JsonData<T>::type()
 {
 	return mType;
 }

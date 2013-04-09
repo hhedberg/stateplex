@@ -3,14 +3,14 @@
 
 JsonObject::JsonObject(const char *key)
 {
-        mKey = key;
+    mKey = key;
 	mItems = new Stateplex::List<JsonItem>;
-	mType = "JSON_OBJECT";
+	mType = JSON_OBJECT;
 }
 
 JsonObject::~JsonObject()
 {
-        freeItems();
+    freeItems();
 	delete mItems;
 }
 
@@ -49,7 +49,7 @@ const char *JsonObject::key()
 	return mKey;
 }
 
-const char *JsonObject::type()
+JsonType JsonObject::type()
 {
 	return mType;
 }
@@ -81,9 +81,9 @@ JsonObject *JsonObject::findObject(const char *target)
 {
 	JsonItem *item = find(target);
 
-	if(strcmp(item->type(), "JSON_OBJECT") != 0) {
+	if(item->type() != JSON_OBJECT) {
 		return 0;
 	}
 
-	return reinterpret_cast<JsonObject *> (item);
+	return dynamic_cast<JsonObject *> (item);
 }

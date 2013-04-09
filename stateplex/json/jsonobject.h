@@ -16,7 +16,7 @@ public:
 	JsonItem *find(const char *target);
 	JsonObject *findObject(const char *target);
 	const char *key();
-	const char *type();
+	JsonType type();
 protected:
 private:
 	void freeItems();
