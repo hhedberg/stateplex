@@ -33,18 +33,22 @@ class Actor;
  * send messages between them.
  */
 
-class Message : public ListItem {
+template<typename Receiver>
+class Message : public Object, public ListItem {
 	friend class Dispatcher;
 	friend class Actor;
 	
-	Actor *receiver;
-	Actor *sender;
+	Receiver *mReceiver;
+
+protected:
+	Message(Actor *sender, Receiver *receiver);
+
+	virtual void handle(Actor *sender, Receiver *receiver) = 0;
 
 public:
-	Method handler;
-	Method callback;
+	virtual ~Message();
 
-	void invokeHandler();
+	Actor *receiver() const;
 };
 
 }
@@ -53,14 +57,19 @@ public:
 
 namespace Stateplex {
 
+template<typename Receiver>
+inline Message<Receiver>::Message(Actor *sender, Receiver *receiver)
+	: Object(sender), mReceiver(receiver)
+{ }
 
-/**
- * Function that calls the handler object.
- */
+template<typename Receiver>
+inline Message<Receiver>::~Message()
+{ }
 
-inline void Message::invokeHandler()
+template<typename Receiver>
+inline Actor *Message<Receiver>::receiver() const
 {
-	handler.invoke(this);
+	return static_cast<Actor *>(mReceiver);
 }
 
 }
