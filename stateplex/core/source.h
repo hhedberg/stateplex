@@ -42,6 +42,7 @@ class Source : public ListItem {
 	int mWritable : 1;
 
 	void manageDispatching();
+	void setNonblocking();
 
 protected:
 	Source(Actor *actor, int fd, bool readable, bool writable, bool enabled = true, bool handled = false);
@@ -70,6 +71,7 @@ public:
 /*** Inline implementations ***/
 
 #include <unistd.h>
+#include <fcntl.h>
 
 #include "actor.h"
 
@@ -86,6 +88,8 @@ namespace Stateplex {
 inline Source::Source(Actor *actor, int fd, bool readable, bool writable, bool enabled, bool handled)
 	: mActor(actor), mFd(fd), mReadable(readable), mWritable(writable), mEnabled(enabled), mDispatched(0)
 {
+	if (mFd != -1)
+		setNonblocking();
 	manageDispatching();
 }
 
@@ -95,6 +99,15 @@ inline Source::Source(Actor *actor, int fd, bool readable, bool writable, bool e
  
 inline Source::~Source()
 { }
+
+inline void Source::setNonblocking()
+{
+	int flags;
+
+	if ((flags = fcntl(mFd, F_GETFL)) == -1 ||
+		    fcntl(mFd, F_SETFL, flags | O_NONBLOCK) == -1)
+		abort();
+}
 
 /** 
  * Returns file descriptor.
@@ -115,7 +128,11 @@ inline int Source::fd() const
  
 inline void Source::setFd(int fd)
 {
+	if (mFd != -1 || fd == -1)
+		abort();
+
 	mFd = fd;
+	setNonblocking();
 	manageDispatching();
 }
 
