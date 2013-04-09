@@ -1,8 +1,10 @@
 #ifndef INCLUDED_JSON_DB_ACTOR_H
 #define INCLUDED_JSON_DB_ACTOR_H
 
-#include <stateplex/core/callbackmessage.h>
-#include <stateplex/core/actor.h>
+#include "../core/callbackmessage.h"
+#include "../core/actor.h"
+#include "../core/string.h"
+#include "jsonitem.h"
 
 class JsonDbActor : public Stateplex::Actor
 {
@@ -14,9 +16,9 @@ public:
 	JsonDbActor();
 	~JsonDbActor();
 
-	class JsonMessage: public Stateplex::CallbackMessage<CallbackActor, CallbackMessage> {
+	class JsonMessage: public Stateplex::CallbackMessage<JsonDbActor, JsonMessage> {
 		JsonMessageType mType;
-		String *mParameter;
+		//String *mParameter;
 		JsonItem *mResult;
 
 	public:
