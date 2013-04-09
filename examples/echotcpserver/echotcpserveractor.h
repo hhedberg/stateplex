@@ -26,7 +26,7 @@
 class EchoTcpServerActor : public Stateplex::Actor {
 	Stateplex::TcpServer *mTcpServer;
 
-	Stateplex::TcpConnection *instantiateTcpConnection(const Stateplex::TcpConnectionEmbryo *embryo);
+	Stateplex::TcpConnection *instantiateTcpConnection(const Stateplex::TcpConnection::Embryo *embryo);
 	void handleTcpConnection(Stateplex::IoSource *source);
 
 public:
@@ -39,7 +39,7 @@ protected:
 	virtual void handleReady(bool readyRead, bool readyWrite);
 
 public:
-	EchoTcpConnection(Stateplex::Actor *actor, const Stateplex::TcpConnectionEmbryo *embryo);
+	EchoTcpConnection(Stateplex::Actor *actor, const Stateplex::TcpConnection::Embryo *embryo);
 };
 
 #endif

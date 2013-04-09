@@ -47,12 +47,12 @@ EchoTcpServerActor::EchoTcpServerActor(Stateplex::Dispatcher *dispatcher)
 	mTcpServer->setTcpConnectionFactoryMethod(this, &EchoTcpServerActor::instantiateTcpConnection);
 }
 
-Stateplex::TcpConnection *EchoTcpServerActor::instantiateTcpConnection(const Stateplex::TcpConnectionEmbryo *embryo)
+Stateplex::TcpConnection *EchoTcpServerActor::instantiateTcpConnection(const Stateplex::TcpConnection::Embryo *embryo)
 {
 	return new EchoTcpConnection(this, embryo);
 }
 
-EchoTcpConnection::EchoTcpConnection(Stateplex::Actor* actor, const Stateplex::TcpConnectionEmbryo* embryo)
+EchoTcpConnection::EchoTcpConnection(Stateplex::Actor* actor, const Stateplex::TcpConnection::Embryo* embryo)
 	: TcpConnection(actor, embryo)
 { }
 

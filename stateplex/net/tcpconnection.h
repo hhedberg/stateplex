@@ -43,26 +43,26 @@ class TcpConnection : public IoSource {
 	int connect(const struct sockaddr *address, socklen_t length);
 
 public:
+	/**
+	 * @brief Used to store data so that the creation of the
+	 * tcp connection is possible.
+	 */
+
+	class Embryo {
+		friend class TcpConnection;
+
+		int mFd;
+
+	public:
+		TcpServer *mTcpServer;
+		const struct sockaddr *mAddress;
+		socklen_t mAddressLength;
+
+		Embryo(TcpServer *server, int fd, const struct sockaddr *mAddress, socklen_t mAddressLength);
+	};
+
 	TcpConnection(Actor *actor, const struct sockaddr *address, socklen_t length);
-	TcpConnection(Actor *actor, const TcpConnectionEmbryo *embryo);
-};
-
-/**
- * @brief Used to store data so that the creation of the
- * tcp connection is possible.
- */
-
-class TcpConnectionEmbryo {
-	friend class TcpConnection;
-
-	int mFd;
-
-public:
-	TcpServer *mTcpServer;
-	const struct sockaddr *mAddress;
-	socklen_t mAddressLength;
-
-	TcpConnectionEmbryo(TcpServer *server, int fd, const struct sockaddr *mAddress, socklen_t mAddressLength);
+	TcpConnection(Actor *actor, const Embryo *embryo);
 };
 
 }
@@ -95,7 +95,7 @@ inline TcpConnection::TcpConnection(Actor *actor, const struct sockaddr *address
  * @param *actor		actor that is part of the connection.
  * @param *embryo		data storage for tcp connection.
  */
-inline TcpConnection::TcpConnection(Actor *actor, const TcpConnectionEmbryo *embryo)
+inline TcpConnection::TcpConnection(Actor *actor, const Embryo *embryo)
 		: IoSource(actor, embryo->mFd)
 { }
 
@@ -108,7 +108,7 @@ inline TcpConnection::TcpConnection(Actor *actor, const TcpConnectionEmbryo *emb
  * @param addressLength		the length of the address.
  */
 
-inline TcpConnectionEmbryo::TcpConnectionEmbryo(TcpServer *server, int fd, const struct sockaddr *address, socklen_t addressLength)
+inline TcpConnection::Embryo::Embryo(TcpServer *server, int fd, const struct sockaddr *address, socklen_t addressLength)
 	: mTcpServer(server), mFd(fd), mAddress(address), mAddressLength(addressLength)
 { }
 

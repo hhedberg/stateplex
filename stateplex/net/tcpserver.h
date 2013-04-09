@@ -25,11 +25,9 @@
 
 #include "../core/source.h"
 #include "../core/factorymethod.h"
+#include "tcpconnection.h"
 
 namespace Stateplex {
-
-class TcpConnection;
-class TcpConnectionEmbryo;
 
 /** 
  * @brief Inherited from class Source. Handles incoming connections and
@@ -37,7 +35,7 @@ class TcpConnectionEmbryo;
  */
 
 class TcpServer : public Source {
-	FactoryMethod<TcpConnection, TcpConnectionEmbryo> mConnectionFactoryMethod;
+	FactoryMethod<TcpConnection, TcpConnection::Embryo> mConnectionFactoryMethod;
 
 	int createServerSocket(const struct sockaddr *address, socklen_t length);
 
@@ -48,7 +46,7 @@ public:
 	TcpServer(Actor *actor, const struct sockaddr *address, socklen_t length);
 	virtual ~TcpServer();
 
-	template<typename T> void setTcpConnectionFactoryMethod(T *object, TcpConnection* (T::*function)(const TcpConnectionEmbryo *embryo) = 0);
+	template<typename T> void setTcpConnectionFactoryMethod(T *object, TcpConnection* (T::*function)(const TcpConnection::Embryo *embryo) = 0);
 };
 
 }
@@ -88,7 +86,7 @@ inline TcpServer::~TcpServer()
  */
  
 template<typename T>
-void TcpServer::setTcpConnectionFactoryMethod(T *object, TcpConnection* (T::*function)(const TcpConnectionEmbryo *embryo))
+void TcpServer::setTcpConnectionFactoryMethod(T *object, TcpConnection* (T::*function)(const TcpConnection::Embryo *embryo))
 {
 	mConnectionFactoryMethod.set(object, function);
 }
