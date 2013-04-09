@@ -125,7 +125,7 @@ inline String *String::uninitialised(Allocator *allocator, Size length)
 	Size size = sizeOfLength(length);
 	char *memory = reinterpret_cast<char *>(allocator->allocate(size + length + 1));
 	*(memory + size + length) = 0;
-	String *string = reinterpret_cast<String *>(string);
+	String *string = reinterpret_cast<String *>(memory);
 	string->setLength(length);
 
 	return string;
