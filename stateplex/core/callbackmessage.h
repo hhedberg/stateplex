@@ -24,13 +24,14 @@
 
 namespace Stateplex {
 
-class CallbackMessage : public Message {
+template<typename Receiver, typename Subtype>
+class CallbackMessage : public Message<Receiver> {
 	Method mCallback;
 
 protected:
-	template<typename T> CallbackMessage(Actor *sender, Actor *receiver, T *callbackObject, void (T::*callbackFunction)(CallbackMessage *));
+	template<typename Sender> CallbackMessage(Sender *sender, Receiver *receiver, void (Sender::*callbackFunction)(Subtype *));
 
-	virtual void handle(Actor *sender, Actor *receiver) = 0;
+	virtual void handle(Actor *sender, Receiver *receiver) = 0;
 	void invokeCallback() const;
 
 public:
@@ -43,15 +44,17 @@ public:
 
 namespace Stateplex {
 
-template<typename T>
-inline CallbackMessage::CallbackMessage(Actor *sender, Actor *receiver, T *callbackObject, void (T::*callbackFunction)(CallbackMessage *))
-	: Message(sender, receiver), mCallback(callbackObject, callbackFunction)
+template<typename Receiver, typename Subtype> template<typename Sender>
+inline CallbackMessage<Receiver, Subtype>::CallbackMessage(Sender *sender, Receiver *receiver, void (Sender::*callbackFunction)(Subtype *))
+	: Message<Receiver>(sender, receiver), mCallback(sender, callbackFunction)
 { }
 
-inline CallbackMessage::~CallbackMessage()
+template<typename Receiver, typename Subtype>
+inline CallbackMessage<Receiver, Subtype>::~CallbackMessage()
 { }
 
-inline void CallbackMessage::invokeCallback() const
+template<typename Receiver, typename Subtype>
+inline void CallbackMessage<Receiver, Subtype>::invokeCallback() const
 {
 	/* TODO */
 }

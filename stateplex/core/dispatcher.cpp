@@ -89,8 +89,8 @@ void Dispatcher::run()
 		if (!mOutgoingMessages.isEmpty()) {
 			sDispatchLock.lock();
 			locked = true;
-			for (ListIterator<Message> iterator(&mOutgoingMessages); iterator.hasCurrent(); iterator.subsequent()) {
-				Message *message = iterator.current();
+			for (ListIterator<Message<Actor> > iterator(&mOutgoingMessages); iterator.hasCurrent(); iterator.subsequent()) {
+				Message<Actor> *message = iterator.current();
 				Actor *receiver = message->mReceiver;
 				receiver->mQueuedMessages.addTail(message);
 				activateActor(receiver);
@@ -182,21 +182,6 @@ void Dispatcher::run()
 				delete actor;
 		}
 	}
-}
-
-/**
- * Function that queues message, activates message receiver actor if
- * message sender is set and message senders dispatcher is the same as the receivers,
- * otherwise adds to outgoing messages list. 
- */
-
-void Dispatcher::queueMessage(Message *message)
-{
-	if (message->actor() && message->actor()->mDispatcher == message->mReceiver->mDispatcher) {
-		message->mReceiver->mIncomingMessages.addTail(message);
-		activateActor(message->mReceiver);
-	} else
-		mOutgoingMessages.addTail(message);
 }
 
 /**

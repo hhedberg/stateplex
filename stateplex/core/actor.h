@@ -28,7 +28,7 @@ namespace Stateplex {
 class Dispatcher;
 class Source;
 class Timeout;
-class Message;
+template<typename T> class Message;
 
 /** 
  * @brief Actors handle the actual work with dispatcher.
@@ -43,8 +43,8 @@ class Actor : public Object, public ListItem {
 
 	Dispatcher *mDispatcher;
 	
-	List<Message> mQueuedMessages;
-	List<Message> mIncomingMessages;
+	List<Message<Actor> > mQueuedMessages;
+	List<Message<Actor> > mIncomingMessages;
 	List<Timeout> mTimeouts;
 	
 	unsigned int mAlive : 1;
@@ -64,7 +64,7 @@ protected:
 	template<typename T> Source *addSource(int fd, T *callbackObject, void (T::*callbackFunction)(Source *source));
 	void deleteWatch(Source *source);
 
-	void setCallback(Message *message, void (Actor::*callback)(Message *message));
+	template<typename T> void setCallback(Message<T> *message, void (Actor::*callback)(Message<T> *message));
 
 public:
 	Actor(Dispatcher *dispatcher);

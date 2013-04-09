@@ -33,19 +33,22 @@ class Actor;
  * send messages between them.
  */
 
+template<typename Receiver>
 class Message : public Object, public ListItem {
 	friend class Dispatcher;
 	friend class Actor;
 	
-	Actor *mReceiver;
+	Receiver *mReceiver;
 
 protected:
-	Message(Actor *sender, Actor *receiver);
+	Message(Actor *sender, Receiver *receiver);
 
-	virtual void handle(Actor *sender, Actor *receiver) = 0;
+	virtual void handle(Actor *sender, Receiver *receiver) = 0;
 
 public:
 	virtual ~Message();
+
+	Actor *receiver() const;
 };
 
 }
@@ -54,12 +57,20 @@ public:
 
 namespace Stateplex {
 
-inline Message::Message(Actor *sender, Actor *receiver)
+template<typename Receiver>
+inline Message<Receiver>::Message(Actor *sender, Receiver *receiver)
 	: Object(sender), mReceiver(receiver)
 { }
 
-inline Message::~Message()
+template<typename Receiver>
+inline Message<Receiver>::~Message()
 { }
+
+template<typename Receiver>
+inline Actor *Message<Receiver>::receiver() const
+{
+	return static_cast<Actor *>(mReceiver);
+}
 
 }
 

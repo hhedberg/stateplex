@@ -24,14 +24,14 @@
 #include <stateplex/core/message.h>
 
 class GreeterActor : public Stateplex::Actor {
-	class GreetingMessage : public Stateplex::Message {
+	class GreetingMessage : public Stateplex::Message<GreeterActor> {
 		const char *mText;
 
 	protected:
-		void handle(Actor *sender, Actor *receiver);
+		void handle(Actor *sender, GreeterActor *receiver);
 
 	public:
-		explicit GreetingMessage(Actor *sender, Actor *receiver, const char *text);
+		GreetingMessage(Actor *sender, GreeterActor *receiver, const char *text);
 	};
 
 public:
@@ -43,11 +43,11 @@ public:
 
 #include <iostream>
 
-GreeterActor::GreetingMessage::GreetingMessage(Actor *sender, Actor *receiver, const char *text)
-	: Message(sender, receiver), mText(text)
+GreeterActor::GreetingMessage::GreetingMessage(Actor *sender, GreeterActor *receiver, const char *text)
+	: Message<GreeterActor>(sender, receiver), mText(text)
 { }
 
-void GreeterActor::GreetingMessage::handle(Actor *sender, Actor *receiver)
+void GreeterActor::GreetingMessage::handle(Actor *sender, GreeterActor *receiver)
 {
 	std::cout << mText;
 }

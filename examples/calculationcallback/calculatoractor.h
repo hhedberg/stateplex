@@ -25,32 +25,32 @@
 
 class CalculatorActor : public Stateplex::Actor {
 public:
-	class CalculationMessage : public Stateplex::CallbackMessage {
+	class CalculationMessage : public Stateplex::CallbackMessage<CalculatorActor, CalculationMessage> {
 		int mX;
 		int mY;
 		int mResult;
 
 	protected:
-		void handle(Actor *sender, Actor *receiver);
+		void handle(Actor *sender, CalculatorActor *receiver);
 
 	public:
-		template<typename T> CalculationMessage(Actor *sender, Actor *receiver, int x, int y, T* callbackObject, void (T::*callbackFunction)(Stateplex::CallbackMessage *message));
+		template<typename Sender> CalculationMessage(Sender *sender, CalculatorActor *receiver, int x, int y, void (Sender::*callbackFunction)(CalculationMessage *message));
 		int result() const;
 	};
 
 	CalculatorActor(Stateplex::Dispatcher *dispatcher);
-	template<typename T> void calculateSum(Stateplex::Actor *sender, int x, int y, T* callbackObject, void (T::*callbackFunction)(Stateplex::CallbackMessage *message));
+	template<typename Sender> void calculateSum(Sender *sender, int x, int y, void (Sender::*callbackFunction)(CalculationMessage *message));
 };
 
 /*** Inline implementations ***/
 
 #include <iostream>
 
-template<typename T> CalculatorActor::CalculationMessage::CalculationMessage(Actor *sender, Actor *receiver, int x, int y, T* callbackObject, void (T::*callbackFunction)(Stateplex::CallbackMessage *message))
-	: Stateplex::CallbackMessage(sender, receiver, callbackObject, callbackFunction), mX(x), mY(y), mResult(0)
+template<typename Sender> CalculatorActor::CalculationMessage::CalculationMessage(Sender *sender, CalculatorActor *receiver, int x, int y, void (Sender::*callbackFunction)(CalculationMessage *message))
+	: Stateplex::CallbackMessage<CalculatorActor, CalculationMessage>(sender, receiver, callbackFunction), mX(x), mY(y), mResult(0)
 { }
 
-inline void CalculatorActor::CalculationMessage::handle(Actor *sender, Actor *receiver)
+inline void CalculatorActor::CalculationMessage::handle(Actor *sender, CalculatorActor *receiver)
 {
 	mResult = mX + mY;
 	invokeCallback();
@@ -65,9 +65,9 @@ inline CalculatorActor::CalculatorActor(Stateplex::Dispatcher *dispatcher)
 	: Actor(dispatcher)
 { }
 
-template<typename T> void CalculatorActor::calculateSum(Stateplex::Actor *sender, int x, int y, T* callbackObject, void (T::*callbackFunction)(Stateplex::CallbackMessage *message))
+template<typename Sender> void CalculatorActor::calculateSum(Sender *sender, int x, int y, void (Sender::*callbackFunction)(CalculationMessage *message))
 {
-	CalculationMessage *calculation = new CalculationMessage(sender, this, x, y, callbackObject, callbackFunction);
+	CalculationMessage *calculation = new CalculationMessage(sender, this, x, y, callbackFunction);
 	queueMessage(calculation);
 }
 

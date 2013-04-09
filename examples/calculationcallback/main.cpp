@@ -27,7 +27,7 @@ int main(void)
 
 	CalculatorActor calculator(&dispatcher);
 	ClientActor client(&dispatcher);
-	calculator.calculateSum(&client, 1, 2, &client, &ClientActor::showResult);
+	calculator.calculateSum(&client, 1, 2, &ClientActor::showResult);
 
 	dispatcher.run();
 

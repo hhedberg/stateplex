@@ -23,12 +23,14 @@
 #include <stateplex/core/actor.h>
 #include <stateplex/core/callbackmessage.h>
 
+#include "calculatoractor.h"
+
 class ClientActor : public Stateplex::Actor {
 
 public:
 	ClientActor(Stateplex::Dispatcher *dispatcher);
 
-	void showResult(Stateplex::CallbackMessage *message);
+	void showResult(CalculatorActor::CalculationMessage *message);
 };
 
 /*** Inline implementations ***/
@@ -39,12 +41,9 @@ ClientActor::ClientActor(Stateplex::Dispatcher *dispatcher)
 	: Actor(dispatcher)
 { }
 
-void ClientActor::showResult(Stateplex::CallbackMessage *message)
+void ClientActor::showResult(CalculatorActor::CalculationMessage *message)
 {
-	CalculatorActor::CalculationMessage *calculation;
-
-	calculation = static_cast<CalculatorActor::CalculationMessage *>(message);
-	std::cout << "Result is " << calculation->result();
+	std::cout << "Result is " << message->result();
 }
 
 #endif

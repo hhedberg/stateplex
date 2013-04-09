@@ -26,7 +26,7 @@
 namespace Stateplex {
 
 class Actor;
-class Message;
+template<typename T> class Message;
 class Source;
 class Allocator;
 
@@ -43,7 +43,7 @@ class Dispatcher {
 	List<Actor> mActiveActors;
 	List<Actor> mWaitingActors;
 	List<Actor> mPassiveActors;
-	List<Message> mOutgoingMessages;
+	List<Message<Actor> > mOutgoingMessages;
 	Allocator *mAllocator;
 	
 	bool mRunning;
@@ -63,7 +63,7 @@ public:
 	void addSource(Source *source);
 	void updateSource(Source *source);
 	void removeSource(Source *source);
-	void queueMessage(Message *message);
+	template<typename T> void queueMessage(Message<T> *message);
 	unsigned long milliseconds() const;
 
 	static Dispatcher *leastLoaded();
@@ -140,6 +140,21 @@ inline void Dispatcher::updateSource(Source *source)
 inline void Dispatcher::removeSource(Source *source)
 {
 	epoll_ctl(mEpollFd, EPOLL_CTL_DEL, source->mFd, 0);
+}
+
+/**
+ * Queues the given message to be handled by the receiving actor.
+ */
+
+template<typename T>
+void Dispatcher::queueMessage(Message<T> *message)
+{
+	Message<Actor> *m = reinterpret_cast<Message<Actor> *>(message);
+	if (message->actor() && message->actor()->mDispatcher == message->receiver()->mDispatcher) {
+		message->receiver()->mIncomingMessages.addTail(m);
+		activateActor(message->mReceiver);
+	} else
+		mOutgoingMessages.addTail(m);
 }
 
 /**
