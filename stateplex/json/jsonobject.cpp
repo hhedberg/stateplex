@@ -21,16 +21,19 @@ void JsonObject::add(JsonItem *item)
 
 void JsonObject::traverse()
 {
+	int count = 0;
 	std::cout << '"' <<  key() << '"' << " : " << "{" << std::endl;
 	for (Stateplex::ListIterator<JsonItem> iterator(mItems); iterator.hasCurrent(); iterator.subsequent()) {
 		if(iterator.hasSubsequent()) {
-			std::cout < "\t";
+			for(int i = 0; i < count; i++) {
+				std::cout < "\t";	
+			}
 		}
 		JsonObject *item = reinterpret_cast<JsonObject *>(iterator.current());
 		item->traverse();
 	}
 
-	std::cout << "\t" << "}" << std::endl;
+	std::cout << "}" << std::endl;
 
 }
 
