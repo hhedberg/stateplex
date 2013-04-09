@@ -1,3 +1,6 @@
+#ifndef INCLUDED_JSON_DB_ACTOR_H
+#define INCLUDED_JSON_DB_ACTOR_H
+
 #include <stateplex/core/callbackmessage.h>
 #include <stateplex/core/actor.h>
 
