@@ -11,7 +11,7 @@ class JsonData : public JsonItem
 public:
 	JsonData();
 	JsonData(const char *key, T *value);
-    virtual ~JsonData();
+    	virtual ~JsonData();
 	void traverse();
 	const char *key();
 	const char *type();
