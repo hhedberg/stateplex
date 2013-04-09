@@ -5,6 +5,7 @@ JsonObject::JsonObject(const char *key)
 {
         mKey = key;
 	mItems = new Stateplex::List<JsonItem>;
+	mType = "JSON_OBJECT";
 }
 
 JsonObject::~JsonObject()
@@ -48,6 +49,11 @@ const char *JsonObject::key()
 	return mKey;
 }
 
+const char *JsonObject::type()
+{
+	return mType;
+}
+
 void JsonObject::freeItems()
 {
 	for (Stateplex::ListIterator<JsonItem> iterator(mItems); iterator.hasCurrent(); iterator.subsequent()) {
@@ -71,11 +77,9 @@ JsonItem *JsonObject::find(const char *target)
 
 JsonObject *JsonObject::findObject(const char *target)
 {
-	JsonObject *item;
-	for (Stateplex::ListIterator<JsonItem> iterator(mItems); iterator.hasCurrent(); iterator.subsequent()) {
-		if(strcmp(iterator.current()->key(), target) == 0) {
-			item = reinterpret_cast<JsonObject *> (iterator.current());
-		}
+	JsonObject *item = static_cast<JsonObject *> (find(target));
+	if(!(strcmp(item->type(), "JSON_OBJECT"))) {
+		return 0;
 	}
 
 	return item;

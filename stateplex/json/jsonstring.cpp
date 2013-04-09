@@ -9,6 +9,7 @@ JsonString::JsonString(const char *key, const char *value)
 {
 	mKey = key;
 	mValue = value;
+	mType = "JSON_STRING";
 }
 
 void JsonString::traverse()
@@ -24,6 +25,11 @@ const char *JsonString::value()
 const char *JsonString::key()
 {
 	return mKey;
+}
+
+const char *JsonString::type()
+{
+	return mType;
 }
 
 JsonString::~JsonString()

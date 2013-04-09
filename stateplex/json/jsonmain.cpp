@@ -86,6 +86,7 @@ int main()
 		std::cout << std::endl;
 	}
 
+
 	std::cout << std::endl;
 
 	std::cout << "JSONDATA_CHAR: " << jsonChar.key() << " " << jsonChar.value() << std::endl;

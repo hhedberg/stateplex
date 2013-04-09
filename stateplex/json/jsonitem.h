@@ -11,9 +11,11 @@ public:
 	virtual ~JsonItem();
 	virtual void traverse() = 0;
 	virtual const char *key() = 0;
+	virtual const char *type() = 0;
 
 protected:
 	const char *mKey;
+	const char *mType;
 private:
 	
 };

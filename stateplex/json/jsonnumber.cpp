@@ -10,6 +10,7 @@ JsonNumber::JsonNumber(const char *key, int number)
 {
 	mKey = key;
 	mValue = number;
+	mType = "JSON_NUMBER";
 }
 
 void JsonNumber::traverse()
@@ -25,6 +26,11 @@ int JsonNumber::value()
 const char *JsonNumber::key()
 {
 	return mKey;
+}
+
+const char *JsonNumber::type()
+{
+	return mType;
 }
 
 JsonNumber::~JsonNumber()

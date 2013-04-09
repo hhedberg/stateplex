@@ -14,6 +14,7 @@ public:
 	void traverse();
 	const char *key();
 	const char *value();
+	const char *type();
 protected:
 private:
 	const char *mValue;

@@ -11,6 +11,7 @@ public:
         virtual ~JsonNumber();
 	void traverse();
 	const char *key();
+	const char *type();
 	int value();
 protected:
 private:
