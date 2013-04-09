@@ -22,6 +22,7 @@
 
 #include "source.h"
 #include "../core/types.h"
+#include "../core/buffer.h"
 
 namespace Stateplex {
 
@@ -29,19 +30,18 @@ namespace Stateplex {
  * @brief Inherited from class Source. Used by the net module classes.
  */
  
+class String;
+
 class IoSource : public Source {
-	Method mHandler;
+	Buffer<> *mOutputBuffer;
 
 	int mReadyToRead : 1;
-	int mReadyToWrite : 1;
 	int mReachedEof : 1;
 
 protected:
-	IoSource(Actor *actor, int fd, bool readable = true, bool writable = true, bool enabled = true);
-	template<typename T> IoSource(Actor *actor, int fd, T* handlerObject, void (T::*handlerFunction)(IoSource *source), bool readable = true, bool writable = true, bool enabled = true);
+	IoSource(Actor *actor, int fd = -1, bool readable = true, bool writable = true, bool enabled = true);
 
-	void invokeHandler();
-	void handleReady(bool readyToRead, bool readyToWrite);
+	void setFd(int fd);
 
 public:
 	virtual ~IoSource();
@@ -53,9 +53,10 @@ public:
 	bool hasReachedEof() const;
 
 	Size read(char *data, Size length);
-	Size write(char *data, Size length);
-	template<typename T> void setHandler(T *handlerObject, void (T::*handlerFunction)(IoSource *source));
-	void unsetHandler();
+	Size read(Buffer<> *buffer);
+	void write(const char *data, Size length);
+	void write(const Buffer<> *buffer);
+	void write(const String *string);
 };
 
 }
@@ -73,13 +74,8 @@ namespace Stateplex {
  * @param *handlerFunction 	pointer to handler function.
  */
 
-
 inline IoSource::IoSource(Actor *actor, int fd, bool readable, bool writable, bool enabled)
-	: Source(actor, fd, readable, writable, enabled, false), mReadyToRead(0), mReadyToWrite(1), mReachedEof(0)
-{ }
-
-template<typename T> IoSource::IoSource(Actor *actor, int fd, T* handlerObject, void (T::*handlerFunction)(IoSource *source), bool readable, bool writable, bool enabled)
-: Source(actor, fd, readable, writable, enabled, true), mHandler(handlerObject, handlerFunction), mReadyToRead(0), mReadyToWrite(1), mReachedEof(0)
+	: Source(actor, fd, readable, writable, enabled, false), mOutputBuffer(0), mReadyToRead(1), mReachedEof(0)
 { }
 
 /** 
@@ -89,21 +85,6 @@ template<typename T> IoSource::IoSource(Actor *actor, int fd, T* handlerObject, 
 inline IoSource::~IoSource()
 { }
 
-/** 
- * Function that invokes the handler object.
- */
- 
-inline void IoSource::invokeHandler()
-{
-	mHandler.invoke(this);
-}
-
-/** 
- * Checks if source is readable.
- *
- * @return		true if readable, otherwise false.
- */
- 
 inline bool IoSource::isReadable() const
 {
 	return Source::isReadable();
@@ -139,7 +120,7 @@ inline bool IoSource::isReadyToRead() const
 
 inline bool IoSource::isReadyToWrite() const
 {
-	return Source::isWritable() && !!mReadyToWrite;
+	return Source::isWritable() && !mOutputBuffer;
 }
 
 /** 
@@ -151,30 +132,6 @@ inline bool IoSource::isReadyToWrite() const
 inline bool IoSource::hasReachedEof() const
 {
 	return !!mReachedEof;
-}
-
-/** 
- * Sets handler.
- * 
- * @param *handlerObject	pointer to the handler object.
- * @param *handlerFunction	pointer to the handler function.
- */
- 
-template<typename T>
-void IoSource::setHandler(T *handlerObject, void (T::*handlerFunction)(IoSource *source))
-{
-	mHandler.set(handlerObject, handlerFunction);
-	setHandled(true);
-}
-
-/**
- * Function that sets the state of iosource to not 
- * have been handled.
- */
-
-inline void IoSource::unsetHandler()
-{
-	setHandled(false);
 }
 
 }

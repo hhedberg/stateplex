@@ -44,9 +44,11 @@ class ListItem {
 
 	void addBetween(ListItem *previous, ListItem *next);
 
+protected:
+	~ListItem();
+
 public:
 	ListItem();
-	virtual ~ListItem();
 
 	void addBefore(ListItem *existing_item);
 	void addAfter(ListItem *existing_item);
@@ -65,21 +67,21 @@ class List {
 	ListItem mItems;
 
 	void addBetween(ListItem *previous, ListItem *next);
-	ListItem *next(ListItem *item);
-	ListItem *previous(ListItem *item);
 
 public:
 	List();
 	
-	T *first();
-	T *last();
+	T *first() const;
+	T *last() const;
+	T *next(T *item) const;
+	T *previous(T *item) const;
 	
 	void addHead(T *item);
 	void addTail(T *item);
 	void spliceHead(List<T> *list);
 	void spliceTail(List<T> *list);
 
-	bool isEmpty();
+	bool isEmpty() const;
 };
 
 /**
@@ -91,19 +93,19 @@ public:
 template<typename T>
 class ListIterator {
 	List<T> *mList;
-	ListItem *mCurrent;
-	ListItem *mSubsequent;
+	T *mCurrent;
+	T *mSubsequent;
 	bool mBackwards;
 	
 public:
 	ListIterator(List<T> *list, bool backwards = false);
 
-	List<T> *list();
-	T *current();
+	List<T> *list() const;
+	T *current() const;
 	T *subsequent();
-	bool hasCurrent();
-	bool hasSubsequent();
-	bool backwards();
+	bool hasCurrent() const;
+	bool hasSubsequent() const;
+	bool isBackwards() const;
 };
 
 }
@@ -199,7 +201,7 @@ List<T>::List()
  */
  
 template<typename T>
-T *List<T>::first()
+T *List<T>::first() const
 {
 	return static_cast<T *>(mItems.mNext != &mItems ? mItems.mNext : 0);
 }
@@ -212,7 +214,7 @@ T *List<T>::first()
  */
 
 template<typename T>
-T *List<T>::last()
+T *List<T>::last() const
 {
 	return static_cast<T *>(mItems.mPrevious != &mItems ? mItems.mPrevious : 0);
 }
@@ -226,9 +228,9 @@ T *List<T>::last()
  */
 
 template<typename T>
-ListItem *List<T>::next(ListItem *item)
+T *List<T>::next(T *item) const
 {
-	return (item->mNext != &mItems ? item->mNext : 0);
+	return static_cast<T *>(item->mNext != &mItems ? item->mNext : 0);
 }
 
 /**
@@ -239,9 +241,9 @@ ListItem *List<T>::next(ListItem *item)
  */
 
 template<typename T>
-ListItem *List<T>::previous(ListItem *item)
+T *List<T>::previous(T *item) const
 {
-	return (item->mPrevious != &mItems ? item->mPrevious : 0);
+	return static_cast<T *>(item->mPrevious != &mItems ? item->mPrevious : 0);
 }
 
 /**
@@ -319,7 +321,7 @@ void List<T>::spliceTail(List<T> *list)
  * @return 		true if there isn't a next list item, otherwise false.
  */
 template<typename T>
-bool List<T>::isEmpty()
+bool List<T>::isEmpty() const
 {
 	return mItems.mNext == &mItems;
 }
@@ -355,7 +357,7 @@ ListIterator<T>::ListIterator(List<T> *list, bool backwards)
  */
 
 template<typename T>
-List<T> *ListIterator<T>::list()
+List<T> *ListIterator<T>::list() const
 {
 	return mList;
 }
@@ -367,9 +369,9 @@ List<T> *ListIterator<T>::list()
  */
 
 template<typename T>
-T *ListIterator<T>::current()
+T *ListIterator<T>::current() const
 {
-	return static_cast<T *>(mCurrent);
+	return mCurrent;
 }
 
 /**
@@ -386,7 +388,7 @@ T *ListIterator<T>::subsequent()
 	if (mCurrent)
 		mSubsequent = (!mBackwards ? mList->next(mCurrent) : mList->previous(mCurrent));
 
-	return static_cast<T *>(mCurrent);
+	return mCurrent;
 }
 
 /**
@@ -396,7 +398,7 @@ T *ListIterator<T>::subsequent()
  */
 
 template<typename T>
-bool ListIterator<T>::hasCurrent()
+bool ListIterator<T>::hasCurrent() const
 {
 	return mCurrent != 0;
 }
@@ -408,7 +410,7 @@ bool ListIterator<T>::hasCurrent()
  */
 
 template<typename T>
-bool ListIterator<T>::hasSubsequent()
+bool ListIterator<T>::hasSubsequent() const
 {
 	return mSubsequent != 0;
 }
@@ -420,7 +422,7 @@ bool ListIterator<T>::hasSubsequent()
  */
 
 template<typename T>
-bool ListIterator<T>::backwards()
+bool ListIterator<T>::isBackwards() const
 {
 	return mBackwards;
 }

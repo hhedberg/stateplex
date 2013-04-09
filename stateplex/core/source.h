@@ -37,12 +37,12 @@ class Source : public ListItem {
 	Actor *mActor;
 	int mFd;
 	int mEnabled : 1;
-	int mHandled : 1;
 	int mDispatched : 1;
 	int mReadable : 1;
 	int mWritable : 1;
 
 	void manageDispatching();
+	void setNonblocking();
 
 protected:
 	Source(Actor *actor, int fd, bool readable, bool writable, bool enabled = true, bool handled = false);
@@ -53,7 +53,6 @@ protected:
 
 	virtual void handleReady(bool readyToRead, bool readyToWrite) = 0;
 	void setFd(int fd);
-	void setHandled(bool handled);
 	void setMode(bool readable, bool writable);
 
 public:
@@ -72,6 +71,7 @@ public:
 /*** Inline implementations ***/
 
 #include <unistd.h>
+#include <fcntl.h>
 
 #include "actor.h"
 
@@ -86,8 +86,10 @@ namespace Stateplex {
  */
 
 inline Source::Source(Actor *actor, int fd, bool readable, bool writable, bool enabled, bool handled)
-	: mActor(actor), mFd(fd), mReadable(readable), mWritable(writable), mEnabled(enabled), mHandled(handled), mDispatched(0)
+	: mActor(actor), mFd(fd), mReadable(readable), mWritable(writable), mEnabled(enabled), mDispatched(0)
 {
+	if (mFd != -1)
+		setNonblocking();
 	manageDispatching();
 }
 
@@ -97,6 +99,15 @@ inline Source::Source(Actor *actor, int fd, bool readable, bool writable, bool e
  
 inline Source::~Source()
 { }
+
+inline void Source::setNonblocking()
+{
+	int flags;
+
+	if ((flags = fcntl(mFd, F_GETFL)) == -1 ||
+		    fcntl(mFd, F_SETFL, flags | O_NONBLOCK) == -1)
+		abort();
+}
 
 /** 
  * Returns file descriptor.
@@ -117,40 +128,12 @@ inline int Source::fd() const
  
 inline void Source::setFd(int fd)
 {
+	if (mFd != -1 || fd == -1)
+		abort();
+
 	mFd = fd;
+	setNonblocking();
 	manageDispatching();
-}
-
-/**
- * Function that sets source as handled and calls for the
- * function that handles source.
- *
- * @param handled	boolean value to set.
- */
-
-inline void Source::setHandled(bool handled)
-{
-	mHandled = handled;
-	manageDispatching();
-}
-
-/**
- * Function that sets source to be readable and/or writable.
- * Tells actor's dispatcher to update source after setting readable/writable.
- *
- * @param readable	value for readable to set.
- * @param writable	value for writable to set.
- */
-
-inline void Source::setMode(bool readable, bool writable)
-{
-	if (mReadable == readable && mWritable == writable)
-		return;
-
-	mReadable = readable;
-	mWritable = writable;
-	if (mDispatched)
-		actor()->dispatcher()->updateSource(this);
 }
 
 /** 

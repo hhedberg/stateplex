@@ -27,7 +27,6 @@
 #include <iostream>
 
 #include "tcpserver.h"
-#include "tcpconnection.h"
 
 namespace Stateplex {
 	
@@ -42,6 +41,7 @@ namespace Stateplex {
 int TcpServer::createServerSocket(const struct sockaddr *address, socklen_t length)
 {
 	int fd;
+	int flags;
 
 	fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (fd == -1)
@@ -76,7 +76,7 @@ void TcpServer::handleReady(bool /* readyToRead */, bool /* readyToWrite */)
 				abort();
 			}
 		}
-		TcpConnectionEmbryo embryo(this, socket, reinterpret_cast<struct sockaddr *>(&address), length);
+		TcpConnection::Embryo embryo(this, socket, reinterpret_cast<struct sockaddr *>(&address), length);
 		TcpConnection *connection = mConnectionFactoryMethod.invoke(&embryo);
 		if (!connection)
 			::close(socket);
