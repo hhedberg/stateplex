@@ -93,21 +93,6 @@ inline Allocator *Dispatcher::allocator() const
 	return mAllocator;
 }
 
-/**
- * Function that adds or updates source.
- *
- * @param *source        target source to add or update.
- * @param epollOperation command for epoll.										
- */
-
-inline void Dispatcher::addOrUpdateSource(Source *source, int epollOperation)
-{
-	struct ::epoll_event event;
-
-	event.events = (source->mReadable ? EPOLLIN : 0 ) | (source->mWritable ? EPOLLOUT : 0) | EPOLLET;
-	event.data.ptr = source;
-	epoll_ctl(mEpollFd, epollOperation, source->mFd, &event);
-}
 
 /**
  * Function that adds source. 
@@ -129,17 +114,6 @@ inline void Dispatcher::addSource(Source *source)
 inline void Dispatcher::updateSource(Source *source)
 {
 	addOrUpdateSource(source, EPOLL_CTL_MOD);
-}
-
-/**
- * Function that removes the source.
- *
- * @param *source        target source to remove.
- */
- 
-inline void Dispatcher::removeSource(Source *source)
-{
-	epoll_ctl(mEpollFd, EPOLL_CTL_DEL, source->mFd, 0);
 }
 
 /**
