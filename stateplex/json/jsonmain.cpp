@@ -93,7 +93,7 @@ int main()
 	std::cout << "JSONDATA_CHAR: " << jsonChar.key() << " " << jsonChar.value() << std::endl;
 	std::cout << "JSONDATA_INT: " << integer.key() << " " << *(integer.value()) << std::endl;
 
-	std::cout << "JSON SEARCH: " << mSecond.find("strkey")->type() << std::endl;
+	std::cout << "JSON SEARCH: " << mSecond.find("strKey")->key() << std::endl;
 
 	company.traverse();
 

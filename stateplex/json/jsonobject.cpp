@@ -66,9 +66,11 @@ void JsonObject::freeItems()
 JsonItem *JsonObject::find(const char *target)
 {
 	JsonItem *item;
+	
 	for (Stateplex::ListIterator<JsonItem> iterator(mItems); iterator.hasCurrent(); iterator.subsequent()) {
 		if(strcmp(iterator.current()->key(), target) == 0) {
 			item = iterator.current();
+			break;
 		}
 	}
 
