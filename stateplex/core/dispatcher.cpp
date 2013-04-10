@@ -185,6 +185,33 @@ void Dispatcher::run()
 }
 
 /**
+ * Function that adds or updates source.
+ *
+ * @param *source        target source to add or update.
+ * @param epollOperation command for epoll.
+ */
+
+void Dispatcher::addOrUpdateSource(Source *source, int epollOperation)
+{
+	struct ::epoll_event event;
+
+	event.events = (source->mReadable ? EPOLLIN : 0 ) | (source->mWritable ? EPOLLOUT : 0) | EPOLLET;
+	event.data.ptr = source;
+	epoll_ctl(mEpollFd, epollOperation, source->mFd, &event);
+}
+
+/**
+ * Function that removes the source.
+ *
+ * @param *source        target source to remove.
+ */
+
+void Dispatcher::removeSource(Source *source)
+{
+	epoll_ctl(mEpollFd, EPOLL_CTL_DEL, source->mFd, 0);
+}
+
+/**
  * Function that handles timeout for waiting actors.
  *
  * @return		void if existing timeout is larger that the specified actor's timeout.
