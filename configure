@@ -231,7 +231,7 @@ fi
 if [ $doxygen == 1 ]; then
         write_line "docs:"
         write_line "\t@echo \"Creating Doxygen documentation...\""
-        write_line "\t@doxygen $(pwd)/doc/settings > /dev/null 2> /dev/null "
+        write_line "\t@doxygen $(pwd)/doc/settings"
         write_line ""
 else
         write_line "docs:"

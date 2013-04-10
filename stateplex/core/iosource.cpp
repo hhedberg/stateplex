@@ -93,8 +93,17 @@ void IoSource::write(const char *data, Size length)
 
 void IoSource::write(const Buffer<> *buffer)
 {
-
+	Buffer<>::Iterator iterator(buffer);
+	Size length;
+	while ((length = iterator.charBlockLength()) > 0) {
+		write(iterator.charBlock(), length);
+		iterator.advance(length);
+	}
 }
-void write(const String *string);
+
+void IoSource::write(const String *string)
+{
+	write(string->chars(), string->length());
+}
 
 }

@@ -34,9 +34,9 @@ void Source::manageDispatching()
 
 	mDispatched = shouldDispatch;
 	if (mDispatched) {
-		mActor->dispatcher()->addSource(this);
+		actor()->dispatcher()->addSource(this);
 	} else {
-		mActor->dispatcher()->removeSource(this);
+		actor()->dispatcher()->removeSource(this);
 	}
 }
 

@@ -20,6 +20,7 @@
 #ifndef INCLUDED_STATEPLEX_SOURCE_H
 #define INCLUDED_STATEPLEX_SOURCE_H
 
+#include "object.h"
 #include "list.h"
 #include "method.h"
 
@@ -31,10 +32,9 @@ class Actor;
  * @brief Inherited from ListItem. Source is used by the net module.
  */
 
-class Source : public ListItem {
+class Source : public Object, public ListItem {
 	friend class Dispatcher;
 
-	Actor *mActor;
 	int mFd;
 	int mEnabled : 1;
 	int mDispatched : 1;
@@ -58,7 +58,6 @@ protected:
 public:
 	virtual ~Source();
 
-	Actor *actor() const;
 	bool isOpen() const;
 	bool isEnabled() const;
 
@@ -86,7 +85,7 @@ namespace Stateplex {
  */
 
 inline Source::Source(Actor *actor, int fd, bool readable, bool writable, bool enabled, bool handled)
-	: mActor(actor), mFd(fd), mReadable(readable), mWritable(writable), mEnabled(enabled), mDispatched(0)
+	: Object(actor), mFd(fd), mReadable(readable), mWritable(writable), mEnabled(enabled), mDispatched(0)
 {
 	if (mFd != -1)
 		setNonblocking();
@@ -134,17 +133,6 @@ inline void Source::setFd(int fd)
 	mFd = fd;
 	setNonblocking();
 	manageDispatching();
-}
-
-/** 
- * Returns the address of the actor that uses this source.
- *
- * @return		pointer to actor to be returned.
- */
- 
-inline Actor *Source::actor() const
-{
-	return mActor;
 }
 
 /** 

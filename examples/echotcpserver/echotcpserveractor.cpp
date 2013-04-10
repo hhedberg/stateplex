@@ -23,7 +23,7 @@
 #include <stateplex/core/dispatcher.h>
 #include <stateplex/net/tcpserver.h>
 #include <stateplex/net/tcpconnection.h>
-
+#include <stateplex/core/buffer.h>
 
 #include "echotcpserveractor.h"
 
@@ -53,13 +53,15 @@ Stateplex::TcpConnection *EchoTcpServerActor::instantiateTcpConnection(const Sta
 }
 
 EchoTcpConnection::EchoTcpConnection(Stateplex::Actor* actor, const Stateplex::TcpConnection::Embryo* embryo)
-	: TcpConnection(actor, embryo)
+	: TcpConnection(actor, embryo), mBuffer(actor)
 { }
 
 void EchoTcpConnection::handleReady(bool readyRead, bool readyWrite)
 {
-	char buffer[1024];
-	Stateplex::Size length;
-	length = read(buffer, 1024);
-	write(buffer, length);
+
+	read(&mBuffer);
+	Stateplex::String *s = mBuffer.asString();
+	write(s->chars(), s->length());
+	//write(&mBuffer);
+	mBuffer.poppedAll();
 }
