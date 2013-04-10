@@ -1,7 +1,8 @@
 #include "jsonobject.h"
 #include <iostream>
 
-JsonObject::JsonObject(const char *key)
+JsonObject::JsonObject(Stateplex::Actor *owner, const char *key)
+	: JsonItem(owner)
 {
     mKey = key;
 	mItems = new Stateplex::List<JsonItem>;

@@ -7,7 +7,7 @@
 class JsonObject : public JsonItem
 {
 public:
-    	JsonObject(const char *key);
+    	JsonObject(Stateplex::Actor *owner, const char *key);
     	virtual ~JsonObject();
  	void add(JsonItem *item);
 	void traverse();

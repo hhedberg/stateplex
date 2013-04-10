@@ -2,6 +2,7 @@
 #define JSONITEM_H
 
 #include "../core/list.h"
+#include "../core/object.h"
 #include <cstring>
 
 enum JsonType {
@@ -11,11 +12,11 @@ enum JsonType {
 		JSON_DATA
 };
 
-class JsonItem : public Stateplex::ListItem
+class JsonItem : public Stateplex::Object, public Stateplex::ListItem
 {
 
 public:
-	JsonItem();
+	JsonItem(Stateplex::Actor *owner);
 	virtual ~JsonItem();
 	virtual void traverse() = 0;
 	virtual const char *key() = 0;

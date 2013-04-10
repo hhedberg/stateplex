@@ -6,8 +6,7 @@
 class JsonNumber : public JsonItem
 {
 public:
-	JsonNumber();
-	JsonNumber(const char *key, int number);
+	JsonNumber(Stateplex::Actor *owner, const char *key, int number);
         virtual ~JsonNumber();
 	void traverse();
 	const char *key();

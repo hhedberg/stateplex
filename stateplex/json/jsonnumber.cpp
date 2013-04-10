@@ -1,12 +1,8 @@
 #include "jsonnumber.h"
 #include <iostream>
 
-JsonNumber::JsonNumber()
-{
-        //ctor
-}
-
-JsonNumber::JsonNumber(const char *key, int number)
+JsonNumber::JsonNumber(Stateplex::Actor *owner, const char *key, int number)
+	: JsonItem(owner)
 {
 	mKey = key;
 	mValue = number;

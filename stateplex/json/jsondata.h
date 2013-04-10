@@ -9,8 +9,7 @@ template<typename T>
 class JsonData : public JsonItem
 {
 public:
-	JsonData();
-	JsonData(const char *key, T *value);
+	JsonData(Stateplex::Actor *owner, const char *key, T *value);
     	virtual ~JsonData();
 	void traverse();
 	const char *key();
@@ -23,13 +22,8 @@ private:
 };
 
 template<typename T>
-JsonData<T>::JsonData()
-{
-        //ctor
-}
-
-template<typename T>
-JsonData<T>::JsonData(const char *key, T *value)
+JsonData<T>::JsonData(Stateplex::Actor *owner, const char *key, T *value)
+	: JsonItem(owner)
 { 
 	mKey = key;
 	mValue = value;

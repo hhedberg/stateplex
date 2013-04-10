@@ -1,11 +1,7 @@
 #include "jsonstring.h"
 
-JsonString::JsonString()
-{
-        //ctor
-}
-
-JsonString::JsonString(const char *key, const char *value)
+JsonString::JsonString(Stateplex::Actor *owner, const char *key, const char *value)
+	: JsonItem(owner)
 {
 	mKey = key;
 	mValue = value;

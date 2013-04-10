@@ -13,34 +13,33 @@ int main()
 	JsonDbActor jsonactor(&dispatcher);
 	JsonClient client(&dispatcher);
 	
-
 	Stateplex::List<JsonObject> mList;
-	JsonObject mFirst("mFirst");
-	JsonObject mSecond("mSecond");
-	JsonObject company("Stateplex");
+	JsonObject mFirst(&jsonactor,"mFirst");
+	JsonObject mSecond(&jsonactor,"mSecond");
+	JsonObject company(&jsonactor,"Stateplex");
 
-	company.add(new JsonObject("Employee"));
+	company.add(new JsonObject(&jsonactor,"Employee"));
 	company.findObject("Employee");
-	company.findObject("Employee")->add(new JsonObject("Juha"));
-	company.findObject("Employee")->add(new JsonObject("Tapio"));
+	company.findObject("Employee")->add(new JsonObject(&jsonactor,"Juha"));
+	company.findObject("Employee")->add(new JsonObject(&jsonactor,"Tapio"));
 
-	company.findObject("Employee")->findObject("Juha")->add(new JsonNumber("Age", 24));
-	company.findObject("Employee")->findObject("Tapio")->add(new JsonNumber("Age", 24));
+	company.findObject("Employee")->findObject("Juha")->add(new JsonNumber(&jsonactor,"Age", 24));
+	company.findObject("Employee")->findObject("Tapio")->add(new JsonNumber(&jsonactor,"Age", 24));
 
 	jsonactor.getRootObject(&client, &company, &JsonClient::showResult);
 
-	JsonData<const char> jsonChar("key", "value");
+	JsonData<const char> jsonChar(&jsonactor, "key", "value");
 	int number = 17;
-	JsonData<int> integer("key", &number);
+	JsonData<int> integer(&jsonactor, "key", &number);
 
 
 	for (int i = 0; i < 12; i++) {
-		mFirst.add(new JsonNumber("key", i*3));
+		mFirst.add(new JsonNumber(&jsonactor, "key", i*3));
 	}
 
 	for (int y = 0; y < 7; y++) {
-		mSecond.add(new JsonNumber("key", y * 43));
-		mSecond.add(new JsonString("strKey", "strTest"));	
+		mSecond.add(new JsonNumber(&jsonactor, "key", y * 43));
+		mSecond.add(new JsonString(&jsonactor, "strKey", "strTest"));	
 	}
 
 	mList.addTail(&mFirst);

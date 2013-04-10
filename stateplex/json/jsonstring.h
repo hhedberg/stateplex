@@ -8,8 +8,7 @@
 class JsonString : public JsonItem
 {
 public:
-	JsonString();
-	JsonString(const char *key, const char *value);
+	JsonString(Stateplex::Actor *owner, const char *key, const char *value);
         virtual ~JsonString();
 	void traverse();
 	const char *key();

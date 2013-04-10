@@ -1,11 +1,8 @@
 #include "jsonitem.h"
 
-JsonItem::JsonItem()
-{
-        //ctor
-}
+JsonItem::JsonItem(Stateplex::Actor *owner)
+	: Object(owner)
+{ }
 
 JsonItem::~JsonItem()
-{
-        //dtor
-}
+{ }
