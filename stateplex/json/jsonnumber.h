@@ -15,7 +15,6 @@ public:
 protected:
 private:
 	int mValue;
-	//const char *mKey;
 };
 
 #endif // JSONNUMBER_H

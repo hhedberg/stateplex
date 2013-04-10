@@ -25,11 +25,19 @@ public:
 protected:
 
 	const char *mKey;
-	//const char *mType;
 	JsonType mType;
 
 private:
 	
 };
+
+/*** Inline Implementation ***/
+
+inline JsonItem::JsonItem(Stateplex::Actor *owner)
+	: Object(owner)
+{ }
+
+inline JsonItem::~JsonItem()
+{ }
 
 #endif // JSONITEM_H

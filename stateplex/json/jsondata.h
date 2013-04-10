@@ -17,7 +17,6 @@ public:
 	const T *value();
 protected:
 private:
-	//char *mKey;
 	T *mValue;
 };
 

@@ -38,11 +38,6 @@ void JsonObject::traverse()
 
 }
 
-/*JsonNumber *JsonObject::nextJson()
-{
-	return mIterator.subsequent();
-}*/
-
 Stateplex::List<JsonItem> *JsonObject::getList()
 {
 	return mItems;
