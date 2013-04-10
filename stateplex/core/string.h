@@ -122,11 +122,13 @@ inline Size String::length() const
 
 inline String *String::uninitialised(Allocator *allocator, Size length)
 {
-	Size size;
-	char *string = reinterpret_cast<char *>(allocator->allocate(size + length + 1));
-	*(string + size + length) = 0;
+	Size size = sizeOfLength(length);
+	char *memory = reinterpret_cast<char *>(allocator->allocate(size + length + 1));
+	*(memory + size + length) = 0;
+	String *string = reinterpret_cast<String *>(memory);
+	string->setLength(length);
 
-	return reinterpret_cast<String *>(string);
+	return string;
 }
 
 inline String *String::copy(Allocator *allocator, const char *cString)
@@ -136,7 +138,7 @@ inline String *String::copy(Allocator *allocator, const char *cString)
 
 inline String *String::copy(Allocator *allocator, const char *cString, Size length)
 {
-	Size size = sizeOfLength(length);;
+	Size size = sizeOfLength(length);
 	char *memory = reinterpret_cast<char *>(allocator->allocate(size + length + 1));
 	memcpy(memory + size, cString, length);
 	*(memory + size + length) = 0;

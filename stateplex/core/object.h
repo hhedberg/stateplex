@@ -46,7 +46,6 @@ public:
 
 /*** Inline implementations ***/
 
-#include "actor.h"
 #include "dispatcher.h"
 #include "allocator.h"
 

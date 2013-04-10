@@ -35,6 +35,8 @@ public:
 };
 
 class EchoTcpConnection : public Stateplex::TcpConnection {
+	Stateplex::Buffer<> mBuffer;
+
 protected:
 	virtual void handleReady(bool readyRead, bool readyWrite);
 

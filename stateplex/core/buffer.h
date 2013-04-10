@@ -53,19 +53,23 @@ class Buffer : public Object {
 		Block(Allocator *allocator);
 		Block(Allocator *allocator, Block *block);
 		Block(Allocator *allocator, Block *block, Size16 offset, Size16 length);
-		~Block();
 
-		char *start() const;
-		char *end() const;
-		char *position(Size16 offset) const;
+		Size16 start() const;
+		Size16 end() const;
+		char *startPointer() const;
+		char *endPointer() const;
+		char *pointer(Size16 offset) const;
 		Size16 size() const;
 		Size16 room() const;
 		int compare(Size16 myOffset, const Block *block, Size16 offset, Size16 length) const;
 		void copyFrom(const char *cString, Size16 length);
 		void copyTo(char *string, Size16 offset, Size16 length);
+		void destroy(Allocator *allocator);
 		void pushed(Size16 length);
 		void popped(Size16 length);
 		void split(Allocator *allocator, Size16 offset);
+
+		static void *allocateMemory(Allocator *allocator);
 	};
 
 	List<Block> mBlocks;
@@ -84,6 +88,24 @@ class Buffer : public Object {
 	Block *splitBlock(Size offset);
 
 public:
+	class Iterator {
+		const Buffer<blockSize> *mBuffer;
+		Block *mBlock;
+		Size16 mStart;
+		Size mOffset;
+
+	public:
+		Iterator(const Buffer<blockSize> *buffer);
+		~Iterator();
+
+		void advance(Size length = 1);
+		Size charBlockLength() const;
+		const char *charBlock() const;
+		const Buffer<blockSize> *buffer() const;
+		char current() const;
+		Size left() const;
+	};
+
 	Buffer(Actor *actor);
 	Buffer(Actor *actor, const char *cString);
 
@@ -102,12 +124,14 @@ public:
 	const char *popPointer() const;
 	Size16 popLength() const;
 	void popped(Size16 length);
+	void poppedAll();
 
-	Size size() const;
+	Size length() const;
 
 	char here() const;
 	void next();
 	Size left() const;
+	Size offset() const;
 	void popHere();
 
 	char charAt(Size offset) const;
@@ -175,27 +199,41 @@ Buffer<blockSize>::Block::Block(Allocator *allocator, Block *block, Size16 offse
 }
 
 template<Size16 blockSize>
-Buffer<blockSize>::Block::~Block()
+void Buffer<blockSize>::Block::destroy(Allocator *allocator)
 {
 	mBytes->mReferenceCount--;
 	if (mBytes->mReferenceCount == 0)
 		Dispatcher::current()->allocator()->deallocate(mBytes, sizeof(Bytes) + blockSize);
+
+	allocator->deallocate(this, sizeof(Block));
 }
 
 template<Size16 blockSize>
-char *Buffer<blockSize>::Block::start() const
+Size16 Buffer<blockSize>::Block::start() const
+{
+	return mStart;
+}
+
+template<Size16 blockSize>
+Size16 Buffer<blockSize>::Block::end() const
+{
+	return mEnd;
+}
+
+template<Size16 blockSize>
+char *Buffer<blockSize>::Block::startPointer() const
 {
 	return reinterpret_cast<char *>(mBytes) + sizeof(Bytes) + mStart;
 }
 
 template<Size16 blockSize>
-char *Buffer<blockSize>::Block::end() const
+char *Buffer<blockSize>::Block::endPointer() const
 {
 	return reinterpret_cast<char *>(mBytes) + sizeof(Bytes) + mEnd;
 }
 
 template<Size16 blockSize>
-char *Buffer<blockSize>::Block::position(Size16 offset) const
+char *Buffer<blockSize>::Block::pointer(Size16 offset) const
 {
 	return reinterpret_cast<char *>(mBytes) + sizeof(Bytes) + mStart + offset;
 }
@@ -215,20 +253,20 @@ Size16 Buffer<blockSize>::Block::room() const
 template<Size16 blockSize>
 int Buffer<blockSize>::Block::compare(Size16 myOffset, const Block *block, Size16 offset, Size16 length) const
 {
-	return memcmp(position(myOffset), block->position(offset), length);
+	return memcmp(pointer(myOffset), block->pointer(offset), length);
 }
 
 template<Size16 blockSize>
 void Buffer<blockSize>::Block::copyFrom(const char *cString, Size16 length)
 {
-	memcpy(end(), cString, length);
+	memcpy(endPointer(), cString, length);
 	mBytes->mEnd = mEnd += length;
 }
 
 template<Size16 blockSize>
 void Buffer<blockSize>::Block::copyTo(char *cString, Size16 offset, Size16 length)
 {
-	memcpy(cString, start() + offset, length);
+	memcpy(cString, startPointer() + offset, length);
 }
 
 template<Size16 blockSize>
@@ -246,15 +284,25 @@ void Buffer<blockSize>::Block::popped(Size16 length)
 template<Size16 blockSize>
 void Buffer<blockSize>::Block::split(Allocator *allocator, Size16 offset)
 {
-	Block *block = new(allocator) Block(allocator, this, offset, size() - offset);
+	void *memory = Block::allocateMemory(allocator);
+	Block *block = new(memory) Block(allocator, this, offset, size() - offset);
 	block->addAfter(this);
 	mEnd = mStart + offset;
 }
 
 template<Size16 blockSize>
+void *Buffer<blockSize>::Block::allocateMemory(Allocator *allocator)
+{
+	return allocator->allocate(sizeof(Block));
+}
+
+
+template<Size16 blockSize>
 typename Buffer<blockSize>::Block *Buffer<blockSize>::allocateBlock(Block *previousBlock)
 {
-	Block *block = new(allocator()) Block(allocator());
+	Allocator *allocator = actor()->dispatcher()->allocator();
+	void *memory = Block::allocateMemory(allocator);
+	Block *block = new(memory) Block(allocator);
 	if (previousBlock)
 		block->addAfter(previousBlock);
 	else
@@ -376,7 +424,8 @@ void Buffer<blockSize>::append(Buffer *buffer)
 	Allocator *allocator = actor()->dispatcher()->allocator();
 	Block *previousBlock = mBlocks.last();
 	for (ListIterator<Block> iterator(&buffer->mBlocks); iterator.hasCurrent(); iterator.subsequent()) {
-		Block *block = new(allocator) Block(iterator.current());
+		void *memory = Block::allocateMemory(allocator);
+		Block *block = new(memory) Block(iterator.current());
 		block->addAfter(previousBlock);
 		mSize += block->size();
 		previousBlock = block;
@@ -436,7 +485,7 @@ template<Size16 blockSize>
 char *Buffer<blockSize>::pushPointer() const
 {
 	Block *block = mBlocks.last();
-	return block->end();
+	return block->endPointer();
 }
 
 /**
@@ -541,13 +590,20 @@ void Buffer<blockSize>::popped(Size16 length)
 			break;
 		} else {
 			block->remove();
-			delete block;
+			block->destroy(allocator());
 			length -= size;
 		}
 	}
 	mSize -= length;
 	/* TODO: Here */
 }
+
+template<Size16 blockSize>
+void Buffer<blockSize>::poppedAll()
+{
+	popped(this->mSize);
+}
+
 
 /**
  * Function that returns the total size of buffer.
@@ -556,7 +612,7 @@ void Buffer<blockSize>::popped(Size16 length)
  */
  
 template<Size16 blockSize>
-Size Buffer<blockSize>::size() const
+Size Buffer<blockSize>::length() const
 {
 	return mSize;
 }
@@ -570,7 +626,7 @@ Size Buffer<blockSize>::size() const
 template<Size16 blockSize>
 char Buffer<blockSize>::here() const
 {
-	return *mHere->position(mPosition);
+	return *mHere->pointer(mPosition);
 }
 
 /**
@@ -600,6 +656,12 @@ Size Buffer<blockSize>::left() const
 	return mSize - mOffset;
 }
 
+template<Size16 blockSize>
+Size Buffer<blockSize>::offset() const
+{
+	return mOffset;
+}
+
 /**
  * This function deallocates every block that is behind the current position's
  * block. After this the function calls for function popped and set current position
@@ -612,7 +674,7 @@ void Buffer<blockSize>::popHere()
 	for (ListItem *item = mBlocks.previous(mHere); item; item = mBlocks.previous(item)) {
 		Block *block = static_cast<Block *>(item);
 		mSize -= block->mEnd - block->mStart;
-		delete block;
+		block->destroy(allocator());
 	}
 	popped(mPosition - mHere->mStart);
 
@@ -628,7 +690,7 @@ char Buffer<blockSize>::charAt(Size offset) const
 		Block *block = iterator.current();
 		Size16 size = block->size();
 		if (offset < size)
-			return *block->position(offset);
+			return *block->pointer(offset);
 		offset -= size;
 	}
 
@@ -729,19 +791,25 @@ Buffer<blockSize> *Buffer<blockSize>::region(Size offset, Size length)
 {
 	Allocator *allocator = actor()->dispatcher()->allocator();
 	Buffer *buffer = new Buffer(actor());
-	for (Block *block = blockByOffset(&offset); block; block = mBlocks.next(block)) {
-		Size16 size = block->size();
+	for (Block *oldBlock = blockByOffset(&offset); oldBlock; oldBlock = mBlocks.next(oldBlock)) {
+		Size16 size = oldBlock->size();
 		if (offset + length < size) {
-			buffer->mBlocks.addTail(new(allocator) Block(allocator, block, offset, length));
+			void *memory = Block::allocateMemory(allocator);
+			Block *newBlock = new(memory) Block(allocator, oldBlock, offset, length);
+			buffer->mBlocks.addTail(newBlock);
 			buffer->mSize += length;
 			break;
 		} else {
-			buffer->mBlocks.addTail(new(allocator) Block(allocator, block, offset, size));
+			void *memory = Block::allocateMemory(allocator);
+			Block *newBlock = new(memory) Block(allocator, oldBlock, offset, size);
+			buffer->mBlocks.addTail(newBlock);
 			buffer->mSize += size;
 		}
 		offset = 0;
 		length -= size;
 	}
+
+	return buffer;
 }
 
 template<Size16 blockSize>
@@ -750,7 +818,8 @@ void Buffer<blockSize>::insert(Size offset, Buffer *buffer)
 	Allocator *allocator = actor()->dispatcher()->allocator();
 	Block *previousBlock = splitBlock(offset);
 	for (ListIterator<Block> iterator(&buffer->mBlocks); iterator.hasCurrent(); iterator.subsequent()) {
-		Block *block = new(allocator) Block(iterator.current());
+		void *memory = Block::allocateMemory(allocator);
+		Block *block = new(memory) Block(iterator.current());
 		if (previousBlock)
 			block->addAfter(previousBlock);
 		else
@@ -771,7 +840,8 @@ void Buffer<blockSize>::insert(Size insertOffset, Buffer *buffer, Size offset, S
 			size = length;
 		else
 			size = block->size();
-		Block *newBlock = new(allocator) Block(allocator, block, offset, size);
+		void *memory = Block::allocateMemory(allocator);
+		Block *newBlock = new(memory) Block(allocator, block, offset, size);
 		if (previousBlock)
 			block->addAfter(previousBlock);
 		else
@@ -799,6 +869,69 @@ template<Size16 blockSize>
 Size16 Buffer<blockSize>::maximumPushLength() const
 {
 	return blockSize;
+}
+
+template<Size16 blockSize>
+Buffer<blockSize>::Iterator::Iterator(const Buffer<blockSize> *buffer)
+	: mBuffer(buffer), mBlock(mBuffer->mBlocks.first()), mStart(0), mOffset(0)
+{
+	if (mBlock)
+		mStart = mBlock->start();
+}
+
+template<Size16 blockSize>
+Buffer<blockSize>::Iterator::~Iterator()
+{ }
+
+template<Size16 blockSize>
+void Buffer<blockSize>::Iterator::advance(Size length)
+{
+	if (!mBlock)
+		return;
+
+	if (length >= left()) {
+
+	}
+
+	while (mBlock && mStart + length > mBlock->end()) {
+		mBlock = mBuffer->mBlocks.next(mBlock);
+		length -= mBlock->end() - mStart;
+	}
+
+	mStart += length;
+}
+
+template<Size16 blockSize>
+Size Buffer<blockSize>::Iterator::charBlockLength() const
+{
+	return mBlock->end() - mStart;
+}
+
+template<Size16 blockSize>
+const char *Buffer<blockSize>::Iterator::charBlock() const
+{
+	return mBlock->pointer(mStart);
+}
+
+template<Size16 blockSize>
+const Buffer<blockSize> *Buffer<blockSize>::Iterator::buffer() const
+{
+	return mBuffer;
+}
+
+template<Size16 blockSize>
+char Buffer<blockSize>::Iterator::current() const
+{
+	if (!mBlock || mStart >= mBlock->end())
+		return 0;
+
+	return *mBlock->pointer(mStart);
+}
+
+template<Size16 blockSize>
+Size Buffer<blockSize>::Iterator::left() const
+{
+	return mBuffer->mSize - mOffset;
 }
 
 }
