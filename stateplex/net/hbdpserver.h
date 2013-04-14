@@ -20,6 +20,7 @@
 #ifndef INCLUDED_STATEPLEX_HBDP_SERVER_H
 #define INCLUDED_STATEPLEX_HBDP_SERVER_H
 
+#include "../core/object.h"
 #include "../core/factorymethod.h"
 #include "../core/list.h"
 #include "hbdpconnection.h"
@@ -32,7 +33,7 @@ class HttpServer;
 /**
  * The main class to implement a HTTP Bidirectional Protocol server.
  */
-class HbdpServer {
+class HbdpServer : public Object {
 	HttpServer *mHttpServer;
 	FactoryMethod<HbdpConnection, HbdpConnection::Embryo> mConnectionFactoryMethod;
 	List<HbdpConnection> mConnections;
@@ -54,7 +55,7 @@ public:
 namespace Stateplex {
 
 inline HbdpServer::HbdpServer(HttpServer* httpServer, const char *path)
-	: mHttpServer(httpServer)
+	: Object(httpServer->actor()), mHttpServer(httpServer)
 {
 	mHttpServer->setRequestFactoryMethod(path, this, &HbdpServer::instantiateHttpRequest);
 }

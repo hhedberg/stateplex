@@ -23,6 +23,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
+#include "../core/object.h"
 #include "../core/buffer.h"
 
 namespace Stateplex {
@@ -37,7 +38,7 @@ class HttpConnection;
  * One HttpConnection may carry through multiple requests.
  */
 
-class HttpRequest {
+class HttpRequest : public Object {
 	friend class HttpConnection;
 
 	HttpConnection *mHttpConnection;
@@ -98,6 +99,7 @@ public:
 /*** Inline implementations ***/
 
 #include "tcpconnection.h"
+#include "httpconnection.h"
 
 namespace Stateplex {
 
@@ -106,7 +108,7 @@ namespace Stateplex {
  */
 
 inline HttpRequest::HttpRequest(HttpConnection *httpConnection)
-	: mHttpConnection(httpConnection)
+	: Object(httpConnection->actor()), mHttpConnection(httpConnection)
 { }
 
 /**

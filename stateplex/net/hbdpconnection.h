@@ -30,7 +30,7 @@ class HbdpServer;
 /**
  * A connection through HTTP Bidirectional Protocol.
  */
-class HbdpConnection : public ListItem {
+class HbdpConnection : public Object, public ListItem {
 	HbdpServer *mHbdpServer;
 
 protected:
@@ -43,7 +43,7 @@ public:
 		HbdpServer *mHbdpServer;
 	};
 
-	HbdpConnection(const Embryo *embryo);
+	HbdpConnection(Actor *actor, const Embryo *embryo);
 	virtual ~HbdpConnection();
 
 	void close();
@@ -60,8 +60,8 @@ public:
 
 namespace Stateplex {
 
-HbdpConnection::HbdpConnection(const Embryo *embryo)
-	: mHbdpServer(embryo->mHbdpServer)
+HbdpConnection::HbdpConnection(Actor *actor, const Embryo *embryo)
+	: Object(actor), mHbdpServer(embryo->mHbdpServer)
 { }
 
 HbdpConnection::~HbdpConnection()
