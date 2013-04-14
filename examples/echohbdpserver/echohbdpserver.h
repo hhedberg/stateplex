@@ -38,7 +38,7 @@ protected:
 	virtual void receive();
 
 public:
-	EchoHbdpConnection(const Stateplex::HbdpConnection::Embryo *embryo);
+	EchoHbdpConnection(Stateplex::Actor *actor, const Stateplex::HbdpConnection::Embryo *embryo);
 };
 
 #endif
