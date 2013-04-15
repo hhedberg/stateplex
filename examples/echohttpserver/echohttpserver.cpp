@@ -72,13 +72,15 @@ bool EchoHttpRequest::receiveHeader(Stateplex::Buffer<> *key, Stateplex::Buffer<
 	sendData("\n", 1);
 }
 
-Stateplex::Size EchoHttpRequest::receiveData(Stateplex::Buffer<> *data)
+bool EchoHttpRequest::receiveData(Stateplex::Buffer<> *data)
 {
 	if (!mDataReceived) {
 		sendData("\n", 1);
 		mDataReceived = true;
 	}
 	sendData(data);
+
+	return true;
 }
 
 void EchoHttpRequest::receiveEnd()

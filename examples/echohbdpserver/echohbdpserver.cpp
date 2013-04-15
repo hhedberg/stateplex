@@ -57,9 +57,9 @@ Stateplex::HbdpConnection *EchoActor::instantiateHbdpConnection(const Stateplex:
 }
 
 
-void EchoHbdpConnection::receiveData()
+void EchoHbdpConnection::receiveData(Stateplex::Buffer<> *data)
 {
-
+	write(data);
 }
 
 void EchoHbdpConnection::receiveClose()

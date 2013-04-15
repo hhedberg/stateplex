@@ -37,7 +37,7 @@ class HbdpConnection : public Object, public ListItem {
 
 	protected:
 		virtual bool receiveHeader(Buffer<> *name, Buffer<> *value);
-		virtual Size receiveData(Buffer<> *data);
+		virtual bool receiveData(Buffer<> *data);
 		virtual void receiveEnd();
 		virtual void receiveAbort();
 
@@ -48,14 +48,13 @@ class HbdpConnection : public Object, public ListItem {
 	HbdpServer *mHbdpServer;
 	HbdpRequest *mHbdpRequest;
 	Size32 mSerialNumber;
-	WriteBuffer<> mIn;
 	WriteBuffer<> mOut;
 
 	void handleRequest(HbdpRequest *hbdpRequest, Size32 serialNumber);
 	void endRequest();
 
 protected:
-	virtual void receiveData() = 0;
+	virtual void receiveData(Buffer<> *data) = 0;
 	virtual void receiveClose() = 0;
 
 public:
@@ -71,7 +70,6 @@ public:
 
 	void close();
 	HbdpServer *hbdpServer() const;
-	Size read(WriteBuffer<> *buffer);
 	void write(Buffer<> *data);
 	void write(const String *data);
 	void write(const char *data, Size dataLength);
@@ -84,7 +82,7 @@ public:
 namespace Stateplex {
 
 inline HbdpConnection::HbdpConnection(Actor *actor, const Embryo *embryo)
-	: Object(actor), mHbdpServer(embryo->mHbdpServer), mHbdpRequest(0), mSerialNumber(0), mIn(actor), mOut(actor)
+	: Object(actor), mHbdpServer(embryo->mHbdpServer), mHbdpRequest(0), mSerialNumber(0), mOut(actor)
 { }
 
 inline HbdpConnection::~HbdpConnection()

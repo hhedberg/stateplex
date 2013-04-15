@@ -55,7 +55,7 @@ protected:
 	/**
 	 * Receives an HTTP message body content belonging to the request.
 	 */
-	virtual Size receiveData(Buffer<> *data) = 0;
+	virtual bool receiveData(Buffer<> *data) = 0;
 
 	/**
 	 * Indicates that the full HTTP request is now received.

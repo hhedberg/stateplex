@@ -26,11 +26,10 @@ bool HbdpConnection::HbdpRequest::receiveHeader(Buffer<> *name, Buffer<> *value)
 	return true;
 }
 
-Size HbdpConnection::HbdpRequest::receiveData(Buffer<> *data)
+bool HbdpConnection::HbdpRequest::receiveData(Buffer<> *data)
 {
-	mHbdpConnection->mIn.append(data);
-	mHbdpConnection->receiveData();
-	return data->length();
+	mHbdpConnection->receiveData(data);
+	return true;
 }
 
 void HbdpConnection::HbdpRequest::receiveEnd()
@@ -79,14 +78,6 @@ void HbdpConnection::close()
 HbdpServer *HbdpConnection::hbdpServer() const
 {
 	return mHbdpServer;
-}
-
-Size HbdpConnection::read(WriteBuffer<> *buffer)
-{
-	Size length = mIn.length();
-	buffer->append(&mIn);
-	mIn.poppedAll();
-	return length;
 }
 
 void HbdpConnection::write(Buffer<> *data)

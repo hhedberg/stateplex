@@ -35,7 +35,7 @@ public:
 class EchoHbdpConnection : public Stateplex::HbdpConnection {
 
 protected:
-	virtual void receiveData();
+	virtual void receiveData(Stateplex::Buffer<> *data);
 	virtual void receiveClose();
 
 public:
