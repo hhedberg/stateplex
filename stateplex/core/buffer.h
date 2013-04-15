@@ -425,7 +425,7 @@ void Buffer<blockSize>::append(Buffer *buffer)
 	Block *previousBlock = mBlocks.last();
 	for (ListIterator<Block> iterator(&buffer->mBlocks); iterator.hasCurrent(); iterator.subsequent()) {
 		void *memory = Block::allocateMemory(allocator);
-		Block *block = new(memory) Block(iterator.current());
+		Block *block = new(memory) Block(allocator, iterator.current());
 		block->addAfter(previousBlock);
 		mSize += block->size();
 		previousBlock = block;
