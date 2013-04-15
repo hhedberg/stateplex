@@ -79,7 +79,7 @@ int HttpConnection::process()
 			mState = STATE_VERSION;
 	} break;
 	case STATE_VERSION: {
-		Buffer<> *version;
+		WriteBuffer<> *version;
 		found = locateRegion('\r', ' ', &version);
 		if (found == 1) {
 			HttpRequest::Embryo embryo(this, mMethod, mUri);
@@ -113,11 +113,11 @@ int HttpConnection::process()
 	return found;
 }
 
-int HttpConnection::locateRegion(const char success, const char fail, Buffer<> **regionReturn)
+int HttpConnection::locateRegion(const char success, const char fail, WriteBuffer<> **regionReturn)
 {
 	int found = locateChar(success, fail);
 	if (found == 1) {
-		Size length = mInputBuffer.offset();
+		Size length = mInputBufferIterator.offset();
 		*regionReturn = mInputBuffer.region(0, length);
 		mInputBuffer.popped(length + 1);
 	}
@@ -126,13 +126,13 @@ int HttpConnection::locateRegion(const char success, const char fail, Buffer<> *
 
 int HttpConnection::locateChar(const char success, const char fail)
 {
-	while (mInputBuffer.left() > 0) {
-		const char c = mInputBuffer.here();
+	while (mInputBufferIterator.left() > 0) {
+		const char c = mInputBufferIterator.current();
 		if (c == success)
 			return 1;
 		if (c == fail)
 			return -1;
-		mInputBuffer.next();
+		mInputBufferIterator.advance();
 	}
 
 	return 0;
@@ -140,7 +140,7 @@ int HttpConnection::locateChar(const char success, const char fail)
 
 bool HttpConnection::eatChars(const char eaten)
 {
-	for (bool found = false; mInputBuffer.left() > 0 && mInputBuffer.here() == eaten; mInputBuffer.next())
+	for (bool found = false; mInputBufferIterator.left() > 0 && mInputBufferIterator.current() == eaten; mInputBufferIterator.advance())
 		found = true;
 }
 

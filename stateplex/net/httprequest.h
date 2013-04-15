@@ -24,7 +24,7 @@
 #include <sys/socket.h>
 
 #include "../core/object.h"
-#include "../core/buffer.h"
+#include "../core/writebuffer.h"
 
 namespace Stateplex {
 
@@ -42,7 +42,7 @@ class HttpRequest : public Object {
 	friend class HttpConnection;
 
 	HttpConnection *mHttpConnection;
-	Buffer<> mData;
+	WriteBuffer<> mData;
 
 	int mStatusSent : 1;
 

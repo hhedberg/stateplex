@@ -21,7 +21,7 @@
 #define INCLUDED_STATEPLEX_HBDP_CONNECTION_H
 
 #include "../core/list.h"
-#include "../core/buffer.h"
+#include "../core/writebuffer.h"
 #include "httprequest.h"
 
 namespace Stateplex {
@@ -48,8 +48,8 @@ class HbdpConnection : public Object, public ListItem {
 	HbdpServer *mHbdpServer;
 	HbdpRequest *mHbdpRequest;
 	Size32 mSerialNumber;
-	Buffer<> mIn;
-	Buffer<> mOut;
+	WriteBuffer<> mIn;
+	WriteBuffer<> mOut;
 
 	void handleRequest(HbdpRequest *hbdpRequest, Size32 serialNumber);
 
@@ -70,7 +70,7 @@ public:
 
 	void close();
 	HbdpServer *hbdpServer() const;
-	Size read(Buffer<> *buffer);
+	Size read(WriteBuffer<> *buffer);
 	void write(Buffer<> *data);
 	void write(const String *data);
 	void write(const char *data, Size dataLength);
