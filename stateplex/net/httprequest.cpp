@@ -101,5 +101,33 @@ void HttpRequest::sendEnd()
 	mHttpConnection->write(&mData);
 }
 
+bool SimpleHttpRequest::receiveHeader(Buffer<> *name, Buffer<> *value)
+{
+	return true;
+}
+
+bool SimpleHttpRequest::receiveData(Buffer<> *data)
+{
+	return true;
+}
+
+void SimpleHttpRequest::receiveEnd()
+{
+	sendStatus(mStatus->chars(), mStatus->length());
+	sendEnd();
+	delete this;
+}
+
+void SimpleHttpRequest::receiveAbort()
+{
+	delete this;
+}
+
+SimpleHttpRequest::SimpleHttpRequest(HttpConnection *connection, const char *status)
+	: HttpRequest(connection)
+{
+	mStatus = String::copy(allocator(), status);
+}
+
 }
 

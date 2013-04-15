@@ -97,6 +97,20 @@ public:
 	void sendEnd();
 };
 
+class SimpleHttpRequest : public HttpRequest {
+	String *mStatus;
+
+protected:
+	virtual bool receiveHeader(Buffer<> *name, Buffer<> *value);
+	virtual bool receiveData(Buffer<> *data);
+	virtual void receiveEnd();
+	virtual void receiveAbort();
+
+public:
+	SimpleHttpRequest(HttpConnection *connection, const char *status);
+};
+
+
 }
 
 /*** Inline implementations ***/
