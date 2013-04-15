@@ -35,7 +35,8 @@ public:
 class EchoHbdpConnection : public Stateplex::HbdpConnection {
 
 protected:
-	virtual void receive();
+	virtual void receiveData();
+	virtual void receiveClose();
 
 public:
 	EchoHbdpConnection(Stateplex::Actor *actor, const Stateplex::HbdpConnection::Embryo *embryo);

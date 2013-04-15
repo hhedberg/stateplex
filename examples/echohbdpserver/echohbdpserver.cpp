@@ -57,10 +57,16 @@ Stateplex::HbdpConnection *EchoActor::instantiateHbdpConnection(const Stateplex:
 }
 
 
-void EchoHbdpConnection::receive()
+void EchoHbdpConnection::receiveData()
 {
 
 }
+
+void EchoHbdpConnection::receiveClose()
+{
+
+}
+
 
 EchoHbdpConnection::EchoHbdpConnection(Stateplex::Actor *actor, const Stateplex::HbdpConnection::Embryo *embryo)
 	: Stateplex::HbdpConnection(actor, embryo)

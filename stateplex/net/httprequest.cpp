@@ -18,6 +18,7 @@
  */
 
 #include <unistd.h>
+#include <stdio.h>
 
 #include "httprequest.h"
 
@@ -29,16 +30,24 @@ namespace Stateplex {
  */
 void HttpRequest::sendStatus(const char *status, size_t statusLength)
 {
+	if (mStatusSent)
+		return;
 
+	mHttpConnection->write(status, statusLength);
+	mStatusSent = true;
 }
 
 /**
  * Sends the HTTP status line.
  * The status line can be sent only once. Any subsequent calls of sendStatus() functions will be ignored.
  */
-void HttpRequest::sendStatus(const Buffer<> *status)
+void HttpRequest::sendStatus(Buffer<> *status)
 {
+	if (mStatusSent)
+		return;
 
+	mHttpConnection->write(status);
+	mStatusSent = true;
 }
 
 /**
@@ -46,15 +55,21 @@ void HttpRequest::sendStatus(const Buffer<> *status)
  */
 void HttpRequest::sendHeader(const char *name, Size nameLength, const char *value, Size valueLength)
 {
-
+	mHttpConnection->write(name, nameLength);
+	mHttpConnection->write(":", 1);
+	mHttpConnection->write(value, valueLength);
+	mHttpConnection->write("\r\n", 2);
 }
 
 /**
  * Sends the HTTP header line.
  */
-void HttpRequest::sendHeader(const Buffer<> *name, const Buffer<> *value)
+void HttpRequest::sendHeader(Buffer<> *name, Buffer<> *value)
 {
-
+	mHttpConnection->write(name);
+	mHttpConnection->write(":", 1);
+	mHttpConnection->write(value);
+	mHttpConnection->write("\r\n", 2);
 }
 
 /**
@@ -62,15 +77,15 @@ void HttpRequest::sendHeader(const Buffer<> *name, const Buffer<> *value)
  */
 void HttpRequest::sendData(const char *data, Size dataLength)
 {
-
+	mData.append(data, dataLength);
 }
 
 /**
  * Sends part of the HTTP message body.
  */
-void HttpRequest::sendData(const Buffer<> *data)
+void HttpRequest::sendData(Buffer<> *data)
 {
-
+	mData.append(data);
 }
 
 /**
@@ -78,7 +93,12 @@ void HttpRequest::sendData(const Buffer<> *data)
  */
 void HttpRequest::sendEnd()
 {
+	char buffer[128];
 
+	Size length = snprintf(buffer, sizeof(buffer), "%lu", (long unsigned)mData.length());
+	sendHeader("Content-Length", 14, buffer, length);
+	mHttpConnection->write("\r\n", 2);
+	mHttpConnection->write(&mData);
 }
 
 }

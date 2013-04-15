@@ -24,6 +24,8 @@ namespace Stateplex {
 
 HttpRequest *HbdpServer::instantiateHttpRequest(const HttpRequest::Embryo *embryo)
 {
+	// Jos path == /, arvo session id, luo connection ja palaute sen request
+	// Jos path == /session_id/serial_number, etsi connection ja palaute sen request
 	return 0;
 }
 
