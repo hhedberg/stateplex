@@ -44,6 +44,7 @@ public:
 	static String *uninitialised(Allocator *allocator, Size length);
 	static String *copy(Allocator *allocator, const char *cString);
 	static String *copy(Allocator *allocator, const char *cString, Size length);
+	static String *copy(Allocator *allocator, const String *string);
 };
 
 }
@@ -147,6 +148,12 @@ inline String *String::copy(Allocator *allocator, const char *cString, Size leng
 
 	return string;
 }
+
+inline String *String::copy(Allocator *allocator, const String *string)
+{
+	return copy(allocator, string->chars(), string->length());
+}
+
 
 inline void String::destroy(Allocator *allocator)
 {
