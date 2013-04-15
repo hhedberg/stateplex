@@ -40,6 +40,11 @@ namespace Stateplex {
 
 template<Size16 mBlockSize = 1024>
 class WriteBuffer : public ReadBuffer<mBlockSize> {
+	typename Buffer<mBlockSize>::Block *allocateBlock(typename Buffer<mBlockSize>::Block *previousBlock);
+	typename Buffer<mBlockSize>::Block *ensurePush(typename Buffer<mBlockSize>::Block *block, Size length);
+	void pushToBlock(const char *cString, Size length, typename Buffer<mBlockSize>::Block *block);
+	typename Buffer<mBlockSize>::Block *splitBlock(Size offset);
+
 public:
 	WriteBuffer(Actor *actor);
 
@@ -67,6 +72,63 @@ public:
 
 namespace Stateplex {
 
+
+template<Size16 mBlockSize>
+typename Buffer<mBlockSize>::Block *WriteBuffer<mBlockSize>::allocateBlock(typename Buffer<mBlockSize>::Block *previousBlock)
+{
+	void *memory = Buffer<mBlockSize>::Block::allocateMemory(this->allocator());
+	typename Buffer<mBlockSize>::Block *block = new(memory) typename Buffer<mBlockSize>::Block(this->allocator());
+	if (previousBlock)
+		block->addAfter(previousBlock);
+	else
+		this->mBlocks.addHead(block);
+
+	return block;
+}
+
+template<Size16 mBlockSize>
+typename Buffer<mBlockSize>::Block *WriteBuffer<mBlockSize>::ensurePush(typename Buffer<mBlockSize>::Block *block, Size length)
+{
+	if (!block || length < block->room())
+		this->allocateBlock(block);
+}
+
+template<Size16 mBlockSize>
+void WriteBuffer<mBlockSize>::pushToBlock(const char *cString, Size length, typename Buffer<mBlockSize>::Block *block)
+{
+	block = ensurePush(block, 1);
+	Size16 room = block->room();
+	if (length < room) {
+		block->copyFrom(cString, length);
+		this->mSize += length;
+	} else {
+		block->copyFrom(cString, room);
+		this->mSize += room;
+
+		pushToBlock(cString + room, length - room, block);
+	}
+}
+
+
+template<Size16 mBlockSize>
+typename Buffer<mBlockSize>::Block *WriteBuffer<mBlockSize>::splitBlock(Size offset)
+{
+	if (offset == 0)
+		return 0;
+
+	for (typename Buffer<mBlockSize>::Block *block = this->mBlocks.first(); block; block = this->mBlocks.next(block)) {
+		Size16 size = block->size();
+		if (offset <= size) {
+			if (offset > 0 && offset < size)
+				block->split(this->allocator(), offset);
+			return block;
+		}
+		offset -= size;
+	}
+
+	return 0;
+}
+
 template<Size16 mBlockSize>
 WriteBuffer<mBlockSize>::WriteBuffer(Actor *actor)
 	: ReadBuffer<mBlockSize>(actor)
@@ -93,11 +155,10 @@ void WriteBuffer<mBlockSize>::append(Buffer<> *buffer)
 }
 
 /**
- * Copies the C string into this buffer.
+ * Copies the C string into the end of the buffer.
  * 
  * @param string	string to be added
  */
-
 template<Size16 mBlockSize>
 void WriteBuffer<mBlockSize>::append(const char *cString)
 {
@@ -105,20 +166,17 @@ void WriteBuffer<mBlockSize>::append(const char *cString)
 }
 
 /**
- * Function that takes in chars and a value how many chars are to be
- * added to block. After this the function calls another function
- * to push the chars to a block.
- * 
- * @param *cString	chars to be added.
- * @param length	determines how many chars are to be added.
+ * Copies the given amount of bytes from the specified location into the end of the buffer.
  */
-
 template<Size16 mBlockSize>
 void WriteBuffer<mBlockSize>::append(const char *cString, Size length)
 {
 	this->pushToBlock(cString, length, this->mBlocks.last());
 }
 
+/**
+ * Copies the contents of the given String into the end of the buffer.
+ */
 template<Size16 mBlockSize>
 void WriteBuffer<mBlockSize>::append(const String *string)
 {

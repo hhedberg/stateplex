@@ -93,13 +93,7 @@ class Buffer : public Object {
 
 	Buffer(Actor *actor);
 
-	Block *allocateBlock(Block *previousBlock);
-	Block *refBlock(Block *block);
-	void unrefBlock(Block *block);
-	Block *ensurePush(Block *block, Size length);
-	void pushToBlock(const char *cString, Size length, Block *block);
 	Block *blockByOffset(Size *offset);
-	Block *splitBlock(Size offset);
 
 public:
 	class Iterator {
@@ -273,50 +267,6 @@ void *Buffer<mBlockSize>::Block::allocateMemory(Allocator *allocator)
 	return allocator->allocate(sizeof(Block));
 }
 
-
-template<Size16 mBlockSize>
-typename Buffer<mBlockSize>::Block *Buffer<mBlockSize>::allocateBlock(Block *previousBlock)
-{
-	Allocator *allocator = actor()->dispatcher()->allocator();
-	void *memory = Block::allocateMemory(allocator);
-	Block *block = new(memory) Block(allocator);
-	if (previousBlock)
-		block->addAfter(previousBlock);
-	else
-		mBlocks.addHead(block);
-
-	if (!mHere) {
-		mHere = block;
-		mPosition = 0;
-		mOffset = 0;
-	}
-
-	return block;
-}
-
-template<Size16 mBlockSize>
-typename Buffer<mBlockSize>::Block *Buffer<mBlockSize>::ensurePush(Block *block, Size length)
-{
-	if (!block || length < block->room())
-		allocateBlock(block);
-}
-
-template<Size16 mBlockSize>
-void Buffer<mBlockSize>::pushToBlock(const char *cString, Size length, Block *block)
-{
-	block = ensurePush(block, 1);
-	Size16 room = block->room();
-	if (length < room) {
-		block->copyFrom(cString, length);
-		mSize += length;
-	} else {
-		block->copyFrom(cString, room);
-		mSize += room;
-
-		pushToBlock(cString + room, length - room, block);
-	}
-}
-
 template<Size16 mBlockSize>
 typename Buffer<mBlockSize>::Block *Buffer<mBlockSize>::blockByOffset(Size *offset)
 {
@@ -325,26 +275,6 @@ typename Buffer<mBlockSize>::Block *Buffer<mBlockSize>::blockByOffset(Size *offs
 		if (*offset < size)
 			return block;
 		*offset -= size;
-	}
-
-	return 0;
-}
-
-template<Size16 mBlockSize>
-typename Buffer<mBlockSize>::Block *Buffer<mBlockSize>::splitBlock(Size offset)
-{
-	if (offset == 0)
-		return 0;
-
-	Allocator *allocator = actor()->dispatcher()->allocator();
-	for (Block *block = mBlocks.first(); block; block = mBlocks.next(block)) {
-		Size16 size = block->size();
-		if (offset <= size) {
-			if (offset > 0 && offset < size)
-				block->split(allocator, offset);
-			return block;
-		}
-		offset -= size;
 	}
 
 	return 0;
