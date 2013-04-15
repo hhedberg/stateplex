@@ -52,6 +52,7 @@ class HbdpConnection : public Object, public ListItem {
 	WriteBuffer<> mOut;
 
 	void handleRequest(HbdpRequest *hbdpRequest, Size32 serialNumber);
+	void endRequest();
 
 protected:
 	virtual void receiveData() = 0;
