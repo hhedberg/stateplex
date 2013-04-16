@@ -37,13 +37,15 @@ class Array {
 	static Size sizeOfLength(Size length);
 
 public:
-	Type *get(Size index) const;
+	Type get(Size index) const;
 	Size length() const;
 
-	void set(Size index, Type *value);
+	void set(Size index, Type value);
 	void destroy(Allocator *allocator);
 
-	static Array<Type> *create(Allocator *allocator, Size length);
+	static Array<Type> *uninitialised(Allocator *allocator, Size length);
+	static Array<Type> *copy(Allocator *allocator, Type *const cArray, Size length);
+	static Array<Type> *copy(Allocator *allocator, Array<Type> *array);
 };
 
 }
@@ -105,23 +107,24 @@ inline Size Array<Type>::sizeOfLength(Size length)
 }
 
 template<typename Type>
-Type* Array<Type>::get(Size index) const
+Type Array<Type>::get(Size index) const
 {
 	Size size;
 	if (index >= getLength(&size))
 		abort();
 
-	return *(reinterpret_cast<Type * const * const>(reinterpret_cast<const char *>(this) + size) + index);
+	Array<Type> *self = const_cast<Array<Type> *>(this);
+	return *(reinterpret_cast<Type *>(reinterpret_cast<char *>(self) + size) + index);
 }
 
 template<typename Type>
-void Array<Type>::set(Size index, Type *value)
+void Array<Type>::set(Size index, Type value)
 {
 	Size size;
 	if (index >= getLength(&size))
 		abort();
 
-	*(reinterpret_cast<Type **>(reinterpret_cast<char *>(this) + size) + index) = value;
+	*(reinterpret_cast<Type *>(reinterpret_cast<char *>(this) + size) + index) = value;
 }
 
 template<typename Type>
@@ -132,7 +135,7 @@ inline Size Array<Type>::length() const
 }
 
 template<typename Type>
-inline Array<Type> *Array<Type>::create(Allocator *allocator, Size length)
+inline Array<Type> *Array<Type>::uninitialised(Allocator *allocator, Size length)
 {
 	Size size = sizeOfLength(length);
 	char *memory = reinterpret_cast<char *>(allocator->allocate(size + length * sizeof(Type *)));
@@ -140,6 +143,29 @@ inline Array<Type> *Array<Type>::create(Allocator *allocator, Size length)
 	array->setLength(length);
 
 	return array;
+}
+
+template<typename Type>
+inline Array<Type> *Array<Type>::copy(Allocator *allocator, Type *const cArray, Size length)
+{
+	Size size = sizeOfLength(length);
+	char *memory = reinterpret_cast<char *>(allocator->allocate(size + length * sizeof(Type *)));
+	memcpy(memory + size, cArray, length * sizeof(Type *));
+	Array *array = reinterpret_cast<Array *>(memory);
+	array->setLength(length);
+
+	return array;
+}
+
+template<typename Type>
+inline Array<Type> *Array<Type>::copy(Allocator *allocator, Array<Type> *array)
+{
+	Size size;
+	Size length = array->getLength(&size);
+	char *memory = reinterpret_cast<char *>(allocator->allocate(size + length * sizeof(Type *)));
+	memcpy(memory, array, size + length * sizeof(Type *));
+
+	return reinterpret_cast<Array *>(memory);
 }
 
 template<typename Type>
