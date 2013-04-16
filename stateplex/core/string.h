@@ -151,7 +151,12 @@ inline String *String::copy(Allocator *allocator, const char *cString, Size leng
 
 inline String *String::copy(Allocator *allocator, const String *string)
 {
-	return copy(allocator, string->chars(), string->length());
+	Size size;
+	Size length = string->getLength(&size);
+	char *memory = reinterpret_cast<char *>(allocator->allocate(size + length + 1));
+	memcpy(memory, string, size + length + 1);
+
+	return reinterpret_cast<String *>(memory);
 }
 
 
