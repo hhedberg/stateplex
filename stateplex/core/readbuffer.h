@@ -46,6 +46,8 @@ class ReadBuffer : public Buffer<mBlockSize> {
 
 	ReadBuffer(Actor *actor);
 
+	void deleteBlock(typename Buffer<mBlockSize>::Block *block);
+
 public:
 	char peek() const;
 	char pop();
@@ -66,6 +68,15 @@ template<Size16 mBlockSize>
 ReadBuffer<mBlockSize>::ReadBuffer(Actor *actor)
 	: Buffer<mBlockSize>(actor)
 { }
+
+template<Size16 mBlockSize>
+void ReadBuffer<mBlockSize>::deleteBlock(typename Buffer<mBlockSize>::Block *block)
+{
+	for (typename Buffer<mBlockSize>::Iterator *iterator = this->mIterators.first(); iterator; iterator = this->mIterators.next(iterator)) {
+		iterator->blockDeleted(block);
+	}
+	block->destroy(this->allocator());
+}
 
 /**
  * Returns the first byte in the buffer.
@@ -101,7 +112,7 @@ template<Size16 mBlockSize>
 const char *ReadBuffer<mBlockSize>::popPointer() const
 {
 	typename Buffer<mBlockSize>::Block *block = this->mBlocks.first();
-	return reinterpret_cast<char *>(block) + sizeof(Buffer<mBlockSize>::Block) + block->mStart;
+	return reinterpret_cast<char *>(block) + sizeof(typename Buffer<mBlockSize>::Block) + block->start();
 }
 
 /**
@@ -135,8 +146,7 @@ void ReadBuffer<mBlockSize>::popped(Size16 length)
 			block->popped(length);
 			break;
 		} else {
-			block->remove();
-			block->destroy(this->allocator());
+			deleteBlock(block);
 			length -= size;
 		}
 	}

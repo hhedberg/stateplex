@@ -48,6 +48,31 @@ template<Size16 blockSize> class WriteBuffer;
 
 template<Size16 mBlockSize = 1024>
 class Buffer : public Object {
+	class Block;
+public:
+	class Iterator : public ListItem {
+		Buffer<mBlockSize> *mBuffer;
+		Block *mBlock;
+		Size16 mPosition;
+		Size mOffset;
+
+		bool ensureBlock();
+
+	public:
+		Iterator(Buffer<mBlockSize> *buffer);
+		~Iterator();
+
+		void advance(Size length = 1);
+		Size offset();
+		Size charBlockLength() const;
+		const char *charBlock() const;
+		Buffer<mBlockSize> *buffer() const;
+		bool hasCurrent();
+		char current();
+		void blockDeleted(Block *block);
+	};
+
+private:
 	friend class ReadBuffer<mBlockSize>;
 	friend class WriteBuffer<mBlockSize>;
 
@@ -87,35 +112,14 @@ class Buffer : public Object {
 
 	List<Block> mBlocks;
 	Size mSize;
-
-	Block *mHere;
-	Size16 mPosition;
-	Size mOffset;
+	List<Iterator> mIterators;
 
 	Buffer(Actor *actor);
 
 	Block *blockByOffset(Size *offset);
+	Size blockOffset(Block *block);
 
 public:
-	class Iterator {
-		const Buffer<mBlockSize> *mBuffer;
-		Block *mBlock;
-		Size16 mStart;
-		Size mOffset;
-
-	public:
-		Iterator(const Buffer<mBlockSize> *buffer);
-		~Iterator();
-
-		void advance(Size length = 1);
-		Size charBlockLength() const;
-		const char *charBlock() const;
-		const Buffer<mBlockSize> *buffer() const;
-		char current() const;
-		Size offset() const;
-		Size left() const;
-	};
-
 	String *asString() const;
 	String *asString(Size length) const;
 	String *asString(Size offset, Size length) const;
@@ -175,6 +179,7 @@ Buffer<mBlockSize>::Block::Block(Allocator *allocator, Block *block, Size16 offs
 template<Size16 mBlockSize>
 void Buffer<mBlockSize>::Block::destroy(Allocator *allocator)
 {
+	remove();
 	mBytes->mReferenceCount--;
 	if (mBytes->mReferenceCount == 0)
 		Dispatcher::current()->allocator()->deallocate(mBytes, sizeof(Bytes) + mBlockSize);
@@ -284,8 +289,20 @@ typename Buffer<mBlockSize>::Block *Buffer<mBlockSize>::blockByOffset(Size *offs
 }
 
 template<Size16 mBlockSize>
+Size Buffer<mBlockSize>::blockOffset(Block *block)
+{
+	Size offset = 0;
+	while (1) {
+		block = mBlocks.previous(block);
+		if (!block)
+			return offset;
+		offset += block->size();
+	}
+}
+
+template<Size16 mBlockSize>
 Buffer<mBlockSize>::Buffer(Actor *actor)
-	: Object(actor), mSize(0), mHere(0), mPosition(0), mOffset(0)
+	: Object(actor), mSize(0)
 { }
 
 /**
@@ -496,72 +513,99 @@ Size16 Buffer<mBlockSize>::blockSize() const
 }
 
 template<Size16 mBlockSize>
-Buffer<mBlockSize>::Iterator::Iterator(const Buffer<mBlockSize> *buffer)
-	: mBuffer(buffer), mBlock(mBuffer->mBlocks.first()), mStart(0), mOffset(0)
+Buffer<mBlockSize>::Iterator::Iterator(Buffer<mBlockSize> *buffer)
+	: mBuffer(buffer), mBlock(0), mPosition(0), mOffset(0)
 {
-	if (mBlock)
-		mStart = mBlock->start();
+	mBuffer->mIterators.addTail(this);
 }
 
 template<Size16 mBlockSize>
 Buffer<mBlockSize>::Iterator::~Iterator()
-{ }
+{
+	remove();
+}
+
+template<Size16 mBlockSize>
+bool Buffer<mBlockSize>::Iterator::ensureBlock()
+{
+	if (mBlock) {
+		if (mPosition < mBlock->start())
+			mPosition = mBlock->start();
+		return true;
+	}
+
+	mBlock = mBuffer->mBlocks.first();
+	if (!mBlock)
+		return false;
+
+	mPosition = mBlock->start();
+	return true;
+}
 
 template<Size16 mBlockSize>
 void Buffer<mBlockSize>::Iterator::advance(Size length)
 {
-	if (!mBlock)
+	if (!ensureBlock())
 		return;
 
-	if (length >= left()) {
-
-	}
-
-	while (mBlock && mStart + length > mBlock->end()) {
+	while (mBlock->end() - mPosition < length) {
+		length -= mBlock->end() - mPosition;
 		mBlock = mBuffer->mBlocks.next(mBlock);
-		length -= mBlock->end() - mStart;
+		if (!mBlock)
+			return;
+		mPosition = mBlock->start();
 	}
 
-	mStart += length;
+	mPosition += length;
+}
+
+template<Size16 mBlockSize>
+Size Buffer<mBlockSize>::Iterator::offset()
+{
+	if (!ensureBlock())
+		return mBuffer->length();
+
+	return mBuffer->blockOffset(mBlock) + mPosition - mBlock->start();
 }
 
 template<Size16 mBlockSize>
 Size Buffer<mBlockSize>::Iterator::charBlockLength() const
 {
-	return mBlock->end() - mStart;
+	return mBlock->end() - mPosition;
 }
 
 template<Size16 mBlockSize>
 const char *Buffer<mBlockSize>::Iterator::charBlock() const
 {
-	return mBlock->pointer(mStart);
+	return mBlock->startPointer() + mPosition;
 }
 
 template<Size16 mBlockSize>
-const Buffer<mBlockSize> *Buffer<mBlockSize>::Iterator::buffer() const
+Buffer<mBlockSize> *Buffer<mBlockSize>::Iterator::buffer() const
 {
 	return mBuffer;
 }
 
 template<Size16 mBlockSize>
-char Buffer<mBlockSize>::Iterator::current() const
+bool Buffer<mBlockSize>::Iterator::hasCurrent()
 {
-	if (!mBlock || mStart >= mBlock->end())
+	return ensureBlock();
+}
+
+template<Size16 mBlockSize>
+char Buffer<mBlockSize>::Iterator::current()
+{
+	if (!ensureBlock())
 		return 0;
 
-	return *mBlock->pointer(mStart);
+	return *(mBlock->startPointer() + mPosition);
 }
 
 template<Size16 mBlockSize>
-Size Buffer<mBlockSize>::Iterator::offset() const
+void Buffer<mBlockSize>::Iterator::blockDeleted(Block *block)
 {
-	return mOffset;
-}
-
-template<Size16 mBlockSize>
-Size Buffer<mBlockSize>::Iterator::left() const
-{
-	return mBuffer->mSize - mOffset;
+	if (mBlock == block)
+		mBlock = 0;
 }
 
 }
