@@ -64,8 +64,7 @@ void HttpConnection::handleReady(bool readyToRead, bool readyToWrite)
 
 int HttpConnection::process()
 {
-	int found;
-	Size processed;
+	int found = 0;
 
 	switch (mState) {
 	case STATE_METHOD: {
@@ -84,24 +83,67 @@ int HttpConnection::process()
 		if (found == 1) {
 			HttpRequest::Embryo embryo(this, mMethod, mUri);
 			mHttpRequest = mHttpServer->instantiateHttpRequest(&embryo);
+			delete mMethod;
+			delete mUri;
 			mState = STATE_REQUEST_LINE_EOL;
 		}
 	} break;
-	case STATE_REQUEST_LINE_EOL:
-		/* TODO: from this on... */
-	case STATE_KEY:
-	case STATE_VALUE:
-	case STATE_HEADER_EOL:
-	case STATE_REQUEST_EOL:
+	case STATE_REQUEST_LINE_EOL: {
+		if (mInputBuffer.pop() != '\n')
+			return -1;
+		found = 1;
+		mState = STATE_KEY_FIRST;
+	} break;
+	case STATE_KEY_FIRST:
+		if (mInputBuffer.charAt(0) == '\r') {
+			mState = STATE_REQUEST_EOL;
+			break;
+		}
+		mState = STATE_KEY;
+		// No break.
+	case STATE_KEY: {
+		found = locateRegion(':', '\r', &mMethod);
+		if (found == 1)
+			mState = STATE_VALUE;
+	} break;
+	case STATE_VALUE: {
+		found = locateRegion('\r', '\n', &mUri);
+		if (found == 1) {
+			if (mMethod->equals("Content-Length")) {
+				String *s = mUri->asString();
+				mDataLeft = atoi(s->chars());
+				s->destroy(allocator());
+			}
+			mHttpRequest->receiveHeader(mMethod, mUri);
+			delete mMethod;
+			delete mUri;
+		}
+	} break;
+	case STATE_HEADER_EOL: {
+		if (mInputBuffer.pop() != '\n')
+			return -1;
+		found = 1;
+		mState = STATE_KEY_FIRST;
+	} break;
+	case STATE_REQUEST_EOL: {
+		if (mInputBuffer.pop() != '\n')
+			return -1;
+		found = 1;
+		mState = STATE_DATA;
+	} break;
 	case STATE_DATA: {
+		bool ok;
 		if (mInputBuffer.length() > mDataLeft) {
-			Buffer<> *buffer = mInputBuffer.region(0, mDataLeft);
-			processed = mHttpRequest->receiveData(buffer);
+			WriteBuffer<> *buffer = mInputBuffer.region(0, mDataLeft);
+			mDataLeft = 0;
+			mInputBuffer.popped(mDataLeft);
+			ok = mHttpRequest->receiveData(buffer);
 			delete buffer;
-		} else
-			processed = mHttpRequest->receiveData(&mInputBuffer);
-		mInputBuffer.popped(processed);
-		mDataLeft -= processed;
+		} else {
+			ok = mHttpRequest->receiveData(&mInputBuffer);
+			mDataLeft -= mInputBuffer.length();
+			mInputBuffer.poppedAll();
+		}
 		if (mDataLeft == 0) {
 			mHttpRequest->receiveEnd();
 			mHttpRequest = 0;
@@ -126,7 +168,7 @@ int HttpConnection::locateRegion(const char success, const char fail, WriteBuffe
 
 int HttpConnection::locateChar(const char success, const char fail)
 {
-	while (mInputBufferIterator.left() > 0) {
+	while (mInputBufferIterator.hasCurrent()) {
 		const char c = mInputBufferIterator.current();
 		if (c == success)
 			return 1;
@@ -140,7 +182,7 @@ int HttpConnection::locateChar(const char success, const char fail)
 
 bool HttpConnection::eatChars(const char eaten)
 {
-	for (bool found = false; mInputBufferIterator.left() > 0 && mInputBufferIterator.current() == eaten; mInputBufferIterator.advance())
+	for (bool found = false; mInputBufferIterator.hasCurrent() && mInputBufferIterator.current() == eaten; mInputBufferIterator.advance())
 		found = true;
 }
 

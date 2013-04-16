@@ -54,6 +54,7 @@ class HttpConnection : public TcpConnection {
 		STATE_PRE_VERSION,
 		STATE_VERSION,
 		STATE_REQUEST_LINE_EOL,
+		STATE_KEY_FIRST,
 		STATE_KEY,
 		STATE_PRE_VALUE,
 		STATE_VALUE,
