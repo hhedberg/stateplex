@@ -34,11 +34,7 @@ bool HbdpConnection::HbdpRequest::receiveData(Buffer<> *data)
 
 void HbdpConnection::HbdpRequest::receiveEnd()
 {
-	if (mHbdpConnection->mOut.length() > 0) {
-		sendData(&mHbdpConnection->mOut);
-		mHbdpConnection->mOut.poppedAll();
-		sendEnd();
-	}
+	mHbdpConnection->handleEnd();
 }
 
 void HbdpConnection::HbdpRequest::receiveAbort()
@@ -50,18 +46,25 @@ HbdpConnection::HbdpRequest::HbdpRequest(HttpConnection *httpConnection, HbdpCon
 	: HttpRequest(httpConnection), mHbdpConnection(hbdpConnection)
 { }
 
-void HbdpConnection::handleRequest(HbdpRequest *hbdpRequest, Size32 serialNumber)
+HttpRequest *HbdpConnection::instantiateHttpRequest(const HttpRequest::Embryo *embryo, Size serialNumber)
 {
 	if (mSerialNumber != serialNumber) {
-		const char status[] = "410 Gone";
-		hbdpRequest->sendStatus(status, sizeof(status));
-		hbdpRequest->sendEnd();
+		return new SimpleHttpRequest(embryo->httpConnection, "410 Gone");
 	}
 	mSerialNumber++;
 
 	if (mHbdpRequest)
 		endRequest();
-	mHbdpRequest = hbdpRequest;
+	mHbdpRequest = new HbdpRequest(embryo->httpConnection, this);
+}
+
+void HbdpConnection::handleEnd()
+{
+	if (mOut.length() > 0) {
+		mHbdpRequest->sendData(&mOut);
+		mOut.poppedAll();
+		endRequest();
+	}
 }
 
 void HbdpConnection::endRequest() {

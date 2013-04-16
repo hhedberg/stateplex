@@ -32,6 +32,8 @@ class HbdpServer;
  * A connection through HTTP Bidirectional Protocol.
  */
 class HbdpConnection : public Object, public ListItem {
+	friend class HbdpServer;
+
 	class HbdpRequest : public HttpRequest {
 		HbdpConnection *mHbdpConnection;
 
@@ -47,10 +49,12 @@ class HbdpConnection : public Object, public ListItem {
 
 	HbdpServer *mHbdpServer;
 	HbdpRequest *mHbdpRequest;
+	String *mId;
 	Size32 mSerialNumber;
 	WriteBuffer<> mOut;
 
-	void handleRequest(HbdpRequest *hbdpRequest, Size32 serialNumber);
+	HttpRequest *instantiateHttpRequest(const HttpRequest::Embryo *embryo, Size serialNumber);
+	void handleEnd();
 	void endRequest();
 
 protected:
@@ -60,9 +64,12 @@ protected:
 public:
 	class Embryo {
 		friend class HbdpConnection;
+		friend class HbdpServer;
 
 		HbdpServer *mHbdpServer;
-		const char *mId;
+		const String *mId;
+
+		Embryo(HbdpServer *hbdpServer, const String *id);
 	};
 
 	HbdpConnection(Actor *actor, const Embryo *embryo);
@@ -70,6 +77,7 @@ public:
 
 	void close();
 	HbdpServer *hbdpServer() const;
+	const String *id() const;
 	void write(Buffer<> *data);
 	void write(const String *data);
 	void write(const char *data, Size dataLength);
@@ -86,6 +94,15 @@ inline HbdpConnection::HbdpConnection(Actor *actor, const Embryo *embryo)
 { }
 
 inline HbdpConnection::~HbdpConnection()
+{ }
+
+inline const String *HbdpConnection::id() const
+{
+	return mId;
+}
+
+inline HbdpConnection::Embryo::Embryo(HbdpServer *hbdpServer, const String *id)
+	: mHbdpServer(hbdpServer), mId(id)
 { }
 
 }

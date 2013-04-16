@@ -24,9 +24,27 @@ namespace Stateplex {
 
 HttpRequest *HbdpServer::instantiateHttpRequest(const HttpRequest::Embryo *embryo)
 {
-	// Jos path == /, arvo session id, luo connection ja palaute sen request
-	// Jos path == /session_id/serial_number, etsi connection ja palaute sen request
-	return 0;
+	WriteBuffer<> *uri = embryo->uri->region(mPath->length(), embryo->uri->length() - mPath->length());
+	Array<WriteBuffer<> *> *elements = uri->split('/', 3);
+	delete uri;
+
+	if (elements->length() == 0) {
+		String *id = String::copy(allocator(), "abcdef");
+		HbdpConnection::Embryo connectionEmbryo(this, id);
+		HbdpConnection *connection = mConnectionFactoryMethod.invoke(&connectionEmbryo);
+		mConnections.addTail(connection);
+		return new SimpleHttpRequest(embryo->httpConnection, "200 OK"); // TODO: plus id
+	} else if (elements->length() == 2) {
+		for (HbdpConnection *connection = mConnections.first(); connection; connection = mConnections.next(connection)) {
+			if (elements->element(0)->equals(connection->id())) {
+				elements->destroy(allocator());
+				return connection->instantiateHttpRequest(embryo, 0);
+			}
+		}
+	}
+
+	elements->destroy(allocator());
+	return new SimpleHttpRequest(embryo->httpConnection, "404 Not Found");
 }
 
 }
