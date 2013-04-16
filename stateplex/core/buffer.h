@@ -22,6 +22,7 @@
 
 #include "object.h"
 #include "list.h"
+#include "array.h"
 #include "types.h"
 
 namespace Stateplex {
@@ -128,8 +129,10 @@ public:
 	bool equals(const String *string) const;
 	bool equals(const Buffer *buffer) const;
 	Size length() const;
+	Size offsetOf(char c, Size fromOffset = 0);
 
 	WriteBuffer<mBlockSize> *region(Size offset, Size length);
+	Array<WriteBuffer<mBlockSize> *> *split(char delimiter, Size maxElements);
 
 	Size16 blockSize() const;
 };
@@ -297,6 +300,18 @@ Size Buffer<mBlockSize>::length() const
 	return mSize;
 }
 
+template<Size16 mBlockSize>
+Size Buffer<mBlockSize>::offsetOf(char c, Size fromOffset)
+{
+	for (Block *block = blockByOffset(&fromOffset); block; block = mBlocks.next(block), fromOffset = 0) {
+		char *found = reinterpret_cast<char *>(memchr(block->pointer(fromOffset), c, block->size() - fromOffset));
+		if (found) {
+			return found - block->startPointer(); // TODO: take block offset into account
+		}
+	}
+	return SIZE_ERROR;
+}
+
 /**
  * Returns the character at the specified position of the buffer.
  */
@@ -447,6 +462,27 @@ WriteBuffer<mBlockSize> *Buffer<mBlockSize>::region(Size offset, Size length)
 
 	return buffer;
 }
+
+template<Size16 mBlockSize>
+Array<WriteBuffer<mBlockSize> *> *Buffer<mBlockSize>::split(char delimiter, Size maxElements)
+{
+	WriteBuffer<mBlockSize> *elements[maxElements];
+	Size nElements = 0;
+
+	Size previousOffset = 0;
+	Size currentOffset;
+	while (previousOffset < length() && (currentOffset = offsetOf(delimiter, previousOffset)) < length() && nElements < maxElements - 1) {
+		elements[nElements++] = region(previousOffset, currentOffset - previousOffset);
+		previousOffset = currentOffset + 1;
+	}
+
+	if (previousOffset < length()) {
+		elements[nElements++] = region(previousOffset, length() - previousOffset);
+	}
+
+	return Array<WriteBuffer<mBlockSize> *>::copy(allocator(), elements, nElements);
+}
+
 
 /**
  * Returns the internal block size for the buffer. This is usually only
