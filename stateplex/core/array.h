@@ -37,10 +37,10 @@ class Array {
 	static Size sizeOfLength(Size length);
 
 public:
-	Type get(Size index) const;
+	Type element(Size index) const;
 	Size length() const;
 
-	void set(Size index, Type value);
+	void setElement(Size index, Type value);
 	void destroy(Allocator *allocator);
 
 	static Array<Type> *uninitialised(Allocator *allocator, Size length);
@@ -107,7 +107,7 @@ inline Size Array<Type>::sizeOfLength(Size length)
 }
 
 template<typename Type>
-Type Array<Type>::get(Size index) const
+Type Array<Type>::element(Size index) const
 {
 	Size size;
 	if (index >= getLength(&size))
@@ -118,7 +118,7 @@ Type Array<Type>::get(Size index) const
 }
 
 template<typename Type>
-void Array<Type>::set(Size index, Type value)
+void Array<Type>::setElement(Size index, Type value)
 {
 	Size size;
 	if (index >= getLength(&size))
