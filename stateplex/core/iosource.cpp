@@ -91,7 +91,7 @@ void IoSource::write(const char *data, Size length)
 	}
 }
 
-void IoSource::write(const Buffer<> *buffer)
+void IoSource::write(Buffer<> *buffer)
 {
 	Buffer<>::Iterator iterator(buffer);
 	Size length;

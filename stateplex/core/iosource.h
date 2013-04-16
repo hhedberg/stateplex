@@ -55,7 +55,7 @@ public:
 	Size read(char *data, Size length);
 	Size read(WriteBuffer<> *buffer);
 	void write(const char *data, Size length);
-	void write(const Buffer<> *buffer);
+	void write(Buffer<> *buffer);
 	void write(const String *string);
 };
 
