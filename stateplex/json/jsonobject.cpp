@@ -73,6 +73,16 @@ JsonObject *JsonObject::get(Stateplex::String *path)
 	//mResult->set(path, parameter);
 	//JsonObject *test = dynamic_cast<JsonObject *> (mResult);
 	//invokeCallBack(this);
+	std::vector<std::string> tokens;
+
+	std::string str(path->chars());
+
+	tokenizepath(str, tokens);
+
+	for (int i = 0; i < tokens.size(); i++) {
+		std::cout << tokens[i] << " ";
+	}
+	std::cout << std::endl;
 	std::cout << "test object get print" << std::endl;
 
 }
@@ -107,3 +117,19 @@ JsonObject *JsonObject::findObject(const char *target)
 
 	return dynamic_cast<JsonObject *> (item);
 }
+
+
+
+void JsonObject::tokenizepath(const std::string& str, std::vector<std::string>& tokens, const std::string& delimiters)
+{
+	std::string::size_type lastPos = str.find_first_not_of(delimiters, 0);
+	std::string::size_type pos = str.find_first_of(delimiters, lastPos);
+
+	while (std::string::npos != pos || std::string::npos != lastPos)
+	{
+		tokens.push_back(str.substr(lastPos, pos - lastPos));
+		lastPos = str.find_first_not_of(delimiters, pos);
+		pos = str.find_first_of(delimiters, lastPos);
+	}
+}
+

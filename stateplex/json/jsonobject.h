@@ -2,6 +2,9 @@
 #define JSONOBJECT_H
 
 #include "jsonitem.h"
+#include <string>
+#include <vector>
+#include <iostream>
 
 class JsonObject : public JsonItem
 {
@@ -17,9 +20,11 @@ public:
 	JsonObject *set(Stateplex::String *path);
 	const char *key();
 	JsonType type();
+
 protected:
 private:
 	void freeItems();
+	void tokenizepath(const std::string& str, std::vector<std::string>& tokens, const std::string& delimiters = "/");
 	
 	Stateplex::List<JsonItem> *mItems;
 };
