@@ -4,7 +4,7 @@
 JsonObject::JsonObject(Stateplex::Actor *owner, const char *key)
 	: JsonItem(owner)
 {
-    mKey = key;
+    	mKey = key;
 	mItems = new Stateplex::List<JsonItem>;
 	mType = JSON_OBJECT;
 }
@@ -74,22 +74,37 @@ JsonObject *JsonObject::get(Stateplex::String *path)
 	//JsonObject *test = dynamic_cast<JsonObject *> (mResult);
 	//invokeCallBack(this);
 	std::vector<std::string> tokens;
+	JsonObject *test = NULL;
 
 	std::string str(path->chars());
 
 	tokenizepath(str, tokens);
 
 	for (int i = 0; i < tokens.size(); i++) {
-		std::cout << tokens[i] << " ";
+		if(test == NULL) {
+			test = findObject(tokens[i].c_str());
+		} else {
+			test = test->findObject(tokens[i].c_str());
+		}
 	}
 	std::cout << std::endl;
 	std::cout << "test object get print" << std::endl;
-
+	return test;
 }
 
 JsonObject *JsonObject::set(Stateplex::String *path)
 {
 	std::cout << "test object set print" << std::endl;
+
+	/*
+	* Plan:
+	* JsonObject *test = get(path);
+	* tokenizepath(str, tokens, ',');
+	* for example if(str castToint == true)
+	* dynamic_cast<JsonNumber *> (test)->setValue(str);
+ 	* !!! REF COUNT ??? COPY OF THE JSONOBJECT BEFORE SETTING VALUE ???
+	* GETFUNCTION( CONST JSONOBJECT ???? )
+	*/
 
 }
 
