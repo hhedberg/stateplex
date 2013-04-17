@@ -92,13 +92,13 @@ public:
 
 template<typename T>
 class ListIterator {
-	List<T> *mList;
+	const List<T> *mList;
 	T *mCurrent;
 	T *mSubsequent;
 	bool mBackwards;
 	
 public:
-	ListIterator(List<T> *list, bool backwards = false);
+	ListIterator(const List<T> *list, bool backwards = false);
 
 	List<T> *list() const;
 	T *current() const;
@@ -336,7 +336,7 @@ bool List<T>::isEmpty() const
  */
 
 template<typename T>
-ListIterator<T>::ListIterator(List<T> *list, bool backwards)
+ListIterator<T>::ListIterator(const List<T> *list, bool backwards)
 	: mList(list), mBackwards(backwards)
 {
 	if (!backwards) {
