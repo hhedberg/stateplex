@@ -16,7 +16,6 @@ public:
 
 /*** Inline implementations ***/
 
-#include <iostream>
 
 JsonClient::JsonClient(Stateplex::Dispatcher *dispatcher)
 	: Actor(dispatcher)

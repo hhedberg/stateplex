@@ -43,7 +43,7 @@ ClientActor::ClientActor(Stateplex::Dispatcher *dispatcher)
 
 void ClientActor::showResult(CalculatorActor::CalculationMessage *message)
 {
-	std::cout << "Result is " << message->result();
+	std::cout << "Result is " << message->result() << std::endl;
 }
 
 #endif

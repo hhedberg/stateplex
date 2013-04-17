@@ -47,14 +47,16 @@ template<typename Sender> JsonDbActor::JsonMessage::JsonMessage(Sender *sender, 
 
 inline void JsonDbActor::JsonMessage::handle(Actor *sender, JsonDbActor *receiver)
 {	
-	JsonString *seppo = reinterpret_cast<JsonString *> (mResult);
-	std::cout << "TEST: " << seppo->key();
-	invokeCallback();
+	JsonObject *test = dynamic_cast<JsonObject *> (mResult);
+	std::cout << test->key();
+	//test->traverse();
+	invokeCallback(this);
 }
 
 inline void JsonDbActor::JsonMessage::result() const
 {
-	std::cout << "TESTI:";
+	std::cout << "esiehtoinen testi result" << std::endl;
+	std::cout << "TESTI_RESULT:" << std::endl;
 }
 
 inline JsonDbActor::JsonDbActor(Stateplex::Dispatcher *dispatcher)

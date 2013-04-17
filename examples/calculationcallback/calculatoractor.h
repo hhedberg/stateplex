@@ -53,7 +53,7 @@ template<typename Sender> CalculatorActor::CalculationMessage::CalculationMessag
 inline void CalculatorActor::CalculationMessage::handle(Actor *sender, CalculatorActor *receiver)
 {
 	mResult = mX + mY;
-	invokeCallback();
+	invokeCallback(this);
 }
 
 inline int CalculatorActor::CalculationMessage::result() const
