@@ -55,9 +55,9 @@ Size IoSource::read(char *data, Size length)
 	return size;
 }
 
-Size IoSource::read(Buffer<> *buffer)
+Size IoSource::read(WriteBuffer<> *buffer)
 {
-	buffer->ensurePushLength(buffer->maximumPushLength() / 4);
+	buffer->ensurePushLength(buffer->blockSize() / 4);
 	Size size = read(buffer->pushPointer(), buffer->pushLength());
 	buffer->pushed(size);
 	return size;
@@ -91,7 +91,7 @@ void IoSource::write(const char *data, Size length)
 	}
 }
 
-void IoSource::write(const Buffer<> *buffer)
+void IoSource::write(Buffer<> *buffer)
 {
 	Buffer<>::Iterator iterator(buffer);
 	Size length;

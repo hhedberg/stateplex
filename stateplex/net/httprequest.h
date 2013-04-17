@@ -23,7 +23,8 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
-#include "../core/buffer.h"
+#include "../core/object.h"
+#include "../core/writebuffer.h"
 
 namespace Stateplex {
 
@@ -37,21 +38,24 @@ class HttpConnection;
  * One HttpConnection may carry through multiple requests.
  */
 
-class HttpRequest {
+class HttpRequest : public Object {
 	friend class HttpConnection;
 
 	HttpConnection *mHttpConnection;
+	WriteBuffer<> mData;
+
+	int mStatusSent : 1;
 
 protected:
 	/**
 	 * Receives an HTTP header belonging to the request.
 	 */
-	virtual bool receiveHeader(const Buffer<> *name, const Buffer<> *value) = 0;
+	virtual bool receiveHeader(Buffer<> *name, Buffer<> *value) = 0;
 
 	/**
 	 * Receives an HTTP message body content belonging to the request.
 	 */
-	virtual Size receiveData(const Buffer<> *data) = 0;
+	virtual bool receiveData(Buffer<> *data) = 0;
 
 	/**
 	 * Indicates that the full HTTP request is now received.
@@ -73,10 +77,10 @@ public:
 	class Embryo {
 	public:
 		HttpConnection *httpConnection;
-		const Buffer<> *method;
-		const Buffer<> *uri;
+		Buffer<> *method;
+		Buffer<> *uri;
 
-		Embryo(HttpConnection *httpConnection, const Buffer<> *method, const Buffer<> *uri);
+		Embryo(HttpConnection *httpConnection, Buffer<> *method, Buffer<> *uri);
 	};
 
 	HttpRequest(HttpConnection *httpConnection);
@@ -85,19 +89,34 @@ public:
 	HttpConnection *httpConnection() const;
 
 	void sendStatus(const char *status, Size statusLength);
-	void sendStatus(const Buffer<> *status);
+	void sendStatus(Buffer<> *status);
 	void sendHeader(const char *name, Size nameLength, const char *value, Size valueLength);
-	void sendHeader(const Buffer<> *name, const Buffer<> *value);
+	void sendHeader(Buffer<> *name, Buffer<> *value);
 	void sendData(const char *data, Size dataLength);
-	void sendData(const Buffer<> *data);
+	void sendData(Buffer<> *data);
 	void sendEnd();
 };
+
+class SimpleHttpRequest : public HttpRequest {
+	String *mStatus;
+
+protected:
+	virtual bool receiveHeader(Buffer<> *name, Buffer<> *value);
+	virtual bool receiveData(Buffer<> *data);
+	virtual void receiveEnd();
+	virtual void receiveAbort();
+
+public:
+	SimpleHttpRequest(HttpConnection *connection, const char *status);
+};
+
 
 }
 
 /*** Inline implementations ***/
 
 #include "tcpconnection.h"
+#include "httpconnection.h"
 
 namespace Stateplex {
 
@@ -106,7 +125,7 @@ namespace Stateplex {
  */
 
 inline HttpRequest::HttpRequest(HttpConnection *httpConnection)
-	: mHttpConnection(httpConnection)
+	: Object(httpConnection->actor()), mHttpConnection(httpConnection), mStatusSent(false), mData(actor())
 { }
 
 /**
@@ -127,7 +146,7 @@ inline HttpConnection *HttpRequest::httpConnection() const
 	return mHttpConnection;
 }
 
-inline HttpRequest::Embryo::Embryo(HttpConnection *httpConnection, const Buffer<> *method, const Buffer<> *uri)
+inline HttpRequest::Embryo::Embryo(HttpConnection *httpConnection, Buffer<> *method, Buffer<> *uri)
 	: httpConnection(httpConnection), method(method), uri(uri)
 { }
 

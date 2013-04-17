@@ -35,10 +35,11 @@ public:
 class EchoHbdpConnection : public Stateplex::HbdpConnection {
 
 protected:
-	virtual void receive();
+	virtual void receiveData(Stateplex::Buffer<> *data);
+	virtual void receiveClose();
 
 public:
-	EchoHbdpConnection(const Stateplex::HbdpConnection::Embryo *embryo);
+	EchoHbdpConnection(Stateplex::Actor *actor, const Stateplex::HbdpConnection::Embryo *embryo);
 };
 
 #endif

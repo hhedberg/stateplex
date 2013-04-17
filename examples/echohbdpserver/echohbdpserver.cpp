@@ -53,16 +53,22 @@ EchoActor::EchoActor(Stateplex::Dispatcher *dispatcher)
 
 Stateplex::HbdpConnection *EchoActor::instantiateHbdpConnection(const Stateplex::HbdpConnection::Embryo *embryo)
 {
-	return new EchoHbdpConnection(embryo);
+	return new EchoHbdpConnection(this, embryo);
 }
 
 
-void EchoHbdpConnection::receive()
+void EchoHbdpConnection::receiveData(Stateplex::Buffer<> *data)
+{
+	write(data);
+}
+
+void EchoHbdpConnection::receiveClose()
 {
 
 }
 
-EchoHbdpConnection::EchoHbdpConnection(const Stateplex::HbdpConnection::Embryo *embryo)
-	: Stateplex::HbdpConnection(embryo)
+
+EchoHbdpConnection::EchoHbdpConnection(Stateplex::Actor *actor, const Stateplex::HbdpConnection::Embryo *embryo)
+	: Stateplex::HbdpConnection(actor, embryo)
 { }
 

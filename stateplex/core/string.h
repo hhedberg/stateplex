@@ -44,6 +44,7 @@ public:
 	static String *uninitialised(Allocator *allocator, Size length);
 	static String *copy(Allocator *allocator, const char *cString);
 	static String *copy(Allocator *allocator, const char *cString, Size length);
+	static String *copy(Allocator *allocator, const String *string);
 };
 
 }
@@ -147,6 +148,17 @@ inline String *String::copy(Allocator *allocator, const char *cString, Size leng
 
 	return string;
 }
+
+inline String *String::copy(Allocator *allocator, const String *string)
+{
+	Size size;
+	Size length = string->getLength(&size);
+	char *memory = reinterpret_cast<char *>(allocator->allocate(size + length + 1));
+	memcpy(memory, string, size + length + 1);
+
+	return reinterpret_cast<String *>(memory);
+}
+
 
 inline void String::destroy(Allocator *allocator)
 {
