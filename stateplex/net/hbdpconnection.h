@@ -21,7 +21,8 @@
 #define INCLUDED_STATEPLEX_HBDP_CONNECTION_H
 
 #include "../core/list.h"
-#include "../core/buffer.h"
+#include "../core/writebuffer.h"
+#include "httprequest.h"
 
 namespace Stateplex {
 
@@ -30,27 +31,55 @@ class HbdpServer;
 /**
  * A connection through HTTP Bidirectional Protocol.
  */
-class HbdpConnection : public ListItem {
+class HbdpConnection : public Object, public ListItem {
+	friend class HbdpServer;
+
+	class HbdpRequest : public HttpRequest {
+		HbdpConnection *mHbdpConnection;
+
+	protected:
+		virtual bool receiveHeader(Buffer<> *name, Buffer<> *value);
+		virtual bool receiveData(Buffer<> *data);
+		virtual void receiveEnd();
+		virtual void receiveAbort();
+
+	public:
+		HbdpRequest(HttpConnection *httpConnection, HbdpConnection *hbdpConnection);
+	};
+
 	HbdpServer *mHbdpServer;
+	HbdpRequest *mHbdpRequest;
+	String *mId;
+	Size32 mSerialNumber;
+	WriteBuffer<> mOut;
+
+	HttpRequest *instantiateHttpRequest(const HttpRequest::Embryo *embryo, Size serialNumber);
+	void handleEnd();
+	void endRequest();
 
 protected:
-	virtual void receive() = 0;
+	virtual void receiveData(Buffer<> *data) = 0;
+	virtual void receiveClose() = 0;
 
 public:
 	class Embryo {
 		friend class HbdpConnection;
+		friend class HbdpServer;
 
 		HbdpServer *mHbdpServer;
+		const String *mId;
+
+		Embryo(HbdpServer *hbdpServer, const String *id);
 	};
 
-	HbdpConnection(const Embryo *embryo);
+	HbdpConnection(Actor *actor, const Embryo *embryo);
 	virtual ~HbdpConnection();
 
 	void close();
 	HbdpServer *hbdpServer() const;
-	Size read(Buffer<> *buffer);
-	void write(Buffer<> data);
-	void write(String data);
+	const String *id() const;
+	void write(Buffer<> *data);
+	void write(const String *data);
 	void write(const char *data, Size dataLength);
 };
 
@@ -60,11 +89,20 @@ public:
 
 namespace Stateplex {
 
-HbdpConnection::HbdpConnection(const Embryo *embryo)
-	: mHbdpServer(embryo->mHbdpServer)
+inline HbdpConnection::HbdpConnection(Actor *actor, const Embryo *embryo)
+	: Object(actor), mHbdpServer(embryo->mHbdpServer), mHbdpRequest(0), mSerialNumber(0), mOut(actor)
 { }
 
-HbdpConnection::~HbdpConnection()
+inline HbdpConnection::~HbdpConnection()
+{ }
+
+inline const String *HbdpConnection::id() const
+{
+	return mId;
+}
+
+inline HbdpConnection::Embryo::Embryo(HbdpServer *hbdpServer, const String *id)
+	: mHbdpServer(hbdpServer), mId(id)
 { }
 
 }

@@ -64,7 +64,7 @@ EchoHttpRequest::EchoHttpRequest(Stateplex::HttpConnection *connection)
 	: HttpRequest(connection), mDataReceived(false)
 { }
 
-bool EchoHttpRequest::receiveHeader(const Stateplex::Buffer<> *key, const Stateplex::Buffer<> *value)
+bool EchoHttpRequest::receiveHeader(Stateplex::Buffer<> *key, Stateplex::Buffer<> *value)
 {
 	sendData(key);
 	sendData(": ", 2);
@@ -72,13 +72,15 @@ bool EchoHttpRequest::receiveHeader(const Stateplex::Buffer<> *key, const Statep
 	sendData("\n", 1);
 }
 
-Stateplex::Size EchoHttpRequest::receiveData(const Stateplex::Buffer<> *data)
+bool EchoHttpRequest::receiveData(Stateplex::Buffer<> *data)
 {
 	if (!mDataReceived) {
 		sendData("\n", 1);
 		mDataReceived = true;
 	}
 	sendData(data);
+
+	return true;
 }
 
 void EchoHttpRequest::receiveEnd()
