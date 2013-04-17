@@ -26,7 +26,7 @@ int main()
 	company.findObject("Employee")->findObject("Juha")->add(new JsonNumber(&jsonactor,"Age", 24));
 	company.findObject("Employee")->findObject("Tapio")->add(new JsonNumber(&jsonactor,"Age", 24));
 
-	jsonactor.getRootObject(&client, &company, &JsonClient::showResult);
+	jsonactor.getRootObject("/Stateplex/Employee/Juha/", &client, &company, &JsonClient::showResult);
 
 	JsonData<const char> jsonChar(&jsonactor, "key", "value");
 	int number = 17;

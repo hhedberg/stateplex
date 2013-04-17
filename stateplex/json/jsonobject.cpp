@@ -11,7 +11,7 @@ JsonObject::JsonObject(Stateplex::Actor *owner, const char *key)
 
 JsonObject::~JsonObject()
 {
-    freeItems();
+    	freeItems();
 	delete mItems;
 }
 
@@ -59,6 +59,27 @@ void JsonObject::freeItems()
 		JsonObject *item = reinterpret_cast<JsonObject *>(iterator.current());
 		delete item;
 	}
+
+}
+
+JsonObject *JsonObject::get(Stateplex::String *path)
+{
+		//IF(JSONMESSAGETYPEGET)
+	//mResult->findObject(path);
+	//PARSE STRING, SEPARATOR /
+	//JsonObject *test = dynamic_cast<JsonObject *> (mResult);
+	//ELSE
+	//PARSE STRING, SEPARATOR / , 
+	//mResult->set(path, parameter);
+	//JsonObject *test = dynamic_cast<JsonObject *> (mResult);
+	//invokeCallBack(this);
+	std::cout << "test object get print" << std::endl;
+
+}
+
+JsonObject *JsonObject::set(Stateplex::String *path)
+{
+	std::cout << "test object set print" << std::endl;
 
 }
 

@@ -13,6 +13,8 @@ public:
 	Stateplex::List<JsonItem> *getList();
 	JsonItem *find(const char *target);
 	JsonObject *findObject(const char *target);
+	JsonObject *get(Stateplex::String *path);
+	JsonObject *set(Stateplex::String *path);
 	const char *key();
 	JsonType type();
 protected:

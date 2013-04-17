@@ -3,6 +3,7 @@
 
 #include "../core/list.h"
 #include "../core/object.h"
+#include "../core/string.h"
 #include <cstring>
 
 enum JsonType {
