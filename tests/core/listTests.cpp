@@ -147,11 +147,15 @@ TEST_F(ListTest, removeTest)
 TEST_F(ListTest, listItemListTest)
 {
         Stateplex::ListIterator<Stateplex::ListItem> li(&list);
-        EXPECT_EQ(li.list(), &list);
+        const Stateplex::List<Stateplex::ListItem> *const_list = &list;
+
+        EXPECT_EQ(li.list(), const_list);
+
 }
 
 TEST_F(ListTest, listItemTests)
 {
+        int noItems = 0;
         list.addHead(item);
         list.addTail(item1);
         Stateplex::ListIterator<Stateplex::ListItem> li(&list);
@@ -166,6 +170,7 @@ TEST_F(ListTest, listItemTests)
         EXPECT_EQ(li.current(),item1);
 
         EXPECT_EQ(li.hasSubsequent(),false);
-
+        noItems = countItems(&list);
+        std::cout << "noItems is " << noItems << std::endl;
 }
 
