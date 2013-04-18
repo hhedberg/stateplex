@@ -1,5 +1,7 @@
 #include "jsonobject.h"
 #include <iostream>
+#include <cstdlib>
+#include <ctype.h>
 
 JsonObject::JsonObject(Stateplex::Actor *owner, const char *key)
 	: JsonItem(owner)
@@ -87,14 +89,34 @@ JsonObject *JsonObject::get(Stateplex::String *path)
 			test = test->findObject(tokens[i].c_str());
 		}
 	}
-	std::cout << std::endl;
-	std::cout << "test object get print" << std::endl;
+
+	std::cout << "test object get print " << std::endl;
 	return test;
 }
 
-JsonObject *JsonObject::set(Stateplex::String *path)
+JsonObject *JsonObject::set(Stateplex::String *path, Stateplex::String *parameter)
 {
-	std::cout << "test object set print" << std::endl;
+	JsonObject *test = NULL;
+	std::vector<std::string> tokens;
+	std::string str(path->chars());
+	
+	tokenizepath(str, tokens, "/");
+
+	for(int i = 0; i < tokens.size(); i++) std::cout << "value: " <<  tokens[i] << std::endl;
+
+	std::cout << get(path);
+	std::cout << "seppo tokens " << tokens[0] << std::endl;
+
+	
+
+	if(test != NULL) {
+		std::cout << "test object set print seppo" <<  std::endl;
+		if(isInteger(&tokens[1])) {
+			int value = std::atoi(tokens[1].c_str());
+			std::cout << "seppo on taalla taas" << std::endl;
+			//std::cout << "test object set print int " << test->key() << std::endl;
+		}
+	} else { std::cout << "seppo oli null" << std::endl; }
 
 	/*
 	* Plan:
@@ -146,5 +168,17 @@ void JsonObject::tokenizepath(const std::string& str, std::vector<std::string>& 
 		lastPos = str.find_first_not_of(delimiters, pos);
 		pos = str.find_first_of(delimiters, lastPos);
 	}
+}
+
+bool JsonObject::isInteger(const std::string *s)
+{
+	/*if(s->empty() || ((!isdigit(s[0])) && (s[0] != '-') && (s[0] != '+'))) {
+		return false;
+	}
+
+	char *p;
+	strtol(s.c_str(), &p, 10) ;
+
+	return (*p == 0) ;*/
 }
 

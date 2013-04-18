@@ -19,6 +19,7 @@ public:
 
 	class JsonMessage : public Stateplex::CallbackMessage<JsonDbActor, JsonMessage> {
 		JsonMessageType mType;
+		Stateplex::String *mPath;
 		Stateplex::String *mParameter;
 		JsonItem *mResult;
 
@@ -26,6 +27,7 @@ public:
 
 
 		template<typename Sender> JsonMessage(Sender *sender, JsonDbActor *receiver, JsonObject *item, void (Sender::*callbackFunction)(JsonMessage *message));
+		template<typename Sender> JsonMessage(JsonMessageType type, Stateplex::String *path, Stateplex::String *parameter, Sender *sender, JsonDbActor *receiver, JsonObject *item, void (Sender::*callbackFunction)(JsonMessage *message));
 		template<typename Sender> JsonMessage(JsonMessageType type, Stateplex::String *path, Sender *sender, JsonDbActor *receiver, JsonObject *item, void (Sender::*callbackFunction)(JsonMessage *message));
 		template<typename Sender> JsonMessage(Sender *sender, JsonDbActor *receiver, void (Sender::*callbackFunction)(JsonMessage *message));
 		void result() const;
@@ -36,14 +38,19 @@ public:
 	};
 
 	template<typename Sender> void getRootObject(const char *path, Sender *sender, JsonObject *item, void (Sender::*callbackFunction)(JsonMessage *message));
+	template<typename Sender> void setJsonObject(const char *path, Sender *sender, JsonObject *item, void (Sender::*callbackFunction)(JsonMessage *message));
 };
 
 /*** Inline implementations ***/
 
 #include <iostream>
 
+template<typename Sender> JsonDbActor::JsonMessage::JsonMessage(JsonMessageType type, Stateplex::String *path, Stateplex::String *parameter, Sender *sender, JsonDbActor *receiver, JsonObject *item, void (Sender::*callbackFunction)(JsonMessage *message))
+	: Stateplex::CallbackMessage<JsonDbActor, JsonMessage>(sender, receiver, callbackFunction), mResult(item), mType(type),mPath(path),  mParameter(parameter)
+{ }
+
 template<typename Sender> JsonDbActor::JsonMessage::JsonMessage(JsonMessageType type, Stateplex::String *path, Sender *sender, JsonDbActor *receiver, JsonObject *item, void (Sender::*callbackFunction)(JsonMessage *message))
-	: Stateplex::CallbackMessage<JsonDbActor, JsonMessage>(sender, receiver, callbackFunction), mResult(item), mType(type), mParameter(path)
+	: Stateplex::CallbackMessage<JsonDbActor, JsonMessage>(sender, receiver, callbackFunction), mResult(item), mType(type), mPath(path)
 { }
 
 inline void JsonDbActor::JsonMessage::handle(Actor *sender, JsonDbActor *receiver)
@@ -51,9 +58,9 @@ inline void JsonDbActor::JsonMessage::handle(Actor *sender, JsonDbActor *receive
 	JsonObject *test;
 	if(mType == JSON_MESSAGE_TYPE_GET) {
 		
-		test = dynamic_cast<JsonObject *>(mResult)->get(mParameter);
+		test = dynamic_cast<JsonObject *>(mResult)->get(mPath);
 	} else {
-		test = dynamic_cast<JsonObject *>(mResult)->set(mParameter);
+		test = dynamic_cast<JsonObject *>(mResult)->set(mPath, mParameter);
 	}
 	mResult = dynamic_cast<JsonItem *>(test);
 	invokeCallback(this);
@@ -72,6 +79,12 @@ inline JsonDbActor::JsonDbActor(Stateplex::Dispatcher *dispatcher)
 template<typename Sender> void JsonDbActor::getRootObject(const char *path, Sender *sender, JsonObject *item, void (Sender::*callbackFunction)(JsonMessage *message))
 {
 	JsonMessage *rootObject = new JsonMessage(JSON_MESSAGE_TYPE_GET, Stateplex::String::copy(allocator(), path), sender, this, item, callbackFunction);
+	queueMessage(rootObject);
+}
+
+template<typename Sender> void JsonDbActor::setJsonObject(const char *path, Sender *sender, JsonObject *item, void (Sender::*callbackFunction)(JsonMessage *message))
+{
+	JsonMessage *rootObject = new JsonMessage(JSON_MESSAGE_TYPE_SET, Stateplex::String::copy(allocator(), path), sender, this, item, callbackFunction);
 	queueMessage(rootObject);
 }
 
