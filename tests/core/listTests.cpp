@@ -144,7 +144,7 @@ TEST_F(ListTest, removeTest)
 //ListIterator tests------------------------------>
 
 
-TEST_F(ListTest, listItemListTest)
+TEST_F(ListTest, listIteratorListTest)
 {
         Stateplex::ListIterator<Stateplex::ListItem> li(&list);
         const Stateplex::List<Stateplex::ListItem> *const_list = &list;
@@ -153,7 +153,7 @@ TEST_F(ListTest, listItemListTest)
 
 }
 
-TEST_F(ListTest, listItemTests)
+TEST_F(ListTest, listIteratorTests)
 {
         int noItems = 0;
         list.addHead(item);
