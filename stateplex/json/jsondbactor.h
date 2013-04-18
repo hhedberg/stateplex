@@ -20,7 +20,7 @@ public:
 	class JsonMessage : public Stateplex::CallbackMessage<JsonDbActor, JsonMessage> {
 		JsonMessageType mType;
 		Stateplex::String *mParameter;
-		JsonObject *mResult;
+		JsonItem *mResult;
 
 	public:
 
@@ -50,17 +50,18 @@ inline void JsonDbActor::JsonMessage::handle(Actor *sender, JsonDbActor *receive
 {	
 	JsonObject *test;
 	if(mType == JSON_MESSAGE_TYPE_GET) {
-		test = dynamic_cast<JsonObject*> (mResult->get(mParameter));
+		
+		test = dynamic_cast<JsonObject *>(mResult)->get(mParameter);
 	} else {
-		test = dynamic_cast<JsonObject*> (mResult->set(mParameter));
+		test = dynamic_cast<JsonObject *>(mResult)->set(mParameter);
 	}
-
+	mResult = dynamic_cast<JsonItem *>(test);
 	invokeCallback(this);
 }
 
 inline void JsonDbActor::JsonMessage::result() const
 {
-	std::cout << "esiehtoinen testi result" << std::endl;
+	std::cout << "Key: " << mResult->key() << std::endl;
 	std::cout << "TESTI_RESULT:" << std::endl;
 }
 
