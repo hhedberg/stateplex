@@ -56,6 +56,8 @@ HttpRequest *HbdpConnection::instantiateHttpRequest(const HttpRequest::Embryo *e
 	if (mHbdpRequest)
 		endRequest();
 	mHbdpRequest = new HbdpRequest(embryo->httpConnection, this);
+
+	return mHbdpRequest;
 }
 
 void HbdpConnection::handleEnd()
