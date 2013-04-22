@@ -50,7 +50,7 @@ void HttpConnection::handleReady(bool readyToRead, bool readyToWrite)
 		int found;
 		do {
 			found = process();
-		} while (found == 1);
+		} while (found == 1 && mInputBuffer.length() > 0);
 
 		if (found == -1) {
 			mKeepAlive = 0;
@@ -96,6 +96,8 @@ int HttpConnection::process()
 	} break;
 	case STATE_KEY_FIRST:
 		if (mInputBuffer.charAt(0) == '\r') {
+			mInputBuffer.pop();
+			found = 1;
 			mState = STATE_REQUEST_EOL;
 			break;
 		}
@@ -117,6 +119,7 @@ int HttpConnection::process()
 			mHttpRequest->receiveHeader(mMethod, mUri);
 			delete mMethod;
 			delete mUri;
+			mState = STATE_HEADER_EOL;
 		}
 	} break;
 	case STATE_HEADER_EOL: {
@@ -129,7 +132,13 @@ int HttpConnection::process()
 		if (mInputBuffer.pop() != '\n')
 			return -1;
 		found = 1;
-		mState = STATE_DATA;
+		if (mDataLeft == 0) {
+			mHttpRequest->receiveEnd();
+			mHttpRequest = 0;
+			mState = STATE_METHOD;
+		} else {
+			mState = STATE_DATA;
+		}
 	} break;
 	case STATE_DATA: {
 		bool ok;
