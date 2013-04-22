@@ -415,7 +415,7 @@ String *Buffer<mBlockSize>::asString(Size offset, Size length) const
 template<Size16 mBlockSize>
 int Buffer<mBlockSize>::compare(const char *cString) const
 {
-	compare(cString, strlen(cString));
+	return compare(cString, strlen(cString));
 }
 
 template<Size16 mBlockSize>
