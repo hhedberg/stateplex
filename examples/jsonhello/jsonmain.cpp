@@ -26,8 +26,8 @@ int main()
 	company.findObject("Employee")->findObject("Juha")->add(new JsonNumber(&jsonactor,"Age", 24));
 	company.findObject("Employee")->findObject("Tapio")->add(new JsonNumber(&jsonactor,"Age", 24));
 
-	jsonactor.getRootObject("Employee/Juha/", &client, &company, &JsonClient::showResult);
-	jsonactor.setJsonObject("Employee/Juha/Age/14", &client, &company, &JsonClient::showResult);
+	jsonactor.getRootObject("Employee/Juha/Age/", &client, &company, &JsonClient::showResult);
+	//jsonactor.setJsonObject("Employee/Juha/Age/", "14", &client, &company, &JsonClient::showResult);
 
 	JsonData<const char> jsonChar(&jsonactor, "key", "value");
 	int number = 17;
