@@ -73,7 +73,7 @@ template<Size16 mBlockSize>
 void ReadBuffer<mBlockSize>::deleteBlock(typename Buffer<mBlockSize>::Block *block)
 {
 	for (typename Buffer<mBlockSize>::Iterator *iterator = this->mIterators.first(); iterator; iterator = this->mIterators.next(iterator)) {
-		iterator->blockDeleted(block);
+		iterator->deleteBlock(block);
 	}
 	block->destroy(this->allocator());
 }
@@ -112,7 +112,10 @@ template<Size16 mBlockSize>
 const char *ReadBuffer<mBlockSize>::popPointer() const
 {
 	typename Buffer<mBlockSize>::Block *block = this->mBlocks.first();
-	return reinterpret_cast<char *>(block) + sizeof(typename Buffer<mBlockSize>::Block) + block->start();
+	if (!block)
+		return 0;
+
+	return block->startPointer();
 }
 
 /**
@@ -127,7 +130,10 @@ template<Size16 mBlockSize>
 Size16 ReadBuffer<mBlockSize>::popLength() const
 {
 	typename Buffer<mBlockSize>::Block *block = this->mBlocks.first();
-	return block->mEnd - block->mStart;
+	if (!block)
+		return 0;
+
+	return block->size();
 }
 
 /**

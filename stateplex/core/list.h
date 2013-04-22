@@ -100,7 +100,7 @@ class ListIterator {
 public:
 	ListIterator(const List<T> *list, bool backwards = false);
 
-	List<T> *list() const;
+	const List<T> *list() const;
 	T *current() const;
 	T *subsequent();
 	bool hasCurrent() const;
@@ -357,7 +357,7 @@ ListIterator<T>::ListIterator(const List<T> *list, bool backwards)
  */
 
 template<typename T>
-List<T> *ListIterator<T>::list() const
+const List<T> *ListIterator<T>::list() const
 {
 	return mList;
 }

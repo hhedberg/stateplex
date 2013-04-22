@@ -90,7 +90,9 @@ template<Size16 mBlockSize>
 typename Buffer<mBlockSize>::Block *WriteBuffer<mBlockSize>::ensurePush(typename Buffer<mBlockSize>::Block *block, Size length)
 {
 	if (!block || length < block->room())
-		this->allocateBlock(block);
+		block = this->allocateBlock(block);
+
+	return block;
 }
 
 template<Size16 mBlockSize>
@@ -148,7 +150,10 @@ void WriteBuffer<mBlockSize>::append(Buffer<> *buffer)
 	for (ListIterator<typename Buffer<mBlockSize>::Block> iterator(&buffer->mBlocks); iterator.hasCurrent(); iterator.subsequent()) {
 		void *memory = Buffer<mBlockSize>::Block::allocateMemory(this->allocator());
 		typename Buffer<mBlockSize>::Block *block = new(memory) typename Buffer<mBlockSize>::Block(this->allocator(), iterator.current());
-		block->addAfter(previousBlock);
+		if (previousBlock)
+			block->addAfter(previousBlock);
+		else
+			this->mBlocks.addTail(block);
 		this->mSize += block->size();
 		previousBlock = block;
 	}
