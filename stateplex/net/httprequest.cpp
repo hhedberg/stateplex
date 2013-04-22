@@ -33,7 +33,9 @@ void HttpRequest::sendStatus(const char *status, size_t statusLength)
 	if (mStatusSent)
 		return;
 
+	mHttpConnection->write("HTTP/1.0 ", 9);
 	mHttpConnection->write(status, statusLength);
+	mHttpConnection->write("\r\n", 2);
 	mStatusSent = true;
 }
 
@@ -47,6 +49,7 @@ void HttpRequest::sendStatus(Buffer<> *status)
 		return;
 
 	mHttpConnection->write(status);
+	mHttpConnection->write("\r\n", 2);
 	mStatusSent = true;
 }
 
@@ -95,6 +98,9 @@ void HttpRequest::sendEnd()
 {
 	char buffer[128];
 
+	if (!mStatusSent)
+		sendStatus("200 OK", 6);
+
 	Size length = snprintf(buffer, sizeof(buffer), "%lu", (long unsigned)mData.length());
 	sendHeader("Content-Length", 14, buffer, length);
 	mHttpConnection->write("\r\n", 2);
@@ -114,6 +120,9 @@ bool SimpleHttpRequest::receiveData(Buffer<> *data)
 void SimpleHttpRequest::receiveEnd()
 {
 	sendStatus(mStatus->chars(), mStatus->length());
+	if (mBody) {
+		sendData(mBody->chars(), mBody->length());
+	}
 	sendEnd();
 	delete this;
 }
@@ -124,9 +133,16 @@ void SimpleHttpRequest::receiveAbort()
 }
 
 SimpleHttpRequest::SimpleHttpRequest(HttpConnection *connection, const char *status)
+	: HttpRequest(connection), mBody(0)
+{
+	mStatus = String::copy(allocator(), status);
+}
+
+SimpleHttpRequest::SimpleHttpRequest(HttpConnection *connection, const char *status, const char *body)
 	: HttpRequest(connection)
 {
 	mStatus = String::copy(allocator(), status);
+	mBody = String::copy(allocator(), body);
 }
 
 }

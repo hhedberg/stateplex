@@ -99,6 +99,7 @@ public:
 
 class SimpleHttpRequest : public HttpRequest {
 	String *mStatus;
+	String *mBody;
 
 protected:
 	virtual bool receiveHeader(Buffer<> *name, Buffer<> *value);
@@ -108,6 +109,7 @@ protected:
 
 public:
 	SimpleHttpRequest(HttpConnection *connection, const char *status);
+	SimpleHttpRequest(HttpConnection *connection, const char *status, const char *body);
 };
 
 
