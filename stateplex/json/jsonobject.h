@@ -16,7 +16,7 @@ public:
 	Stateplex::List<JsonItem> *getList();
 	JsonItem *find(const char *target);
 	JsonObject *findObject(const char *target);
-	JsonObject *get(Stateplex::String *path);
+	JsonItem *get(Stateplex::String *path);
 	JsonObject *set(Stateplex::String *path, Stateplex::String *parameter);
 	const char *key();
 	JsonType type();

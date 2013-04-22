@@ -64,9 +64,9 @@ void JsonObject::freeItems()
 
 }
 
-JsonObject *JsonObject::get(Stateplex::String *path)
+JsonItem *JsonObject::get(Stateplex::String *path)
 {
-		//IF(JSONMESSAGETYPEGET)
+	//IF(JSONMESSAGETYPEGET)
 	//mResult->findObject(path);
 	//PARSE STRING, SEPARATOR /
 	//JsonObject *test = dynamic_cast<JsonObject *> (mResult);
@@ -76,27 +76,44 @@ JsonObject *JsonObject::get(Stateplex::String *path)
 	//JsonObject *test = dynamic_cast<JsonObject *> (mResult);
 	//invokeCallBack(this);
 	std::vector<std::string> tokens;
-	JsonObject *test = NULL;
+	JsonItem *test = NULL;
+	JsonObject *test2 = NULL;
+	
 
 	std::string str(path->chars());
 
 	tokenizepath(str, tokens);
-
+	
 	for (int i = 0; i < tokens.size(); i++) {
-		if(test == NULL) {
-			test = findObject(tokens[i].c_str());
-		} else {
-			test = test->findObject(tokens[i].c_str());
+		if(test == NULL && test2 == NULL) {
+			test2 = findObject(tokens[i].c_str());
+			if(test2 == NULL) {
+				test = find(tokens[i].c_str());
+			}
+
+		} else if(test2!=NULL) {
+			test2 = test2->findObject(tokens[i].c_str());
+			if(test2 == NULL) {
+				test = find(tokens[i].c_str());
+			}
 		}
 	}
+	
 
-	std::cout << "test object get print " << std::endl;
-	return test;
+	//std::cout << "test object get print " << test << std::endl;
+	if(test != NULL) {
+		std::cout << "dimitri: " << test->type() <<  std::endl;
+		return test;
+	} else {
+		std::cout << "dimitri: " << test->key();
+		return test2;
+	}
 }
 
 JsonObject *JsonObject::set(Stateplex::String *path, Stateplex::String *parameter)
 {
-	JsonObject *test = NULL;
+	JsonItem *test = get(path);
+	
 	std::vector<std::string> tokens;
 	std::string str(path->chars());
 	
