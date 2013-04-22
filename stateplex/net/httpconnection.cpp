@@ -189,10 +189,4 @@ int HttpConnection::locateChar(const char success, const char fail)
 	return 0;
 }
 
-bool HttpConnection::eatChars(const char eaten)
-{
-	for (bool found = false; mInputBufferIterator.hasCurrent() && mInputBufferIterator.current() == eaten; mInputBufferIterator.advance())
-		found = true;
-}
-
 }
