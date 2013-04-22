@@ -48,15 +48,20 @@ template<Size16 blockSize> class WriteBuffer;
 
 template<Size16 mBlockSize = 1024>
 class Buffer : public Object {
+	friend class ReadBuffer<mBlockSize>;
+	friend class WriteBuffer<mBlockSize>;
+
 	class Block;
 public:
 	class Iterator : public ListItem {
+		friend class ReadBuffer<mBlockSize>;
+
 		Buffer<mBlockSize> *mBuffer;
 		Block *mBlock;
 		Size16 mPosition;
-		Size mOffset;
 
 		bool ensureBlock();
+		void deleteBlock(Block *block);
 
 	public:
 		Iterator(Buffer<mBlockSize> *buffer);
@@ -64,18 +69,14 @@ public:
 
 		void advance(Size length = 1);
 		Size offset();
-		Size charBlockLength() const;
-		const char *charBlock() const;
+		Size charBlockLength();
+		const char *charBlock();
 		Buffer<mBlockSize> *buffer() const;
 		bool hasCurrent();
 		char current();
-		void blockDeleted(Block *block);
 	};
 
 private:
-	friend class ReadBuffer<mBlockSize>;
-	friend class WriteBuffer<mBlockSize>;
-
 	class Block : public ListItem {
 		struct Bytes {
 			Size32 mReferenceCount;
@@ -97,6 +98,7 @@ private:
 		char *startPointer() const;
 		char *endPointer() const;
 		char *pointer(Size16 offset) const;
+		char *rawPointer(Size16 offset) const;
 		Size16 size() const;
 		Size16 room() const;
 		int compare(Size16 myOffset, const Block *block, Size16 offset, Size16 length) const;
@@ -215,6 +217,12 @@ template<Size16 mBlockSize>
 char *Buffer<mBlockSize>::Block::pointer(Size16 offset) const
 {
 	return reinterpret_cast<char *>(mBytes) + sizeof(Bytes) + mStart + offset;
+}
+
+template<Size16 mBlockSize>
+char *Buffer<mBlockSize>::Block::rawPointer(Size16 offset) const
+{
+	return reinterpret_cast<char *>(mBytes) + sizeof(Bytes) + offset;
 }
 
 template<Size16 mBlockSize>
@@ -514,7 +522,7 @@ Size16 Buffer<mBlockSize>::blockSize() const
 
 template<Size16 mBlockSize>
 Buffer<mBlockSize>::Iterator::Iterator(Buffer<mBlockSize> *buffer)
-	: mBuffer(buffer), mBlock(0), mPosition(0), mOffset(0)
+	: mBuffer(buffer), mBlock(0), mPosition(0)
 {
 	mBuffer->mIterators.addTail(this);
 }
@@ -528,17 +536,17 @@ Buffer<mBlockSize>::Iterator::~Iterator()
 template<Size16 mBlockSize>
 bool Buffer<mBlockSize>::Iterator::ensureBlock()
 {
-	if (mBlock) {
-		if (mPosition < mBlock->start())
+	if (!mBlock) {
+		if ((mBlock = mBuffer->mBlocks.first()) != 0) {
 			mPosition = mBlock->start();
-		return true;
+			return true;
+		}
+		return false;
 	}
 
-	mBlock = mBuffer->mBlocks.first();
-	if (!mBlock)
-		return false;
+	if (mPosition < mBlock->start())
+		mPosition = mBlock->start();
 
-	mPosition = mBlock->start();
 	return true;
 }
 
@@ -550,9 +558,12 @@ void Buffer<mBlockSize>::Iterator::advance(Size length)
 
 	while (mBlock->end() - mPosition < length) {
 		length -= mBlock->end() - mPosition;
-		mBlock = mBuffer->mBlocks.next(mBlock);
-		if (!mBlock)
+		Block *block = mBuffer->mBlocks.next(mBlock);
+		if (!block) {
+			mPosition = mBlock->end();
 			return;
+		}
+		mBlock = block;
 		mPosition = mBlock->start();
 	}
 
@@ -569,15 +580,21 @@ Size Buffer<mBlockSize>::Iterator::offset()
 }
 
 template<Size16 mBlockSize>
-Size Buffer<mBlockSize>::Iterator::charBlockLength() const
+Size Buffer<mBlockSize>::Iterator::charBlockLength()
 {
+	if (!ensureBlock())
+		return 0;
+
 	return mBlock->end() - mPosition;
 }
 
 template<Size16 mBlockSize>
-const char *Buffer<mBlockSize>::Iterator::charBlock() const
+const char *Buffer<mBlockSize>::Iterator::charBlock()
 {
-	return mBlock->startPointer() + mPosition;
+	if (!ensureBlock())
+		return 0;
+
+	return mBlock->rawPointer(mPosition);
 }
 
 template<Size16 mBlockSize>
@@ -589,7 +606,7 @@ Buffer<mBlockSize> *Buffer<mBlockSize>::Iterator::buffer() const
 template<Size16 mBlockSize>
 bool Buffer<mBlockSize>::Iterator::hasCurrent()
 {
-	return ensureBlock();
+	return ensureBlock() && mPosition < mBlock->end();
 }
 
 template<Size16 mBlockSize>
@@ -598,14 +615,19 @@ char Buffer<mBlockSize>::Iterator::current()
 	if (!ensureBlock())
 		return 0;
 
-	return *(mBlock->startPointer() + mPosition);
+	return *(mBlock->rawPointer(mPosition));
 }
 
 template<Size16 mBlockSize>
-void Buffer<mBlockSize>::Iterator::blockDeleted(Block *block)
+void Buffer<mBlockSize>::Iterator::deleteBlock(Block *block)
 {
-	if (mBlock == block)
-		mBlock = 0;
+	if (block != mBlock)
+		return;
+
+	if ((mBlock = mBuffer->mBlocks.next(mBlock)) != 0 ||
+		(mBlock = mBuffer->mBlocks.last()) != 0) {
+		mPosition = mBlock->start();
+	}
 }
 
 }
