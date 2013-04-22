@@ -17,6 +17,8 @@
  * Authors: Henrik Hedberg
  */
 
+#include <stdio.h>
+
 #include "hbdpserver.h"
 #include "hbdpconnection.h"
 
@@ -29,11 +31,14 @@ HttpRequest *HbdpServer::instantiateHttpRequest(const HttpRequest::Embryo *embry
 	delete uri;
 
 	if (elements->length() == 0) {
-		String *id = String::copy(allocator(), "abcdef");
+		char buffer[128];
+		Size length = snprintf(buffer, sizeof(buffer), "%lu", (long unsigned)actor()->dispatcher()->milliseconds());
+		// TODO: More random id
+		String *id = String::copy(allocator(), buffer, length);
 		HbdpConnection::Embryo connectionEmbryo(this, id);
 		HbdpConnection *connection = mConnectionFactoryMethod.invoke(&connectionEmbryo);
 		mConnections.addTail(connection);
-		return new SimpleHttpRequest(embryo->httpConnection, "200 OK"); // TODO: plus id
+		return new SimpleHttpRequest(embryo->httpConnection, "200 OK", id->chars());
 	} else if (elements->length() == 2) {
 		for (HbdpConnection *connection = mConnections.first(); connection; connection = mConnections.next(connection)) {
 			if (elements->element(0)->equals(connection->id())) {
