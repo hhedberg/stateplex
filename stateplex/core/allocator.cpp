@@ -45,10 +45,10 @@ Size16 Allocator::sliceSizeToIndex(Size size) const
 		size = sizeof(Slice);
 
 	size -= sizeof(Slice);
-	if (size < 8 << 4)
+	if (size <= 8 << 4)
 		index = (size + 0xf) >> 4;
 	else
-		index = (size + 0x7f) >> 7;
+		index = ((size + 0x7f) >> 7) + 7;
 
 	return index;
 }
@@ -57,10 +57,10 @@ Size Allocator::sliceSizeFromIndex(Size16 index) const
 {
 	Size size;
 
-	if (index < 8)
+	if (index <= 8)
 		size = (index) << 4;
 	else
-		size = (index) << 7;
+		size = (index - 7) << 7;
 
 	return size += sizeof(Slice);
 }
