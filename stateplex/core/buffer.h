@@ -415,25 +415,28 @@ String *Buffer<mBlockSize>::asString(Size offset, Size length) const
 template<Size16 mBlockSize>
 int Buffer<mBlockSize>::compare(const char *cString) const
 {
-
+	compare(cString, strlen(cString));
 }
 
 template<Size16 mBlockSize>
 int Buffer<mBlockSize>::compare(const char *cString, Size length) const
 {
-
+	// TODO
+	return 0;
 }
 
 template<Size16 mBlockSize>
 int Buffer<mBlockSize>::compare(const String *string) const
 {
-
+	// TODO
+	return 0;
 }
 
 template<Size16 mBlockSize>
 int Buffer<mBlockSize>::compare(const Buffer *buffer) const
 {
-
+	// TODO
+	return 0;
 }
 
 template<Size16 mBlockSize>
@@ -556,7 +559,7 @@ void Buffer<mBlockSize>::Iterator::advance(Size length)
 	if (!ensureBlock())
 		return;
 
-	while (mBlock->end() - mPosition < length) {
+	while (mPosition + length >= mBlock->end()) {
 		length -= mBlock->end() - mPosition;
 		Block *block = mBuffer->mBlocks.next(mBlock);
 		if (!block) {
