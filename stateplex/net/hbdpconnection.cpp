@@ -71,7 +71,7 @@ void HbdpConnection::handleEnd()
 
 void HbdpConnection::endRequest() {
 	mHbdpRequest->sendEnd();
-	delete mHbdpRequest;
+	//delete mHbdpRequest;
 	mHbdpRequest = 0;
 }
 
