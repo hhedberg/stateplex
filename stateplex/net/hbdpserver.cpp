@@ -42,8 +42,11 @@ HttpRequest *HbdpServer::instantiateHttpRequest(const HttpRequest::Embryo *embry
 	} else if (elements->length() == 2) {
 		for (HbdpConnection *connection = mConnections.first(); connection; connection = mConnections.next(connection)) {
 			if (elements->element(0)->equals(connection->id())) {
+				String *serialString = elements->element(1)->asString();
+				Size serialNumber = atol(serialString->chars());
+				serialString->destroy(allocator());
 				elements->destroy(allocator());
-				return connection->instantiateHttpRequest(embryo, 0);
+				return connection->instantiateHttpRequest(embryo, serialNumber);
 			}
 		}
 	}
