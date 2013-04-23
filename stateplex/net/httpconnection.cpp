@@ -31,40 +31,47 @@ void HttpConnection::close()
 		delete mHttpRequest;
 }
 
-void HttpConnection::handleReady(bool readyToRead, bool readyToWrite)
+void HttpConnection::receiveDrainedFromUpstream()
 {
-	Size length;
-	if (readyToRead) {
-		length = read(&mInputBuffer);
-		if (hasReachedEof()) {
-			if (mHttpRequest) {
-				mHttpRequest->receiveAbort();
-				mHttpRequest = 0;
-			}
-			mKeepAlive = 0;
-			close();
-		}
-		if (length == 0)
-			return;
-
-		ProcessResult result;
-		do {
-			result = process();
-		} while (result == PROCESS_RESULT_FOUND && mInputBuffer.length() > 0);
-
-		if (result == PROCESS_RESULT_ERROR) {
-			mKeepAlive = 0;
-			close();
-			return;
-		} else if (result == PROCESS_RESULT_REQUEST_END) {
-			if (mKeepAlive)
-				mState = STATE_PRE_METHOD;
-			else
-				close();
-		}
-
-		/* TODO: update inactivity information */
+	if (mHttpRequest) {
+		mHttpRequest->receiveAbort();
+		mHttpRequest = 0;
 	}
+	mKeepAlive = 0;
+	close();
+}
+
+void HttpConnection::receiveFromUpstream(const char *data, Size length)
+{
+	mInputBuffer.append(data, length);
+	receive();
+}
+
+void HttpConnection::receiveFromUpstream(Buffer<> *buffer)
+{
+	mInputBuffer.append(buffer);
+	receive();
+}
+
+void HttpConnection::receive()
+{
+	ProcessResult result;
+	do {
+		result = process();
+	} while (result == PROCESS_RESULT_FOUND && mInputBuffer.length() > 0);
+
+	if (result == PROCESS_RESULT_ERROR) {
+		mKeepAlive = 0;
+		close();
+		return;
+	} else if (result == PROCESS_RESULT_REQUEST_END) {
+		if (mKeepAlive)
+			mState = STATE_PRE_METHOD;
+		else
+			close();
+	}
+
+	/* TODO: update inactivity information */
 }
 
 HttpConnection::ProcessResult HttpConnection::process()

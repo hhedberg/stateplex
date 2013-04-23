@@ -33,9 +33,9 @@ void HttpRequest::sendStatus(const char *status, size_t statusLength)
 	if (mStatusSent)
 		return;
 
-	mHttpConnection->write("HTTP/1.0 ", 9);
-	mHttpConnection->write(status, statusLength);
-	mHttpConnection->write("\r\n", 2);
+	mHttpConnection->sendToUpstream("HTTP/1.0 ", 9);
+	mHttpConnection->sendToUpstream(status, statusLength);
+	mHttpConnection->sendToUpstream("\r\n", 2);
 	mStatusSent = true;
 }
 
@@ -48,8 +48,8 @@ void HttpRequest::sendStatus(Buffer<> *status)
 	if (mStatusSent)
 		return;
 
-	mHttpConnection->write(status);
-	mHttpConnection->write("\r\n", 2);
+	mHttpConnection->sendToUpstream(status);
+	mHttpConnection->sendToUpstream("\r\n", 2);
 	mStatusSent = true;
 }
 
@@ -58,10 +58,10 @@ void HttpRequest::sendStatus(Buffer<> *status)
  */
 void HttpRequest::sendHeader(const char *name, Size nameLength, const char *value, Size valueLength)
 {
-	mHttpConnection->write(name, nameLength);
-	mHttpConnection->write(":", 1);
-	mHttpConnection->write(value, valueLength);
-	mHttpConnection->write("\r\n", 2);
+	mHttpConnection->sendToUpstream(name, nameLength);
+	mHttpConnection->sendToUpstream(":", 1);
+	mHttpConnection->sendToUpstream(value, valueLength);
+	mHttpConnection->sendToUpstream("\r\n", 2);
 }
 
 /**
@@ -69,10 +69,10 @@ void HttpRequest::sendHeader(const char *name, Size nameLength, const char *valu
  */
 void HttpRequest::sendHeader(Buffer<> *name, Buffer<> *value)
 {
-	mHttpConnection->write(name);
-	mHttpConnection->write(":", 1);
-	mHttpConnection->write(value);
-	mHttpConnection->write("\r\n", 2);
+	mHttpConnection->sendToUpstream(name);
+	mHttpConnection->sendToUpstream(":", 1);
+	mHttpConnection->sendToUpstream(value);
+	mHttpConnection->sendToUpstream("\r\n", 2);
 }
 
 /**
@@ -103,8 +103,8 @@ void HttpRequest::sendEnd()
 
 	Size length = snprintf(buffer, sizeof(buffer), "%lu", (long unsigned)mData.length());
 	sendHeader("Content-Length", 14, buffer, length);
-	mHttpConnection->write("\r\n", 2);
-	mHttpConnection->write(&mData);
+	mHttpConnection->sendToUpstream("\r\n", 2);
+	mHttpConnection->sendToUpstream(&mData);
 }
 
 bool SimpleHttpRequest::receiveHeader(Buffer<> *name, Buffer<> *value)

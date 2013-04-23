@@ -28,7 +28,7 @@ bool HbdpConnection::HbdpRequest::receiveHeader(Buffer<> *name, Buffer<> *value)
 
 bool HbdpConnection::HbdpRequest::receiveData(Buffer<> *data)
 {
-	mHbdpConnection->receiveData(data);
+	mHbdpConnection->sendToDownstream(data);
 	return true;
 }
 
@@ -75,46 +75,35 @@ void HbdpConnection::endRequest() {
 	mHbdpRequest = 0;
 }
 
-void HbdpConnection::close()
-{
-	// TODO
-}
-
 HbdpServer *HbdpConnection::hbdpServer() const
 {
 	return mHbdpServer;
 }
 
-void HbdpConnection::write(Buffer<> *data)
+void HbdpConnection::receiveDrainedFromDownstream()
+{
+	// TODO
+}
+
+void HbdpConnection::receiveFromDownstream(const char *data, Size length)
 {
 	if (!mHbdpRequest) {
 		mOut.append(data);
 		return;
 	}
 
-	mHbdpRequest->sendData(data);
+	mHbdpRequest->sendData(data, length);
 	endRequest();
 }
 
-void HbdpConnection::write(const String *data)
+void HbdpConnection::receiveFromDownstream(Buffer<> *buffer)
 {
 	if (!mHbdpRequest) {
-		mOut.append(data);
+		mOut.append(buffer);
 		return;
 	}
 
-	mHbdpRequest->sendData(data->chars(), data->length());
-	endRequest();
-}
-
-void HbdpConnection::write(const char *data, Size dataLength)
-{
-	if (!mHbdpRequest) {
-		mOut.append(data);
-		return;
-	}
-
-	mHbdpRequest->sendData(data, dataLength);
+	mHbdpRequest->sendData(buffer);
 	endRequest();
 }
 

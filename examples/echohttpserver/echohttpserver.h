@@ -42,7 +42,7 @@ protected:
 	virtual void receiveAbort();
 
 public:
-	EchoHttpRequest(Stateplex::HttpConnection *connection);
+	EchoHttpRequest(const Stateplex::HttpRequest::Embryo *embryo);
 };
 
 #endif

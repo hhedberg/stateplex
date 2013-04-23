@@ -31,7 +31,7 @@ class HbdpServer;
 /**
  * A connection through HTTP Bidirectional Protocol.
  */
-class HbdpConnection : public Object, public ListItem {
+class HbdpConnection : public Upstream, public ListItem {
 	friend class HbdpServer;
 
 	class HbdpRequest : public HttpRequest {
@@ -58,8 +58,9 @@ class HbdpConnection : public Object, public ListItem {
 	void endRequest();
 
 protected:
-	virtual void receiveData(Buffer<> *data) = 0;
-	virtual void receiveClose() = 0;
+	virtual void receiveDrainedFromDownstream();
+	virtual void receiveFromDownstream(const char *data, Size length);
+	virtual void receiveFromDownstream(Buffer<> *buffer);
 
 public:
 	class Embryo {
@@ -90,7 +91,7 @@ public:
 namespace Stateplex {
 
 inline HbdpConnection::HbdpConnection(Actor *actor, const Embryo *embryo)
-	: Object(actor), mHbdpServer(embryo->mHbdpServer), mHbdpRequest(0), mSerialNumber(0), mOut(actor)
+	: Object(actor), Upstream(actor), mHbdpServer(embryo->mHbdpServer), mHbdpRequest(0), mSerialNumber(0), mOut(actor)
 {
 	mId = String::copy(allocator(), embryo->mId);
 }

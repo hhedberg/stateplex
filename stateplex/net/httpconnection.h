@@ -37,7 +37,7 @@ class HttpServer;
 /**
  * HTTP connection between the HttpServer and a client.
  */
-class HttpConnection : public TcpConnection {
+class HttpConnection : public Downstream {
 	HttpServer *mHttpServer;
 	WriteBuffer<> mInputBuffer;
 	Buffer<>::Iterator mInputBufferIterator;
@@ -72,6 +72,7 @@ class HttpConnection : public TcpConnection {
 	unsigned int mKeepAlive : 1;
 
 	void close();
+	void receive();
 	ProcessResult process();
 	bool eatSpaces();
 	bool handleVersion(Buffer<> *version);
@@ -80,10 +81,12 @@ class HttpConnection : public TcpConnection {
 	ProcessResult locateRegion(const char success, const char fail, WriteBuffer<> **regionReturn);
 
 protected:
-	virtual void handleReady(bool readyToRead, bool readyToWrite);
+	virtual void receiveDrainedFromUpstream();
+	virtual void receiveFromUpstream(const char *data, Size length);
+	virtual void receiveFromUpstream(Buffer<> *buffer);
 
 public:
-	HttpConnection(Actor *actor, HttpServer *server, const TcpConnection::Embryo *embryo);
+	HttpConnection(Actor *actor, HttpServer *server);
 
 	HttpServer *httpServer() const;
 };
@@ -94,15 +97,14 @@ public:
 
 namespace Stateplex {
 
-inline HttpConnection::HttpConnection(Actor *actor, HttpServer *server, const TcpConnection::Embryo *embryo)
-	: TcpConnection(actor, embryo), mHttpServer(server), mInputBuffer(actor), mInputBufferIterator(&mInputBuffer), mMethod(0), mUri(0), mHttpRequest(0), mState(STATE_PRE_METHOD), mKeepAlive(0)
+inline HttpConnection::HttpConnection(Actor *actor, HttpServer *server)
+	: Object(actor), Downstream(actor), mHttpServer(server), mInputBuffer(actor), mInputBufferIterator(&mInputBuffer), mMethod(0), mUri(0), mHttpRequest(0), mState(STATE_PRE_METHOD), mKeepAlive(0)
 { }
 
 inline HttpServer *HttpConnection::httpServer() const
 {
 	return mHttpServer;
 }
-
 
 }
 
