@@ -421,15 +421,27 @@ int Buffer<mBlockSize>::compare(const char *cString) const
 template<Size16 mBlockSize>
 int Buffer<mBlockSize>::compare(const char *cString, Size length) const
 {
-	// TODO
+	if (length > mSize)
+		return 1;
+
+	int result = 0;
+	for (Block *block = mBlocks.first(); length > 0; block = mBlocks.next(block)) {
+		if (block->size() > length)
+			return memcmp(cString, block->startPointer(), length);
+		result = memcmp(cString, block->startPointer(), block->size());
+		if (result != 0)
+			return result;
+		length -= block->size();
+		cString += block->size();
+	}
+
 	return 0;
 }
 
 template<Size16 mBlockSize>
 int Buffer<mBlockSize>::compare(const String *string) const
 {
-	// TODO
-	return 0;
+	return compare(string->chars(), string->length());
 }
 
 template<Size16 mBlockSize>
