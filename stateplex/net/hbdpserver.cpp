@@ -26,7 +26,7 @@ namespace Stateplex {
 
 HttpRequest *HbdpServer::instantiateHttpRequest(const HttpRequest::Embryo *embryo)
 {
-	WriteBuffer<> *uri = embryo->uri->region(mPath->length(), embryo->uri->length() - mPath->length());
+	WriteBuffer<> *uri = embryo->uri()->region(mPath->length(), embryo->uri()->length() - mPath->length());
 	Array<WriteBuffer<> *> *elements = uri->split('/', 3);
 	delete uri;
 
@@ -38,7 +38,7 @@ HttpRequest *HbdpServer::instantiateHttpRequest(const HttpRequest::Embryo *embry
 		HbdpConnection::Embryo connectionEmbryo(this, id);
 		HbdpConnection *connection = mConnectionFactoryMethod.invoke(&connectionEmbryo);
 		mConnections.addTail(connection);
-		return new SimpleHttpRequest(embryo->httpConnection, "200 OK", id->chars());
+		return new SimpleHttpRequest(embryo, "200 OK", id->chars());
 	} else if (elements->length() == 2) {
 		for (HbdpConnection *connection = mConnections.first(); connection; connection = mConnections.next(connection)) {
 			if (elements->element(0)->equals(connection->id())) {
@@ -49,7 +49,7 @@ HttpRequest *HbdpServer::instantiateHttpRequest(const HttpRequest::Embryo *embry
 	}
 
 	elements->destroy(allocator());
-	return new SimpleHttpRequest(embryo->httpConnection, "404 Not Found");
+	return new SimpleHttpRequest(embryo, "404 Not Found");
 }
 
 }

@@ -44,7 +44,7 @@ class HbdpConnection : public Object, public ListItem {
 		virtual void receiveAbort();
 
 	public:
-		HbdpRequest(HttpConnection *httpConnection, HbdpConnection *hbdpConnection);
+		HbdpRequest(const HttpRequest::Embryo *embryo, HbdpConnection *hbdpConnection);
 	};
 
 	HbdpServer *mHbdpServer;
@@ -91,7 +91,9 @@ namespace Stateplex {
 
 inline HbdpConnection::HbdpConnection(Actor *actor, const Embryo *embryo)
 	: Object(actor), mHbdpServer(embryo->mHbdpServer), mHbdpRequest(0), mSerialNumber(0), mOut(actor)
-{ }
+{
+	mId = String::copy(allocator(), embryo->mId);
+}
 
 inline HbdpConnection::~HbdpConnection()
 { }

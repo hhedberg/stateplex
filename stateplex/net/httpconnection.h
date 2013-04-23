@@ -43,7 +43,6 @@ class HttpConnection : public TcpConnection {
 	Buffer<>::Iterator mInputBufferIterator;
 	WriteBuffer<> *mMethod;
 	WriteBuffer<> *mUri;
-	Size mDataLeft;
 	HttpRequest *mHttpRequest;
 
 	enum State {
@@ -54,23 +53,31 @@ class HttpConnection : public TcpConnection {
 		STATE_PRE_VERSION,
 		STATE_VERSION,
 		STATE_REQUEST_LINE_EOL,
-		STATE_KEY_FIRST,
+		STATE_PRE_KEY,
 		STATE_KEY,
 		STATE_PRE_VALUE,
 		STATE_VALUE,
 		STATE_HEADER_EOL,
-		STATE_REQUEST_EOL,
+		STATE_HEADERS_END_EOL,
 		STATE_DATA
 	} mState;
+
+	enum ProcessResult {
+		PROCESS_RESULT_NOT_FOUND,
+		PROCESS_RESULT_FOUND,
+		PROCESS_RESULT_ERROR,
+		PROCESS_RESULT_REQUEST_END
+	};
 
 	unsigned int mKeepAlive : 1;
 
 	void close();
-	int process();
-
-	bool eatChars(const char eaten);
-	int locateChar(const char success, const char fail);
-	int locateRegion(const char success, const char fail, WriteBuffer<> **regionReturn);
+	ProcessResult process();
+	bool eatSpaces();
+	bool handleVersion(Buffer<> *version);
+	void handleHeader(Buffer<> *name, Buffer<> *value);
+	ProcessResult locateChar(const char success, const char fail);
+	ProcessResult locateRegion(const char success, const char fail, WriteBuffer<> **regionReturn);
 
 protected:
 	virtual void handleReady(bool readyToRead, bool readyToWrite);
@@ -88,7 +95,7 @@ public:
 namespace Stateplex {
 
 inline HttpConnection::HttpConnection(Actor *actor, HttpServer *server, const TcpConnection::Embryo *embryo)
-	: TcpConnection(actor, embryo), mHttpServer(server), mInputBuffer(actor), mInputBufferIterator(&mInputBuffer), mHttpRequest(0), mState(STATE_METHOD), mKeepAlive(0), mDataLeft(0), mMethod(0), mUri(0)
+	: TcpConnection(actor, embryo), mHttpServer(server), mInputBuffer(actor), mInputBufferIterator(&mInputBuffer), mMethod(0), mUri(0), mHttpRequest(0), mState(STATE_PRE_METHOD), mKeepAlive(0)
 { }
 
 inline HttpServer *HttpConnection::httpServer() const

@@ -42,20 +42,20 @@ void HbdpConnection::HbdpRequest::receiveAbort()
 	// TODO: Handle failure.
 }
 
-HbdpConnection::HbdpRequest::HbdpRequest(HttpConnection *httpConnection, HbdpConnection *hbdpConnection)
-	: HttpRequest(httpConnection), mHbdpConnection(hbdpConnection)
+HbdpConnection::HbdpRequest::HbdpRequest(const HttpRequest::Embryo *embryo, HbdpConnection *hbdpConnection)
+	: HttpRequest(embryo), mHbdpConnection(hbdpConnection)
 { }
 
 HttpRequest *HbdpConnection::instantiateHttpRequest(const HttpRequest::Embryo *embryo, Size serialNumber)
 {
 	if (mSerialNumber != serialNumber) {
-		return new SimpleHttpRequest(embryo->httpConnection, "410 Gone");
+		return new SimpleHttpRequest(embryo, "410 Gone");
 	}
 	mSerialNumber++;
 
 	if (mHbdpRequest)
 		endRequest();
-	mHbdpRequest = new HbdpRequest(embryo->httpConnection, this);
+	mHbdpRequest = new HbdpRequest(embryo, this);
 
 	return mHbdpRequest;
 }

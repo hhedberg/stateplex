@@ -132,14 +132,14 @@ void SimpleHttpRequest::receiveAbort()
 	delete this;
 }
 
-SimpleHttpRequest::SimpleHttpRequest(HttpConnection *connection, const char *status)
-	: HttpRequest(connection), mBody(0)
+SimpleHttpRequest::SimpleHttpRequest(const HttpRequest::Embryo *embryo, const char *status)
+	: HttpRequest(embryo), mBody(0)
 {
 	mStatus = String::copy(allocator(), status);
 }
 
-SimpleHttpRequest::SimpleHttpRequest(HttpConnection *connection, const char *status, const char *body)
-	: HttpRequest(connection)
+SimpleHttpRequest::SimpleHttpRequest(const HttpRequest::Embryo *embryo, const char *status, const char *body)
+	: HttpRequest(embryo)
 {
 	mStatus = String::copy(allocator(), status);
 	mBody = String::copy(allocator(), body);
