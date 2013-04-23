@@ -173,7 +173,6 @@ Buffer<mBlockSize>::Block::Block(Allocator *allocator)
 /**
  * Function that allocates a specific block.
  *
- *
  */
 
 template<Size16 mBlockSize>
@@ -186,7 +185,6 @@ Buffer<mBlockSize>::Block::Block(Allocator *allocator, Block *block)
 /**
  * Function that allcoates a specific block size.
  *
- *
  */
 
 template<Size16 mBlockSize>
@@ -198,7 +196,6 @@ Buffer<mBlockSize>::Block::Block(Allocator *allocator, Block *block, Size16 offs
 
 /**
  * Fucntion that destroy the allocated block if refernce count is 0.
- *
  *
  */
 
@@ -696,6 +693,11 @@ bool Buffer<mBlockSize>::Iterator::ensureBlock()
 	return true;
 }
 
+/*
+ *
+ *
+ */
+
 template<Size16 mBlockSize>
 void Buffer<mBlockSize>::Iterator::advance(Size length)
 {
@@ -715,6 +717,11 @@ void Buffer<mBlockSize>::Iterator::advance(Size length)
 
 	mPosition += length;
 }
+
+/*
+ * Gets current postion of the block.
+ *
+ */
 
 template<Size16 mBlockSize>
 Size Buffer<mBlockSize>::Iterator::offset()
