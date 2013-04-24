@@ -179,6 +179,8 @@ Timeout *Actor::addTimeout(unsigned long milliseconds, T *object, void (T::*call
 {
 	Timeout *timeout = new Timeout(milliseconds, object, callback);
 	addTimeout(timeout);
+
+	return timeout;
 }
 
 /**

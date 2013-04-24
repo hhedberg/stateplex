@@ -33,7 +33,9 @@ void HttpRequest::sendStatus(const char *status, size_t statusLength)
 	if (mStatusSent)
 		return;
 
-	mHttpConnection->write(status, statusLength);
+	mHttpConnection->sendToUpstream("HTTP/1.0 ", 9);
+	mHttpConnection->sendToUpstream(status, statusLength);
+	mHttpConnection->sendToUpstream("\r\n", 2);
 	mStatusSent = true;
 }
 
@@ -46,7 +48,8 @@ void HttpRequest::sendStatus(Buffer<> *status)
 	if (mStatusSent)
 		return;
 
-	mHttpConnection->write(status);
+	mHttpConnection->sendToUpstream(status);
+	mHttpConnection->sendToUpstream("\r\n", 2);
 	mStatusSent = true;
 }
 
@@ -55,10 +58,10 @@ void HttpRequest::sendStatus(Buffer<> *status)
  */
 void HttpRequest::sendHeader(const char *name, Size nameLength, const char *value, Size valueLength)
 {
-	mHttpConnection->write(name, nameLength);
-	mHttpConnection->write(":", 1);
-	mHttpConnection->write(value, valueLength);
-	mHttpConnection->write("\r\n", 2);
+	mHttpConnection->sendToUpstream(name, nameLength);
+	mHttpConnection->sendToUpstream(":", 1);
+	mHttpConnection->sendToUpstream(value, valueLength);
+	mHttpConnection->sendToUpstream("\r\n", 2);
 }
 
 /**
@@ -66,10 +69,10 @@ void HttpRequest::sendHeader(const char *name, Size nameLength, const char *valu
  */
 void HttpRequest::sendHeader(Buffer<> *name, Buffer<> *value)
 {
-	mHttpConnection->write(name);
-	mHttpConnection->write(":", 1);
-	mHttpConnection->write(value);
-	mHttpConnection->write("\r\n", 2);
+	mHttpConnection->sendToUpstream(name);
+	mHttpConnection->sendToUpstream(":", 1);
+	mHttpConnection->sendToUpstream(value);
+	mHttpConnection->sendToUpstream("\r\n", 2);
 }
 
 /**
@@ -95,10 +98,13 @@ void HttpRequest::sendEnd()
 {
 	char buffer[128];
 
+	if (!mStatusSent)
+		sendStatus("200 OK", 6);
+
 	Size length = snprintf(buffer, sizeof(buffer), "%lu", (long unsigned)mData.length());
 	sendHeader("Content-Length", 14, buffer, length);
-	mHttpConnection->write("\r\n", 2);
-	mHttpConnection->write(&mData);
+	mHttpConnection->sendToUpstream("\r\n", 2);
+	mHttpConnection->sendToUpstream(&mData);
 }
 
 bool SimpleHttpRequest::receiveHeader(Buffer<> *name, Buffer<> *value)
@@ -114,6 +120,9 @@ bool SimpleHttpRequest::receiveData(Buffer<> *data)
 void SimpleHttpRequest::receiveEnd()
 {
 	sendStatus(mStatus->chars(), mStatus->length());
+	if (mBody) {
+		sendData(mBody->chars(), mBody->length());
+	}
 	sendEnd();
 	delete this;
 }
@@ -123,10 +132,17 @@ void SimpleHttpRequest::receiveAbort()
 	delete this;
 }
 
-SimpleHttpRequest::SimpleHttpRequest(HttpConnection *connection, const char *status)
-	: HttpRequest(connection)
+SimpleHttpRequest::SimpleHttpRequest(const HttpRequest::Embryo *embryo, const char *status)
+	: HttpRequest(embryo), mBody(0)
 {
 	mStatus = String::copy(allocator(), status);
+}
+
+SimpleHttpRequest::SimpleHttpRequest(const HttpRequest::Embryo *embryo, const char *status, const char *body)
+	: HttpRequest(embryo)
+{
+	mStatus = String::copy(allocator(), status);
+	mBody = String::copy(allocator(), body);
 }
 
 }

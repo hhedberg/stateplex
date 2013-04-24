@@ -50,18 +50,18 @@ EchoActor::EchoActor(Stateplex::Dispatcher *dispatcher)
 
 Stateplex::HttpRequest *EchoActor::instantiateHttpRequest(const Stateplex::HttpRequest::Embryo *embryo)
 {
-	Stateplex::HttpRequest *request = new EchoHttpRequest(embryo->httpConnection);
+	Stateplex::HttpRequest *request = new EchoHttpRequest(embryo);
 
-	request->sendData(embryo->method);
+	request->sendData(embryo->method());
 	request->sendData(" ", 1);
-	request->sendData(embryo->uri);
+	request->sendData(embryo->uri());
 	request->sendData("\n", 1);
 
 	return request;
 }
 
-EchoHttpRequest::EchoHttpRequest(Stateplex::HttpConnection *connection)
-	: HttpRequest(connection), mDataReceived(false)
+EchoHttpRequest::EchoHttpRequest(const HttpRequest::Embryo *embryo)
+	: HttpRequest(embryo), mDataReceived(false)
 { }
 
 bool EchoHttpRequest::receiveHeader(Stateplex::Buffer<> *key, Stateplex::Buffer<> *value)
@@ -70,6 +70,8 @@ bool EchoHttpRequest::receiveHeader(Stateplex::Buffer<> *key, Stateplex::Buffer<
 	sendData(": ", 2);
 	sendData(value);
 	sendData("\n", 1);
+
+	return true;
 }
 
 bool EchoHttpRequest::receiveData(Stateplex::Buffer<> *data)

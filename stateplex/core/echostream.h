@@ -1,7 +1,7 @@
 /*
  * Stateplex - A server-side actor model library.
  *
- * net/httpserver.cpp
+ * core/echostream.h
  *
  * (c) 2013 Henrik Hedberg <henrik.hedberg@innologies.fi>
  *
@@ -17,24 +17,40 @@
  * Authors: Henrik Hedberg
  */
 
-#include "httpserver.h"
-#include "httpconnection.h"
+#ifndef INCLUDED_STATEPLEX_ECHO_STREAM_H
+#define INCLUDED_STATEPLEX_ECHO_STREAM_H
+
+#include "downstream.h"
 
 namespace Stateplex {
 
-TcpConnection *HttpServer::instantiateTcpConnection(const TcpConnection::Embryo *embryo)
-{
-	TcpConnection *tcpConnection = new TcpConnection(embryo->mTcpServer->actor(), embryo);
-	HttpConnection *httpConnection = new HttpConnection(embryo->mTcpServer->actor(), this);
-	tcpConnection->setDownstream(httpConnection);
+class EchoStream : public Downstream {
+protected:
+	virtual void receiveDrainedFromUpstream();
+	virtual void receiveFromUpstream(const char *data, Size length);
+	virtual void receiveFromUpstream(Buffer<> *buffer);
 
-	return tcpConnection;
-}
+public:
+	EchoStream(Actor *actor);
+	virtual ~EchoStream();
 
-HttpRequest *HttpServer::instantiateHttpRequest(const HttpRequest::Embryo *embryo)
-{
-	/* TODO: take the path into account */
-	return mRequestFactoryMethod.invoke(embryo);
-}
+};
 
 }
+
+/*** Inline implementations ***/
+
+#include "upstream.h"
+
+namespace Stateplex {
+
+inline EchoStream::EchoStream(Actor *actor)
+	: Object(actor), Downstream(actor)
+{ }
+
+inline EchoStream::~EchoStream()
+{ }
+
+}
+
+#endif
