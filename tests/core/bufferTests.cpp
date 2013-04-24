@@ -14,95 +14,107 @@
 #include "../../stateplex/core/string.h"
 
 class BufferTest : public testing::Test {
+
 protected:
+
+        static Stateplex::Dispatcher *dispatcher;
+      //  static Stateplex::Actor myActor;
 
         static void SetUpTestCase()
         {
+                dispatcher = new Stateplex::Dispatcher();
+        //        myActor = new Stateplex::Actor(dispatcher);
+
         }
         static void TearDownTestCase()
         {
+        //      delete myActor;
+                delete dispatcher;
         }
 
-        virtual void SetUp()
-        {
-
-         }
-        virtual void TearDown()
-        {
-
-        }
-        Stateplex::Dispatcher dispatcher;
-
+        virtual void SetUp(){}
+        virtual void TearDown(){}
 
 };
+
+Stateplex::Dispatcher *BufferTest::dispatcher;
+//Stateplex::Dispatcher *BufferTest::myActor;
+
         //Buffer tests
 
 TEST_F(BufferTest, zeroLengthTest)
 {
-
-
-//      Stateplex::WriteBuffer<> inputBuffer2(&actor);
-        Stateplex::Actor myActor(&dispatcher);
+        Stateplex::Actor myActor(dispatcher);
         Stateplex::WriteBuffer<1024> inputBuffer1(&myActor);
         EXPECT_EQ(0, inputBuffer1.length());
-        delete &myActor;
 }
 
-TEST_F(BufferTest, appendTest)
+TEST_F(BufferTest, appendCStringTest)
 {
-        std::cout << "tama on append test";
-        Stateplex::Actor actor2(&dispatcher);
+        Stateplex::Actor actor1(dispatcher);
         //Stateplex::Actor actor2(&dispatcher);
 
-        Stateplex::WriteBuffer<1024> inputBuffer3(&actor2);
-        //Stateplex::WriteBuffer<1024> inputBuffer4(&actor2);
+        Stateplex::WriteBuffer<1024> inputBuffer2(&actor1);
+        //Stateplex::WriteBuffer<1024> inputBuffer4(&actor1);
 
-        inputBuffer3.append("Marja");
-        EXPECT_NE(inputBuffer3.length(), 0);
-        delete &actor2;
+        inputBuffer2.append("Marja");
+        EXPECT_NE(inputBuffer2.length(), 0);
 
-        //inputBuffer4.append("yrittaa koodata turhaan", 15);
-       // EXPECT_EQ(inputBuffer3.equals("Marja"), true);
-        //std::cout << "buffer 1 " << inputBuffer3.length();
-        //std::cout << "buffer 2 " << inputBuffer4.length();
-        //EXPECT_EQ(inputBuffer3.length(), inputBuffer4.length());
 }
 
 TEST_F(BufferTest, appendStringTest)
 {
-        Stateplex::Actor actor1(&dispatcher);
-        Stateplex::WriteBuffer<1024> inputBuffer2(&actor1);
-        inputBuffer2.append(Stateplex::String::copy(actor1.allocator(), "Marja"));
-        EXPECT_NE(inputBuffer2.length(), 0);
-        delete &actor1;
+        Stateplex::Actor actor2(dispatcher);
+        Stateplex::WriteBuffer<1024> inputBuffer3(&actor2);
+        inputBuffer3.append(Stateplex::String::copy(actor2.allocator(), "Marja"));
+        EXPECT_NE(inputBuffer3.length(), 0);
+        EXPECT_TRUE(inputBuffer3.equals("Marja"));
+        EXPECT_EQ(inputBuffer3.length(), 5);
 }
 
-
-/*
-TEST_F(BufferTest, BufferTest1)
+TEST_F(BufferTest, appendBuffersTest)
 {
-        Stateplex::Actor actor3(&dispatcher);
-        Stateplex::Actor actor4(&dispatcher);
+        Stateplex::Actor actor3(dispatcher);
+        Stateplex::Actor actor4(dispatcher);
+        Stateplex::Actor actor5(dispatcher);
         Stateplex::WriteBuffer<> *buffer3 = new Stateplex::WriteBuffer<>(&actor3);
         Stateplex::WriteBuffer<> *buffer4 = new Stateplex::WriteBuffer<>(&actor4);
-        //Stateplex::WriteBuffer<> *buffer3 = new Stateplex::WriteBuffer<>.region(0, 1024);
-        //Stateplex::WriteBuffer<> *buffer4 = new Stateplex::WriteBuffer<>.region(0, 1024);
+        Stateplex::WriteBuffer<> *buffer5 = new Stateplex::WriteBuffer<>(&actor5);
+
+        buffer3->append("Marja ");
+        EXPECT_TRUE(buffer3->equals("Marja "));
+        EXPECT_EQ(buffer3->length(), 6);
+
+        buffer4->append(Stateplex::String::copy(actor4.allocator(), "tries coding."));
 
         buffer3->append(buffer4);
-        //EXPECT_EQ(buffer3->length()+buffer4->length(), buffer3->length());
-}
+        EXPECT_TRUE(buffer3->equals("Marja tries coding."));
+        EXPECT_EQ(buffer3->length(), 19);
 
-TEST_F(BufferTest, BufferTest2)
+        buffer5->append(" And succeeds in it.", 13);
+        buffer3->append(buffer5);
+
+        EXPECT_EQ(buffer3->length(), 32);
+        EXPECT_TRUE(buffer3->equals("Marja tries coding. And succeeds"));
+
+        delete buffer3;
+        delete buffer4;
+        delete buffer5;
+}
+/*
+//Iterator tests
+TEST_F(BufferTest, regionTest)
 {
+        Stateplex::Actor *actor(dispatcher);
+        Stateplex::WriteBuffer<> inputBuffer(actor);
+        //Stateplex::WriteBuffer<> *buffer5 = new Stateplex::WriteBuffer<>.region(0, 1024);
+        Stateplex::WriteBuffer<> *buffer6 = new inputBuffer.region(0, 1024);
+        inputBuffer.popped(1024);
+        EXPECT_EQ(inputBuffer.length(), 0);
 
+        //delete buffer5;
+        delete buffer6;
 }
-        //Iterator tests
-
-
-        TEST_F(BufferTest, regionTest)
-        {
-
-        }
 
         //WriteBuffer tests
         TEST_F(BufferTest, splitTest)
