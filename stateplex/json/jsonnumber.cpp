@@ -4,7 +4,7 @@
 JsonNumber::JsonNumber(Stateplex::Actor *owner, const char *key, int number)
 	: JsonItem(owner)
 {
-	mKey = key;
+	mKey = const_cast<char*>(key);
 	mValue = number;
 	mType = JSON_NUMBER;
 }
@@ -21,12 +21,18 @@ int JsonNumber::value()
 
 const char *JsonNumber::key()
 {
-	return mKey;
+	return const_cast<const char*>(mKey);
 }
 
 JsonType JsonNumber::type()
 {
 	return mType;
+}
+
+
+void JsonNumber::setValue(int value)
+{
+	mValue = value;
 }
 
 void JsonNumber::ref()

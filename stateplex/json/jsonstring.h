@@ -12,6 +12,7 @@ public:
 	void traverse();
 	const char *key();
 	const char *value();
+	void setValue(Stateplex::String *str);
 	JsonType type();
 	void unref();
 	

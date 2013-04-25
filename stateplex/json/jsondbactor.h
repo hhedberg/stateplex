@@ -68,8 +68,16 @@ inline void JsonDbActor::JsonMessage::handle(Actor *sender, JsonDbActor *receive
 
 inline void JsonDbActor::JsonMessage::result() const
 {
-	std::cout << "Key: " << mResult->key() << std::endl;
-	std::cout << "TESTI_RESULT:" << std::endl;
+	if(mResult->type() == JSON_OBJECT) {
+		std::cout << "Key: " << mResult->key() << std::endl;
+	} else if(mResult->type() == JSON_STRING) {
+		std::cout << "Key: " << mResult->key() << std::endl;
+		std::cout << "Value: " << dynamic_cast<JsonString *> (mResult)->value() << std::endl;
+	} else if(mResult->type() == JSON_NUMBER) {
+		std::cout << "Key: " << mResult->key() << std::endl;
+		std::cout << "Value: " << dynamic_cast<JsonNumber *> (mResult)->value() << std::endl;
+	}
+	
 }
 
 inline JsonDbActor::JsonDbActor(Stateplex::Dispatcher *dispatcher)
