@@ -15,6 +15,8 @@ public:
 	const char *key();
 	JsonType type();
 	const T *value();
+	void ref();
+	void unref();
 protected:
 private:
 	T *mValue;
@@ -51,6 +53,20 @@ template<typename T>
 JsonType JsonData<T>::type()
 {
 	return mType;
+}
+
+template<typename T>
+void JsonData<T>::ref()
+{
+	mRefcount++;
+}
+
+template<typename T>
+void JsonData<T>::unref()
+{
+	if (mRefcount > 0) {
+		mRefcount--;
+	}
 }
 
 template<typename T>

@@ -20,6 +20,8 @@ public:
 	JsonObject *set(Stateplex::String *path, Stateplex::String *parameter);
 	const char *key();
 	JsonType type();
+	void ref();
+	void unref();
 
 protected:
 private:

@@ -66,15 +66,6 @@ void JsonObject::freeItems()
 
 JsonItem *JsonObject::get(Stateplex::String *path)
 {
-	//IF(JSONMESSAGETYPEGET)
-	//mResult->findObject(path);
-	//PARSE STRING, SEPARATOR /
-	//JsonObject *test = dynamic_cast<JsonObject *> (mResult);
-	//ELSE
-	//PARSE STRING, SEPARATOR / , 
-	//mResult->set(path, parameter);
-	//JsonObject *test = dynamic_cast<JsonObject *> (mResult);
-	//invokeCallBack(this);
 	std::vector<std::string> tokens;
 	JsonItem *test = NULL;
 	JsonObject *test2 = NULL;
@@ -94,7 +85,7 @@ JsonItem *JsonObject::get(Stateplex::String *path)
 				test = find(tokens[i].c_str());
 			}
 			
-			std::cout << "SEPPO" << test->key();
+			//std::cout << "S" << test->key();
 		} else {
 			if(test2->find(tokens[i].c_str())->type() == JSON_OBJECT) {
 				test2 = dynamic_cast<JsonObject *> (test2->find(tokens[i].c_str()));
@@ -102,27 +93,23 @@ JsonItem *JsonObject::get(Stateplex::String *path)
 			} else {
 				test = test2->find(tokens[i].c_str());
 			}
-			//test2 = dynamic_cast<JsonObject *> (test2->find(tokens[i].c_str()));
-			//test = dynamic_cast<JsonItem *> (test2);
-			//test = dynamic_cast<JsonItem *> (dynamic_cast<JsonObject*>(test)
 
 			if(test2 == NULL) {
 				std::cout << "NULL";
 			}
-			//test->find(tokens[i].c_str())));
 			if(test2 != NULL) {
-			std::cout << " SEPPO2 " << test2->key();
+				//std::cout << " SE " << test2->key();
 			}
 			
 			if(test != NULL) {
-			std::cout << " seppo3 " << test->key();
+				//std::cout << " se " << test->key();
 			}
 			
 		}
 		
 	}
 
-	
+	ref();
 	return test;
 }
 
@@ -212,5 +199,17 @@ bool JsonObject::isInteger(const std::string *s)
 	strtol(s.c_str(), &p, 10) ;
 
 	return (*p == 0) ;*/
+}
+
+void JsonObject::ref()
+{
+	mRefcount++;
+}
+
+void JsonObject::unref()
+{
+	if (mRefcount > 0) {
+		mRefcount--;
+	}
 }
 

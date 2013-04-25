@@ -12,6 +12,8 @@ public:
 	const char *key();
 	JsonType type();
 	int value();
+	void ref();
+	void unref();
 protected:
 private:
 	int mValue;

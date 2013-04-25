@@ -29,6 +29,18 @@ JsonType JsonNumber::type()
 	return mType;
 }
 
+void JsonNumber::ref()
+{
+	mRefcount++;
+}
+
+void JsonNumber::unref()
+{
+	if (mRefcount > 0) {
+		mRefcount--;
+	}
+}
+
 JsonNumber::~JsonNumber()
 {
         //dtor

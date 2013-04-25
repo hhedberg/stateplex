@@ -23,6 +23,8 @@ public:
 	virtual void traverse() = 0;
 	virtual const char *key() = 0;
 	virtual JsonType type() = 0;
+	virtual void ref() = 0;
+	virtual void unref() = 0;
 
 protected:
 
