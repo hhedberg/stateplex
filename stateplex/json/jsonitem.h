@@ -26,7 +26,7 @@ public:
 
 protected:
 
-	const char *mKey;
+	char *mKey;
 	JsonType mType;
 	Stateplex::Size32 mRefcount;
 

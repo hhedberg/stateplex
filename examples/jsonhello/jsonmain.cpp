@@ -2,7 +2,7 @@
 #include <stateplex/json/jsonnumber.h>
 #include <stateplex/json/jsonstring.h>
 #include <stateplex/json/jsonobject.h>
-#include <stateplex/json/jsondata.h>
+//#include <stateplex/json/jsondata.h>
 #include <stateplex/core/dispatcher.h>
 #include <stateplex/json/jsondbactor.h>
 #include "jsonclient.h"
@@ -16,22 +16,25 @@ int main()
 	Stateplex::List<JsonObject> mList;
 	JsonObject mFirst(&jsonactor,"mFirst");
 	JsonObject mSecond(&jsonactor,"mSecond");
-	JsonObject company(&jsonactor,"Stateplex");
+	JsonObject jsonDatabase(&jsonactor, "Json Database");
+	
+	jsonDatabase.add(new JsonObject(&jsonactor, "Stateplex"));
+	jsonDatabase.findObject("Stateplex")->add(new JsonObject(&jsonactor,"Employee"));
+	jsonDatabase.findObject("Stateplex")->findObject("Employee")->add(new JsonObject(&jsonactor, "Juha"));
+	jsonDatabase.findObject("Stateplex")->findObject("Employee")->add(new JsonObject(&jsonactor, "Tapio"));
+	
+	jsonDatabase.findObject("Stateplex")->findObject("Employee")->findObject("Juha")->add(new JsonNumber(&jsonactor,"Age", 24));
+	jsonDatabase.findObject("Stateplex")->findObject("Employee")->findObject("Tapio")->add(new JsonNumber(&jsonactor,"Age", 24));
 
-	company.add(new JsonObject(&jsonactor,"Employee"));
-	company.findObject("Employee");
-	company.findObject("Employee")->add(new JsonObject(&jsonactor,"Juha"));
-	company.findObject("Employee")->add(new JsonObject(&jsonactor,"Tapio"));
+	jsonactor.getRootObject("Stateplex/Employee/Juha/Age/", &client, &jsonDatabase, &JsonClient::showResult);
+	jsonactor.setJsonObject("Stateplex/Employee/Juha/Age/", "14", &client, &jsonDatabase, &JsonClient::showResult);
+	jsonactor.setJsonObject("Stateplex/Employee/Juha/", "Seppo", &client, &jsonDatabase, &JsonClient::showResult);
 
-	company.findObject("Employee")->findObject("Juha")->add(new JsonNumber(&jsonactor,"Age", 24));
-	company.findObject("Employee")->findObject("Tapio")->add(new JsonNumber(&jsonactor,"Age", 24));
+	
 
-	jsonactor.getRootObject("Employee/Juha/Age/", &client, &company, &JsonClient::showResult);
-	//jsonactor.setJsonObject("Employee/Juha/Age/", "14", &client, &company, &JsonClient::showResult);
-
-	JsonData<const char> jsonChar(&jsonactor, "key", "value");
-	int number = 17;
-	JsonData<int> integer(&jsonactor, "key", &number);
+	//JsonData<const char> jsonChar(&jsonactor, "key", "value");
+	//int number = 17;
+	//JsonData<int> integer(&jsonactor, "key", &number);
 
 
 	for (int i = 0; i < 12; i++) {
@@ -100,12 +103,12 @@ int main()
 
 	std::cout << std::endl;
 
-	std::cout << "JSONDATA_CHAR: " << jsonChar.key() << " " << jsonChar.value() << std::endl;
-	std::cout << "JSONDATA_INT: " << integer.key() << " " << *(integer.value()) << std::endl;
+	//std::cout << "JSONDATA_CHAR: " << jsonChar.key() << " " << jsonChar.value() << std::endl;
+	//std::cout << "JSONDATA_INT: " << integer.key() << " " << *(integer.value()) << std::endl;
 
 	std::cout << "JSON SEARCH: " << mSecond.find("strKey")->key() << std::endl;
 	
-	company.traverse();
+	jsonDatabase.traverse();
 
 	dispatcher.run();
 

@@ -6,7 +6,7 @@
 JsonObject::JsonObject(Stateplex::Actor *owner, const char *key)
 	: JsonItem(owner)
 {
-    	mKey = key;
+    	mKey = const_cast<char *> (key);
 	mItems = new Stateplex::List<JsonItem>;
 	mType = JSON_OBJECT;
 }
@@ -55,6 +55,11 @@ JsonType JsonObject::type()
 	return mType;
 }
 
+void JsonObject::setKey(Stateplex::String *str)
+{
+	mKey = str->chars();
+}
+
 void JsonObject::freeItems()
 {
 	for (Stateplex::ListIterator<JsonItem> iterator(mItems); iterator.hasCurrent(); iterator.subsequent()) {
@@ -66,19 +71,9 @@ void JsonObject::freeItems()
 
 JsonItem *JsonObject::get(Stateplex::String *path)
 {
-	//IF(JSONMESSAGETYPEGET)
-	//mResult->findObject(path);
-	//PARSE STRING, SEPARATOR /
-	//JsonObject *test = dynamic_cast<JsonObject *> (mResult);
-	//ELSE
-	//PARSE STRING, SEPARATOR / , 
-	//mResult->set(path, parameter);
-	//JsonObject *test = dynamic_cast<JsonObject *> (mResult);
-	//invokeCallBack(this);
 	std::vector<std::string> tokens;
 	JsonItem *test = NULL;
 	JsonObject *test2 = NULL;
-	
 
 	std::string str(path->chars());
 
@@ -90,62 +85,56 @@ JsonItem *JsonObject::get(Stateplex::String *path)
 			test2 = dynamic_cast<JsonObject *> (find(tokens[i].c_str()));
 			test = dynamic_cast<JsonItem *> (test2);
 			
-			std::cout << "SEPPO" << test->key();
 		} else {
-			if(test2->find(tokens[i].c_str())->type() == 2) {
+			if(test2->find(tokens[i].c_str())->type() == JSON_OBJECT) {
 				test2 = dynamic_cast<JsonObject *> (test2->find(tokens[i].c_str()));
 				test = dynamic_cast<JsonItem *> (test2);
 			} else {
 				test = test2->find(tokens[i].c_str());
 			}
-			//test2 = dynamic_cast<JsonObject *> (test2->find(tokens[i].c_str()));
-			//test = dynamic_cast<JsonItem *> (test2);
-			//test = dynamic_cast<JsonItem *> (dynamic_cast<JsonObject*>(test)
-
-			if(test2 == NULL) {
-				std::cout << "NULL";
-			}
-			//test->find(tokens[i].c_str())));
-			if(test2 != NULL) {
-			std::cout << " SEPPO2 " << test2->key();
-			}
-			
-			if(test != NULL) {
-			std::cout << " seppo3 " << test->key();
-			}
-			
-		}
-		
+		}		
 	}
-
 	
 	return test;
 }
 
 JsonObject *JsonObject::set(Stateplex::String *path, Stateplex::String *parameter)
 {
-	JsonItem *test = get(path);
+	JsonItem *test = const_cast<JsonItem *> (get(path));
 	
-	std::vector<std::string> tokens;
-	std::string str(path->chars());
-	
-	tokenizepath(str, tokens, "/");
+	switch(test->type()) {
+		
+		case JSON_STRING:
+			dynamic_cast<JsonString *>(test)->setValue(parameter);
+		
+			break;
+		
+		case JSON_NUMBER:
+			if(isInteger(parameter)) {
+				dynamic_cast<JsonNumber *>(test)->setValue(toInteger(parameter));
+			}
+			break;
+		
+		case JSON_OBJECT:
+			dynamic_cast<JsonObject *>(test)->setKey(parameter);
+		break;
+		
+		/*case JSON_DATA:
+			//what is this madness
+			if(isInteger(parameter)) {
+				dynamic_cast<JsonData<int> *>(test)->setValue(toInteger(parameter));
+			} else {
+				dynamic_cast<JsonData<const char> *>(test)->setValue(parameter->chars());
+			}
+		
+			break;
+		*/
+		default:
+			return 0;
+			break;
+		
+	}
 
-	for(int i = 0; i < tokens.size(); i++) std::cout << "value: " <<  tokens[i] << std::endl;
-
-	std::cout << get(path);
-	std::cout << "seppo tokens " << tokens[0] << std::endl;
-
-	
-
-	if(test != NULL) {
-		std::cout << "test object set print seppo" <<  std::endl;
-		if(isInteger(&tokens[1])) {
-			int value = std::atoi(tokens[1].c_str());
-			std::cout << "seppo on taalla taas" << std::endl;
-			//std::cout << "test object set print int " << test->key() << std::endl;
-		}
-	} else { std::cout << "seppo oli null" << std::endl; }
 
 	/*
 	* Plan:
@@ -198,15 +187,33 @@ void JsonObject::tokenizepath(const std::string& str, std::vector<std::string>& 
 	}
 }
 
-bool JsonObject::isInteger(const std::string *s)
+bool JsonObject::isInteger(Stateplex::String *str)
 {
-	/*if(s->empty() || ((!isdigit(s[0])) && (s[0] != '-') && (s[0] != '+'))) {
-		return false;
+	bool isInteger = true;
+	const char *s = str->chars();
+	
+	if(s[0] == '\0') {
+		isInteger = false;
+	}
+	
+	for(int i = 0; i < str->length(); i++) {
+		if(!(isdigit(s[i]))) {
+			isInteger = false;
+		}
 	}
 
-	char *p;
-	strtol(s.c_str(), &p, 10) ;
+	return isInteger;
+}
 
-	return (*p == 0) ;*/
+int JsonObject::toInteger(Stateplex::String *str)
+{
+	const char *s = str->chars();
+	int value;
+	std::stringstream char_str; 
+	
+	char_str << s;
+	char_str >> value;
+	
+	return value;
 }
 

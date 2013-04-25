@@ -3,7 +3,7 @@
 JsonString::JsonString(Stateplex::Actor *owner, const char *key, const char *value)
 	: JsonItem(owner)
 {
-	mKey = key;
+	mKey = const_cast<char *> (key);
 	mValue = value;
 	mType = JSON_STRING;
 }
@@ -26,6 +26,11 @@ const char *JsonString::key()
 JsonType JsonString::type()
 {
 	return mType;
+}
+
+void JsonString::setValue(Stateplex::String *str)
+{
+	mValue = str->chars();
 }
 
 JsonString::~JsonString()

@@ -4,6 +4,7 @@
 #include "jsonitem.h"
 #include <string>
 #include <iostream>
+#include <sstream>
 
 template<typename T>
 class JsonData : public JsonItem
@@ -15,6 +16,9 @@ public:
 	const char *key();
 	JsonType type();
 	const T *value();
+	void setValue(T *value);
+	bool isInteger(Stateplex::String *str);
+	int toInteger(Stateplex::String *str);
 protected:
 private:
 	T *mValue;
@@ -24,7 +28,7 @@ template<typename T>
 JsonData<T>::JsonData(Stateplex::Actor *owner, const char *key, T *value)
 	: JsonItem(owner)
 { 
-	mKey = key;
+	mKey = const_cast<char *> (key);
 	mValue = value;
 	mType = JSON_DATA;
 }
@@ -52,6 +56,46 @@ JsonType JsonData<T>::type()
 {
 	return mType;
 }
+/*
+template<typename T>
+void JsonData<T>::setValue(T *value)
+{
+	*mValue = *value;
+}*/
+
+template<typename T>
+bool JsonData<T>::isInteger(Stateplex::String *str)
+{
+	bool isInteger = true;
+	const char *s = str->chars();
+	
+	if(s[0] == '\0') {
+		isInteger = false;
+	}
+	
+	for(int i = 0; i < str->length(); i++) {
+		if(!(isdigit(s[i]))) {
+			isInteger = false;
+		}
+	}
+
+	return isInteger;
+}
+
+template<typename T>
+int JsonData<T>::toInteger(Stateplex::String *str)
+{
+	const char *s = str->chars();
+	int value;
+	std::stringstream char_str; 
+	
+	char_str << s;
+	char_str >> value;
+	
+	return value;
+}
+
+
 
 template<typename T>
 JsonData<T>::~JsonData()

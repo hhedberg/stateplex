@@ -12,6 +12,7 @@ public:
 	const char *key();
 	JsonType type();
 	int value();
+	void setValue(int value);
 protected:
 private:
 	int mValue;
