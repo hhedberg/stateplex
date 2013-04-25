@@ -20,10 +20,11 @@ public:
 	JsonObject *set(Stateplex::String *path, Stateplex::String *parameter);
 	const char *key();
 	JsonType type();
-	void ref();
 	void unref();
 
 protected:
+	void ref();
+	
 private:
 	void freeItems();
 	void tokenizepath(const std::string& str, std::vector<std::string>& tokens, const std::string& delimiters = "/");

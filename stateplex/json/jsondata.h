@@ -15,9 +15,11 @@ public:
 	const char *key();
 	JsonType type();
 	const T *value();
-	void ref();
 	void unref();
+	
 protected:
+	void ref();
+	
 private:
 	T *mValue;
 };
