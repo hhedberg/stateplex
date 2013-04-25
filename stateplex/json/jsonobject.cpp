@@ -87,12 +87,16 @@ JsonItem *JsonObject::get(Stateplex::String *path)
 	for (int i = 0; i < tokens.size(); i++) {
 		test2 = dynamic_cast<JsonObject *>(test);
 		if(test == NULL) {
-			test2 = dynamic_cast<JsonObject *> (find(tokens[i].c_str()));
-			test = dynamic_cast<JsonItem *> (test2);
+			if (find(tokens[i].c_str())->type() == JSON_OBJECT) {
+				test2 = dynamic_cast<JsonObject *> (find(tokens[i].c_str()));
+				test = dynamic_cast<JsonItem *> (test2);
+			} else {
+				test = find(tokens[i].c_str());
+			}
 			
 			std::cout << "SEPPO" << test->key();
 		} else {
-			if(test2->find(tokens[i].c_str())->type() == 2) {
+			if(test2->find(tokens[i].c_str())->type() == JSON_OBJECT) {
 				test2 = dynamic_cast<JsonObject *> (test2->find(tokens[i].c_str()));
 				test = dynamic_cast<JsonItem *> (test2);
 			} else {
