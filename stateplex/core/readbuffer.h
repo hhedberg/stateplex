@@ -145,6 +145,10 @@ Size16 ReadBuffer<mBlockSize>::popLength() const
 template<Size16 mBlockSize>
 void ReadBuffer<mBlockSize>::popped(Size16 length)
 {
+	if (length > this->mSize)
+		length = this->mSize;
+
+	this->mSize -= length;
 	for (ListIterator<typename Buffer<mBlockSize>::Block> iterator(&this->mBlocks); iterator.hasCurrent(); iterator.subsequent()) {
 		typename Buffer<mBlockSize>::Block *block = iterator.current();
 		Size16 size = block->size();
@@ -156,7 +160,6 @@ void ReadBuffer<mBlockSize>::popped(Size16 length)
 			length -= size;
 		}
 	}
-	this->mSize -= length;
 	/* TODO: Here */
 }
 

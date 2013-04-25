@@ -1,7 +1,7 @@
 /*
  * Stateplex - A server-side actor model library.
  *
- * net/httpserver.cpp
+ * core/echostream.cpp
  *
  * (c) 2013 Henrik Hedberg <henrik.hedberg@innologies.fi>
  *
@@ -17,24 +17,23 @@
  * Authors: Henrik Hedberg
  */
 
-#include "httpserver.h"
-#include "httpconnection.h"
+#include "echostream.h"
 
 namespace Stateplex {
 
-TcpConnection *HttpServer::instantiateTcpConnection(const TcpConnection::Embryo *embryo)
+void EchoStream::receiveDrainedFromUpstream()
 {
-	TcpConnection *tcpConnection = new TcpConnection(embryo->mTcpServer->actor(), embryo);
-	HttpConnection *httpConnection = new HttpConnection(embryo->mTcpServer->actor(), this);
-	tcpConnection->setDownstream(httpConnection);
-
-	return tcpConnection;
+	sendDrainedToUpstream();
 }
 
-HttpRequest *HttpServer::instantiateHttpRequest(const HttpRequest::Embryo *embryo)
+void EchoStream::receiveFromUpstream(const char *data, Size length)
 {
-	/* TODO: take the path into account */
-	return mRequestFactoryMethod.invoke(embryo);
+	sendToUpstream(data, length);
+}
+
+void EchoStream::receiveFromUpstream(Buffer<> *buffer)
+{
+	sendToUpstream(buffer);
 }
 
 }

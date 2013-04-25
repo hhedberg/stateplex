@@ -43,6 +43,7 @@ class HttpRequest : public Object {
 
 	HttpConnection *mHttpConnection;
 	WriteBuffer<> mData;
+	Size mDataLeft;
 
 	int mStatusSent : 1;
 
@@ -75,15 +76,21 @@ protected:
 
 public:
 	class Embryo {
-	public:
-		HttpConnection *httpConnection;
-		Buffer<> *method;
-		Buffer<> *uri;
+		HttpConnection *mHttpConnection;
+		Buffer<> *mMethod;
+		Buffer<> *mUri;
+		Buffer<> *mVersion;
 
-		Embryo(HttpConnection *httpConnection, Buffer<> *method, Buffer<> *uri);
+	public:
+		Embryo(HttpConnection *httpConnection, Buffer<> *method, Buffer<> *uri, Buffer<> *version);
+
+		HttpConnection *httpConnection() const;
+		Buffer<> *method() const;
+		Buffer<> *uri() const;
+		Buffer<> *version() const;
 	};
 
-	HttpRequest(HttpConnection *httpConnection);
+	HttpRequest(const Embryo *embryo);
 	virtual ~HttpRequest();
 
 	HttpConnection *httpConnection() const;
@@ -99,6 +106,7 @@ public:
 
 class SimpleHttpRequest : public HttpRequest {
 	String *mStatus;
+	String *mBody;
 
 protected:
 	virtual bool receiveHeader(Buffer<> *name, Buffer<> *value);
@@ -107,7 +115,8 @@ protected:
 	virtual void receiveAbort();
 
 public:
-	SimpleHttpRequest(HttpConnection *connection, const char *status);
+	SimpleHttpRequest(const HttpRequest::Embryo *embryo, const char *status);
+	SimpleHttpRequest(const HttpRequest::Embryo *embryo, const char *status, const char *body);
 };
 
 
@@ -124,8 +133,8 @@ namespace Stateplex {
  * Constructs a new request and associates it to the given HttpConnection.
  */
 
-inline HttpRequest::HttpRequest(HttpConnection *httpConnection)
-	: Object(httpConnection->actor()), mHttpConnection(httpConnection), mStatusSent(false), mData(actor())
+inline HttpRequest::HttpRequest(const Embryo *embryo)
+	: Object(embryo->httpConnection()->actor()), mHttpConnection(embryo->httpConnection()), mData(actor()), mDataLeft(0), mStatusSent(false)
 { }
 
 /**
@@ -146,9 +155,29 @@ inline HttpConnection *HttpRequest::httpConnection() const
 	return mHttpConnection;
 }
 
-inline HttpRequest::Embryo::Embryo(HttpConnection *httpConnection, Buffer<> *method, Buffer<> *uri)
-	: httpConnection(httpConnection), method(method), uri(uri)
+inline HttpRequest::Embryo::Embryo(HttpConnection *httpConnection, Buffer<> *method, Buffer<> *uri, Buffer<> *version)
+	: mHttpConnection(httpConnection), mMethod(method), mUri(uri), mVersion(version)
 { }
+
+inline HttpConnection *HttpRequest::Embryo::httpConnection() const
+{
+	return mHttpConnection;
+}
+
+inline Buffer<> *HttpRequest::Embryo::method() const
+{
+	return mMethod;
+}
+
+inline Buffer<> *HttpRequest::Embryo::uri() const
+{
+	return mUri;
+}
+
+inline Buffer<> *HttpRequest::Embryo::version() const
+{
+	return mVersion;
+}
 
 }
 

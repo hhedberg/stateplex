@@ -23,7 +23,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
-#include "../core/iosource.h"
+#include "../core/upstreamsource.h"
 
 namespace Stateplex {
 
@@ -37,7 +37,7 @@ class TcpConnectionEmbryo;
  * sender and receiver.
  */
 
-class TcpConnection : public IoSource {
+class TcpConnection : public UpstreamSource {
 	/* TODO: Save the peer address */
 
 	int connect(const struct sockaddr *address, socklen_t length);
@@ -81,7 +81,7 @@ namespace Stateplex {
  */
 
 inline TcpConnection::TcpConnection(Actor *actor, const struct sockaddr *address, socklen_t length)
-	: IoSource(actor)
+	: Object(actor), UpstreamSource(actor)
 {
 	int fd;
 
@@ -96,7 +96,7 @@ inline TcpConnection::TcpConnection(Actor *actor, const struct sockaddr *address
  * @param *embryo		data storage for tcp connection.
  */
 inline TcpConnection::TcpConnection(Actor *actor, const Embryo *embryo)
-		: IoSource(actor, embryo->mFd)
+		: Object(actor), UpstreamSource(actor, embryo->mFd)
 { }
 
 /**
