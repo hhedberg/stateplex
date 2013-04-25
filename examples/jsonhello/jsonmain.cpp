@@ -27,8 +27,9 @@ int main()
 	jsonDatabase.findObject("Stateplex")->findObject("Employee")->findObject("Tapio")->add(new JsonNumber(&jsonactor,"Age", 24));
 
 	jsonactor.getRootObject("Stateplex/Employee/Juha/Age/", &client, &jsonDatabase, &JsonClient::showResult);
-	jsonactor.setJsonObject("Stateplex/Employee/Juha/Age/", "14", &client, &jsonDatabase, &JsonClient::showResult);
 	jsonactor.setJsonObject("Stateplex/Employee/Juha/", "Seppo", &client, &jsonDatabase, &JsonClient::showResult);
+	jsonactor.setJsonObject("Stateplex/Employee/Seppo/Age/", "14", &client, &jsonDatabase, &JsonClient::showResult);
+	
 
 	
 

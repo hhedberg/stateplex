@@ -109,6 +109,8 @@ JsonObject *JsonObject::set(Stateplex::String *path, Stateplex::String *paramete
 {
 	JsonItem *test = const_cast<JsonItem *> (get(path));
 	
+	std::cout << "seppo on taalla taas" << test->type();
+	
 	switch(test->type()) {
 		
 		case JSON_STRING:
