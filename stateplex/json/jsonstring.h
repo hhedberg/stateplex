@@ -2,7 +2,6 @@
 #define JSONSTRING_H
 
 #include "jsonitem.h"
-#include <string>
 #include <iostream>
 
 class JsonString : public JsonItem

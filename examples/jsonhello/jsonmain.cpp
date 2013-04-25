@@ -6,14 +6,19 @@
 #include <stateplex/core/dispatcher.h>
 #include <stateplex/json/jsondbactor.h>
 #include "jsonclient.h"
+#include "jsondbexample.h"
 
 int main()
 {
 	Stateplex::Dispatcher dispatcher;
 	JsonDbActor jsonactor(&dispatcher);
 	JsonClient client(&dispatcher);
+	JsonDbExample jsonDbExample;
 	
-	Stateplex::List<JsonObject> mList;
+	jsonDbExample.initDb(&jsonactor, &client);
+	
+	
+	/*Stateplex::List<JsonObject> mList;
 	JsonObject mFirst(&jsonactor,"mFirst");
 	JsonObject mSecond(&jsonactor,"mSecond");
 	JsonObject company(&jsonactor,"Stateplex");
@@ -105,7 +110,7 @@ int main()
 
 	std::cout << "JSON SEARCH: " << mSecond.find("strKey")->key() << std::endl;
 	
-	company.traverse();
+	company.traverse(); */
 
 	dispatcher.run();
 
