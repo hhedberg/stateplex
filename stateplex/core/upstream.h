@@ -74,14 +74,13 @@ inline void Upstream::setDownstream(Downstream *downstream)
 	if (mDownstream == downstream)
 		return;
 
-	if (mDownstream)
-		mDownstream->setUpstream(0);
-
+	Downstream *oldDownstream = mDownstream;
 	mDownstream = downstream;
 
+	if (oldDownstream)
+		oldDownstream->setUpstream(0);
 	if (mDownstream)
 		mDownstream->setUpstream(this);
-
 }
 
 inline void Upstream::sendToDownstream(Buffer<> *buffer) const
