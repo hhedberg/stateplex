@@ -49,6 +49,7 @@ public:
 	void sendDrainedToDownstream() const;
 	void sendToDownstream(Buffer<> *buffer) const;
 	void sendToDownstream(const char *data, Size length) const;
+	void sendToDownstream(const char *cString) const;
 	void sendToDownstream(const String *string) const;
 };
 
@@ -91,6 +92,11 @@ inline void Upstream::sendToDownstream(Buffer<> *buffer) const
 inline void Upstream::sendToDownstream(const char *data, Size length) const
 {
 	mDownstream->receiveFromUpstream(data, length);
+}
+
+inline void Upstream::sendToDownstream(const char *cString) const
+{
+	mDownstream->receiveFromUpstream(cString, strlen(cString));
 }
 
 inline void Upstream::sendToDownstream(const String *string) const
