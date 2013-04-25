@@ -173,7 +173,6 @@ Buffer<mBlockSize>::Block::Block(Allocator *allocator)
 /**
  * Function that allocates a specific block.
  *
- *
  */
 
 template<Size16 mBlockSize>
@@ -186,7 +185,6 @@ Buffer<mBlockSize>::Block::Block(Allocator *allocator, Block *block)
 /**
  * Function that allcoates a specific block size.
  *
- *
  */
 
 template<Size16 mBlockSize>
@@ -198,7 +196,6 @@ Buffer<mBlockSize>::Block::Block(Allocator *allocator, Block *block, Size16 offs
 
 /**
  * Fucntion that destroy the allocated block if refernce count is 0.
- *
  *
  */
 
@@ -273,9 +270,9 @@ char *Buffer<mBlockSize>::Block::pointer(Size16 offset) const
 }
 
 /**
- * Function that returns the size of the buffer.
+ * Function that calculates the size of the block.
  *
- * @return
+ * @return 	allocated size.
  */
 
 template<Size16 mBlockSize>
@@ -293,7 +290,7 @@ Size16 Buffer<mBlockSize>::Block::size() const
 /**
  * Function that calculates available room.
  *
- *
+ * @return	available room.
  */
 
 template<Size16 mBlockSize>
@@ -368,7 +365,6 @@ void Buffer<mBlockSize>::Block::popped(Size16 length)
 /**
  * Function that split the allocated memory.
  *
- *
  */
 
 template<Size16 mBlockSize>
@@ -410,6 +406,12 @@ typename Buffer<mBlockSize>::Block *Buffer<mBlockSize>::blockByOffset(Size *offs
 	return 0;
 }
 
+/*
+ * Return the current postion of the block
+ * otherwise return the previous offset.
+ *
+ */
+
 template<Size16 mBlockSize>
 Size Buffer<mBlockSize>::blockOffset(Block *block)
 {
@@ -425,7 +427,6 @@ Size Buffer<mBlockSize>::blockOffset(Block *block)
 /**
  * Default constructor for buffer.
  *
- *
  */
 
 template<Size16 mBlockSize>
@@ -436,7 +437,7 @@ Buffer<mBlockSize>::Buffer(Actor *actor)
 /**
  * Returns the amount of bytes in the buffer.
  * 
- * @return total size of the buffer.
+ * @return 	total size of the buffer.
  */
  
 template<Size16 mBlockSize>
@@ -661,6 +662,11 @@ Size16 Buffer<mBlockSize>::blockSize() const
 	return mBlockSize;
 }
 
+/**
+ * Add block at the end of buffer.
+ *
+ */
+
 template<Size16 mBlockSize>
 Buffer<mBlockSize>::Iterator::Iterator(Buffer<mBlockSize> *buffer)
 	: mBuffer(buffer), mBlock(0), mPosition(0)
@@ -668,11 +674,22 @@ Buffer<mBlockSize>::Iterator::Iterator(Buffer<mBlockSize> *buffer)
 	mBuffer->mIterators.addTail(this);
 }
 
+/**
+ * Destructor function.
+ *
+ */
+
 template<Size16 mBlockSize>
 Buffer<mBlockSize>::Iterator::~Iterator()
 {
 	remove();
 }
+
+/**
+ * Function that ensures if the block is in the right position or not.
+ *
+ * @return	True or False.
+ */
 
 template<Size16 mBlockSize>
 bool Buffer<mBlockSize>::Iterator::ensureBlock()
@@ -690,6 +707,11 @@ bool Buffer<mBlockSize>::Iterator::ensureBlock()
 
 	return true;
 }
+
+/*
+ *
+ *
+ */
 
 template<Size16 mBlockSize>
 void Buffer<mBlockSize>::Iterator::advance(Size length)
@@ -710,6 +732,11 @@ void Buffer<mBlockSize>::Iterator::advance(Size length)
 
 	mPosition += length;
 }
+
+/*
+ * Gets current postion of the block.
+ *
+ */
 
 template<Size16 mBlockSize>
 Size Buffer<mBlockSize>::Iterator::offset()
