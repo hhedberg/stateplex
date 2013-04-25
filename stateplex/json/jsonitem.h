@@ -4,6 +4,7 @@
 #include "../core/list.h"
 #include "../core/object.h"
 #include "../core/string.h"
+#include "../core/types.h"
 #include <cstring>
 
 enum JsonType {
@@ -27,6 +28,7 @@ protected:
 
 	const char *mKey;
 	JsonType mType;
+	Stateplex::Size32 mRefcount;
 
 private:
 	
