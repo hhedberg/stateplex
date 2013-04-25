@@ -15,7 +15,11 @@ public:
 	const char *value();
 	void setValue(Stateplex::String *str);
 	JsonType type();
+	void unref();
+	
 protected:
+	void ref();
+	
 private:
 	const char *mValue;
 };

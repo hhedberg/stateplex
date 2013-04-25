@@ -19,7 +19,10 @@ public:
 	void setValue(T *value);
 	bool isInteger(Stateplex::String *str);
 	int toInteger(Stateplex::String *str);
+	void unref();
 protected:
+	void ref();
+	
 private:
 	T *mValue;
 };
@@ -96,6 +99,20 @@ int JsonData<T>::toInteger(Stateplex::String *str)
 }
 
 
+
+template<typename T>
+void JsonData<T>::ref()
+{
+	mRefcount++;
+}
+
+template<typename T>
+void JsonData<T>::unref()
+{
+	if (mRefcount > 0) {
+		mRefcount--;
+	}
+}
 
 template<typename T>
 JsonData<T>::~JsonData()

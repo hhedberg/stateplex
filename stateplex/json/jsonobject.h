@@ -24,8 +24,11 @@ public:
 	const char *key();
 	void setKey(Stateplex::String *str);
 	JsonType type();
+	void unref();
 
 protected:
+	void ref();
+	
 private:
 	void freeItems();
 	void tokenizepath(const std::string& str, std::vector<std::string>& tokens, const std::string& delimiters = "/");

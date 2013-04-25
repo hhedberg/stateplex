@@ -23,10 +23,11 @@ public:
 	virtual void traverse() = 0;
 	virtual const char *key() = 0;
 	virtual JsonType type() = 0;
+	virtual void unref() = 0;
 
 protected:
-
 	char *mKey;
+	virtual void ref() = 0;
 	JsonType mType;
 	Stateplex::Size32 mRefcount;
 

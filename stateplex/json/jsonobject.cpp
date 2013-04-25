@@ -82,19 +82,26 @@ JsonItem *JsonObject::get(Stateplex::String *path)
 	for (int i = 0; i < tokens.size(); i++) {
 		test2 = dynamic_cast<JsonObject *>(test);
 		if(test == NULL) {
-			test2 = dynamic_cast<JsonObject *> (find(tokens[i].c_str()));
-			test = dynamic_cast<JsonItem *> (test2);
+			if (find(tokens[i].c_str())->type() == JSON_OBJECT) {
+				test2 = dynamic_cast<JsonObject *> (find(tokens[i].c_str()));
+				test = dynamic_cast<JsonItem *> (test2);
+			} else {
+				test = find(tokens[i].c_str());
+			}
+			
 			
 		} else {
+			
 			if(test2->find(tokens[i].c_str())->type() == JSON_OBJECT) {
 				test2 = dynamic_cast<JsonObject *> (test2->find(tokens[i].c_str()));
 				test = dynamic_cast<JsonItem *> (test2);
 			} else {
 				test = test2->find(tokens[i].c_str());
 			}
-		}		
+		}
 	}
-	
+
+	ref();
 	return test;
 }
 
@@ -215,5 +222,17 @@ int JsonObject::toInteger(Stateplex::String *str)
 	char_str >> value;
 	
 	return value;
+}
+
+void JsonObject::ref()
+{
+	mRefcount++;
+}
+
+void JsonObject::unref()
+{
+	if (mRefcount > 0) {
+		mRefcount--;
+	}
 }
 

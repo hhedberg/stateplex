@@ -13,7 +13,11 @@ public:
 	JsonType type();
 	int value();
 	void setValue(int value);
+	void unref();
+	
 protected:
+	void ref();
+	
 private:
 	int mValue;
 };

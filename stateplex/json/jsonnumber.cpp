@@ -29,9 +29,22 @@ JsonType JsonNumber::type()
 	return mType;
 }
 
+
 void JsonNumber::setValue(int value)
 {
 	mValue = value;
+}
+
+void JsonNumber::ref()
+{
+	mRefcount++;
+}
+
+void JsonNumber::unref()
+{
+	if (mRefcount > 0) {
+		mRefcount--;
+	}
 }
 
 JsonNumber::~JsonNumber()

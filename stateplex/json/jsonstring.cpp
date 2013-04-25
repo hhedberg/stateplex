@@ -33,6 +33,18 @@ void JsonString::setValue(Stateplex::String *str)
 	mValue = str->chars();
 }
 
+void JsonString::ref()
+{
+	mRefcount++;
+}
+
+void JsonString::unref()
+{
+	if (mRefcount > 0) {
+		mRefcount--;
+	}
+}
+
 JsonString::~JsonString()
 {
         //dtor
