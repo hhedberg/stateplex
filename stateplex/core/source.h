@@ -32,7 +32,7 @@ class Actor;
  * @brief Inherited from ListItem. Source is used by the net module.
  */
 
-class Source : public Object, public ListItem {
+class Source : public virtual Object, public ListItem {
 	friend class Dispatcher;
 
 	int mFd;

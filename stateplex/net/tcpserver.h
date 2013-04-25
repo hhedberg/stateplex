@@ -66,7 +66,7 @@ namespace Stateplex {
  */
 
 inline TcpServer::TcpServer(Actor *actor, const struct sockaddr *address, socklen_t length)
-	: Source(actor, -1, true, false)
+	: Object(actor), Source(actor, -1, true, false)
 {
 	setFd(createServerSocket(address, length));
 }

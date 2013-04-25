@@ -25,6 +25,8 @@
 #include <stateplex/net/httpserver.h>
 #include <stateplex/net/httprequest.h>
 #include <stateplex/net/hbdpserver.h>
+#include <stateplex/net/hbdpconnection.h>
+#include <stateplex/core/echostream.h>
 
 #include "echohbdpserver.h"
 
@@ -53,22 +55,9 @@ EchoActor::EchoActor(Stateplex::Dispatcher *dispatcher)
 
 Stateplex::HbdpConnection *EchoActor::instantiateHbdpConnection(const Stateplex::HbdpConnection::Embryo *embryo)
 {
-	return new EchoHbdpConnection(this, embryo);
+	Stateplex::HbdpConnection *hbdpConnection = new Stateplex::HbdpConnection(this, embryo);
+	Stateplex::EchoStream *echoStream = new Stateplex::EchoStream(this);
+	hbdpConnection->setDownstream(echoStream);
+
+	return hbdpConnection;
 }
-
-
-void EchoHbdpConnection::receiveData(Stateplex::Buffer<> *data)
-{
-	write(data);
-}
-
-void EchoHbdpConnection::receiveClose()
-{
-
-}
-
-
-EchoHbdpConnection::EchoHbdpConnection(Stateplex::Actor *actor, const Stateplex::HbdpConnection::Embryo *embryo)
-	: Stateplex::HbdpConnection(actor, embryo)
-{ }
-
