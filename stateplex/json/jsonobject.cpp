@@ -85,29 +85,41 @@ JsonItem *JsonObject::get(Stateplex::String *path)
 	tokenizepath(str, tokens);
 	
 	for (int i = 0; i < tokens.size(); i++) {
-		if(test == NULL && test2 == NULL) {
-			test2 = findObject(tokens[i].c_str());
-			if(test2 == NULL) {
-				test = find(tokens[i].c_str());
+		test2 = dynamic_cast<JsonObject *>(test);
+		if(test == NULL) {
+			test2 = dynamic_cast<JsonObject *> (find(tokens[i].c_str()));
+			test = dynamic_cast<JsonItem *> (test2);
+			
+			std::cout << "SEPPO" << test->key();
+		} else {
+			if(test2->find(tokens[i].c_str())->type() == 2) {
+				test2 = dynamic_cast<JsonObject *> (test2->find(tokens[i].c_str()));
+				test = dynamic_cast<JsonItem *> (test2);
+			} else {
+				test = test2->find(tokens[i].c_str());
 			}
+			//test2 = dynamic_cast<JsonObject *> (test2->find(tokens[i].c_str()));
+			//test = dynamic_cast<JsonItem *> (test2);
+			//test = dynamic_cast<JsonItem *> (dynamic_cast<JsonObject*>(test)
 
-		} else if(test2!=NULL) {
-			test2 = test2->findObject(tokens[i].c_str());
 			if(test2 == NULL) {
-				test = find(tokens[i].c_str());
+				std::cout << "NULL";
 			}
+			//test->find(tokens[i].c_str())));
+			if(test2 != NULL) {
+			std::cout << " SEPPO2 " << test2->key();
+			}
+			
+			if(test != NULL) {
+			std::cout << " seppo3 " << test->key();
+			}
+			
 		}
+		
 	}
-	
 
-	//std::cout << "test object get print " << test << std::endl;
-	if(test != NULL) {
-		std::cout << "dimitri: " << test->type() <<  std::endl;
-		return test;
-	} else {
-		std::cout << "dimitri: " << test->key();
-		return test2;
-	}
+	
+	return test;
 }
 
 JsonObject *JsonObject::set(Stateplex::String *path, Stateplex::String *parameter)
@@ -157,7 +169,6 @@ JsonItem *JsonObject::find(const char *target)
 			break;
 		}
 	}
-
 	return item;
 }
 
