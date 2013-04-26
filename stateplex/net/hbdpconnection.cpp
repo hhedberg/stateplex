@@ -46,22 +46,29 @@ HbdpConnection::HbdpRequest::HbdpRequest(const HttpRequest::Embryo *embryo, Hbdp
 	: HttpRequest(embryo), mHbdpConnection(hbdpConnection)
 { }
 
-HttpRequest *HbdpConnection::instantiateHttpRequest(const HttpRequest::Embryo *embryo, Size serialNumber)
+HttpRequest *HbdpConnection::instantiateHttpRequest(const HttpRequest::Embryo *embryo, Size serialNumber, bool close)
 {
 	if (mSerialNumber != serialNumber) {
 		return new SimpleHttpRequest(embryo, "410 Gone");
 	}
+
 	mSerialNumber++;
 
 	if (mHbdpRequest)
 		endRequest();
+
+	if (close)
+		return new SimpleHttpRequest(embryo, "200 OK");
+
 	mHbdpRequest = new HbdpRequest(embryo, this);
+	mEndReceived = false;
 
 	return mHbdpRequest;
 }
 
 void HbdpConnection::handleEnd()
 {
+	mEndReceived = true;
 	if (mOut.length() > 0) {
 		mHbdpRequest->sendData(&mOut);
 		mOut.poppedAll();
@@ -87,7 +94,7 @@ void HbdpConnection::receiveDrainedFromDownstream()
 
 void HbdpConnection::receiveFromDownstream(const char *data, Size length)
 {
-	if (!mHbdpRequest) {
+	if (!mHbdpRequest || !mEndReceived) {
 		mOut.append(data);
 		return;
 	}
@@ -98,7 +105,7 @@ void HbdpConnection::receiveFromDownstream(const char *data, Size length)
 
 void HbdpConnection::receiveFromDownstream(Buffer<> *buffer)
 {
-	if (!mHbdpRequest) {
+	if (!mHbdpRequest || !mEndReceived) {
 		mOut.append(buffer);
 		return;
 	}

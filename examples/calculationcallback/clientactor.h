@@ -38,7 +38,7 @@ public:
 #include <iostream>
 
 ClientActor::ClientActor(Stateplex::Dispatcher *dispatcher)
-	: Actor(dispatcher)
+	: Object(this), Actor(dispatcher)
 { }
 
 void ClientActor::showResult(CalculatorActor::CalculationMessage *message)
