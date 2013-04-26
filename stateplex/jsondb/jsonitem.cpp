@@ -1,0 +1,80 @@
+/*
+ * Stateplex - A server-side actor model library.
+ *
+ * jsondb/jsonitem.cpp
+ *
+ * (c) 2013 Henrik Hedberg <henrik.hedberg@innologies.fi>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License version 2.1 as published by the Free Software Foundation.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * Authors: Henrik Hedberg
+ */
+
+#include "jsonitem.h"
+
+namespace Stateplex {
+
+JsonItem::Observer::~Observer()
+{ }
+
+JsonItem::~JsonItem()
+{
+	for (Observer *o = mObservers.first(); o; o = mObservers.next(o)) {
+		o->itemDeleted(this);
+	}
+}
+
+void JsonItem::notifyElementInserted(JsonArray *array, int index) const
+{
+	const JsonItem *item = this;
+	do {
+		for (Observer *o = mObservers.first(); o; o = mObservers.next(o)) {
+			o->elementInserted(array, index);
+		}
+		item = item->mParent;
+	} while (item);
+}
+
+void JsonItem::notifyElementRemoved(JsonArray *array, int index) const
+{
+	const JsonItem *item = this;
+	do {
+		for (Observer *o = mObservers.first(); o; o = mObservers.next(o)) {
+			o->elementRemoved(array, index);
+		}
+		item = item->mParent;
+	} while (item);
+}
+
+void JsonItem::notifyMemberSet(JsonObject *object, const String *name) const
+{
+	const JsonItem *item = this;
+	do {
+		for (Observer *o = mObservers.first(); o; o = mObservers.next(o)) {
+			o->memberSet(object, name);
+		}
+		item = item->mParent;
+	} while (item);
+
+}
+
+void JsonItem::notifyMemberUnset(JsonObject *object, const String *name) const
+{
+	const JsonItem *item = this;
+	do {
+		for (Observer *o = mObservers.first(); o; o = mObservers.next(o)) {
+			o->memberUnset(object, name);
+		}
+		item = item->mParent;
+	} while (item);
+
+}
+
+}
