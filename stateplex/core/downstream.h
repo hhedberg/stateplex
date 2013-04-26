@@ -71,7 +71,6 @@ inline Downstream::~Downstream()
 
 /*
  * Set upstream
- *
  */
 
 inline void Downstream::setUpstream(Upstream *upstream)
