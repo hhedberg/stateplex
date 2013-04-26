@@ -841,7 +841,7 @@ const char *Buffer<mBlockSize>::Iterator::charBlock()
 }
 
 /**
- * Returns 
+ * Returns member variable Buffer.
  */
 
 template<Size16 mBlockSize>
