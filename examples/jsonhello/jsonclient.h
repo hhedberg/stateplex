@@ -18,7 +18,7 @@ public:
 
 
 JsonClient::JsonClient(Stateplex::Dispatcher *dispatcher)
-	: Actor(dispatcher)
+	: Object(this), Actor(dispatcher)
 { }
 
 void JsonClient::showResult(JsonDbActor::JsonMessage *message)

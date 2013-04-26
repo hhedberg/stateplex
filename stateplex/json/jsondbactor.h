@@ -85,7 +85,7 @@ inline void JsonDbActor::JsonMessage::result() const
 }
 
 inline JsonDbActor::JsonDbActor(Stateplex::Dispatcher *dispatcher)
-	: Actor(dispatcher)
+	: Object(this), Actor(dispatcher)
 { }
 
 template<typename Sender> void JsonDbActor::getRootObject(const char *path, Sender *sender, JsonObject *item, void (Sender::*callbackFunction)(JsonMessage *message))
