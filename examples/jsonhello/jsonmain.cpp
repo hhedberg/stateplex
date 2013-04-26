@@ -13,9 +13,9 @@ int main()
 	Stateplex::Dispatcher dispatcher;
 	JsonDbActor jsonactor(&dispatcher);
 	JsonClient client(&dispatcher);
-	JsonDbExample jsonDbExample;
+	JsonDbExample json;
 	
-	jsonDbExample.initDb(&jsonactor, &client);
+	json.initDb(&jsonactor, &client);
 	
 	
 	/*Stateplex::List<JsonObject> mList;
@@ -117,9 +117,9 @@ int main()
 	company.traverse();
 	jsonDatabase.traverse(); */
 
-	dispatcher.run();
+	//dispatcher.run();
 
-  return 0;
+	return 0;
 }
 
 
