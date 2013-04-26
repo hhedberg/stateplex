@@ -72,7 +72,7 @@ TEST_F(BufferTest, appendStringTest)
         EXPECT_EQ(inputBuffer3.length(), 5);
 }
 
-TEST_F(BufferTest, appendBuffersTest)
+TEST_F(BufferTest, appendBuffersAndEqualsTest)
 {
         Stateplex::Actor actor3(dispatcher);
         Stateplex::Actor actor4(dispatcher);
@@ -101,21 +101,65 @@ TEST_F(BufferTest, appendBuffersTest)
         delete buffer4;
         delete buffer5;
 }
-/*
-//Iterator tests
-TEST_F(BufferTest, regionTest)
-{
-        Stateplex::Actor *actor(dispatcher);
-        Stateplex::WriteBuffer<> inputBuffer(actor);
-        //Stateplex::WriteBuffer<> *buffer5 = new Stateplex::WriteBuffer<>.region(0, 1024);
-        Stateplex::WriteBuffer<> *buffer6 = new inputBuffer.region(0, 1024);
-        inputBuffer.popped(1024);
-        EXPECT_EQ(inputBuffer.length(), 0);
 
-        //delete buffer5;
-        delete buffer6;
+TEST_F(BufferTest, insertTest)
+{
+        Stateplex::Actor actor1(dispatcher);
+        Stateplex::WriteBuffer<> *buffer1 = new Stateplex::WriteBuffer<>(&actor1);
+        Stateplex::WriteBuffer<> *buffer2 = new Stateplex::WriteBuffer<>(&actor1);
+        buffer1->insert(0xF867, "TestiCString");
+        EXPECT_TRUE(buffer1->equals("TestiCString"));
+        EXPECT_EQ(0, buffer1->compare("TestiCString"));
+        EXPECT_EQ(0, buffer1->compare("TestiCString", 12));
+
+        buffer2->insert(0xF867,"Ritaharju school", 6 );
+        EXPECT_EQ(buffer2->length(), 6);
+        EXPECT_TRUE(buffer2->equals("Ritaharju school", 6));
+
+      //  buffer2->insert(0xF900, buffer1);
+       // EXPECT_TRUE(buffer2->equals("TestiCString"));
+
+        //EXPECT_EQ(buffer1->asString(1000, 12), String myString.copy("TestiCString");
+        //EXPECT_EQ(buffer1->;
+
+        delete buffer1;
+        delete buffer2;
 }
 
+TEST_F(BufferTest, miscellaneousTests)
+{
+        Stateplex::Actor testActor(dispatcher);
+        Stateplex::WriteBuffer<> *buffer = new Stateplex::WriteBuffer<>(&testActor);
+        buffer->append("aaaab");
+        EXPECT_EQ(buffer->actor(), &testActor);
+        EXPECT_EQ(buffer->allocator(), testActor.allocator());
+       // EXPECT_EQ(buffer->asString(), Stateplex::String::copy));
+        delete buffer;
+}
+
+TEST_F(BufferTest, splitTest)
+{
+        Stateplex::Actor myActor2(dispatcher);
+        Stateplex::WriteBuffer<> *buffer2 = new Stateplex::WriteBuffer<>(&myActor2);
+        buffer2->append("Ritaharju school");
+        buffer2->split('a', 4);
+        EXPECT_TRUE(buffer2->equals("Rita"));
+        delete buffer2;
+}
+
+TEST_F(BufferTest, regionTest)
+{
+        Stateplex::Actor actor(dispatcher);
+        Stateplex::WriteBuffer<> *inputBuffer = new Stateplex::WriteBuffer<>(&actor);
+
+        inputBuffer->region(0xF900, 100);
+        EXPECT_EQ(inputBuffer->length(), 0);
+        inputBuffer->append("foo");
+        EXPECT_EQ(inputBuffer->length(), 3);
+
+        delete inputBuffer;
+}
+/*
         //WriteBuffer tests
         TEST_F(BufferTest, splitTest)
         {
@@ -143,6 +187,16 @@ TEST_F(BufferTest, regionTest)
         {
 
         }
-*/
+
+            TEST_F(BufferTest, pushToBlockTest)
+        {
+        }
+
+    //Block Tests: room, ensureBlock, pushed, popped, split, allocateMemory, pushToBlock, splitBlock
+        TEST_F(BufferTest, splitBlockTest)
+        {
+
+        }
+     */
 
 
