@@ -120,6 +120,7 @@ private:
 
 	Block *blockByOffset(Size *offset);
 	Size blockOffset(Block *block);
+	Size doSplit(char delimiter, WriteBuffer<mBlockSize> **elements, Size maxElements);
 
 public:
 	String *asString() const;
@@ -138,7 +139,9 @@ public:
 	Size offsetOf(char c, Size fromOffset = 0);
 
 	WriteBuffer<mBlockSize> *region(Size offset, Size length);
+	void region(Size offset, Size length, WriteBuffer<mBlockSize> *buffer);
 	Array<WriteBuffer<mBlockSize> *> *split(char delimiter, Size maxElements);
+	Size split(char delimiter, Array<WriteBuffer<mBlockSize> *> *elements);
 
 	Size16 blockSize() const;
 };
@@ -166,7 +169,7 @@ Buffer<mBlockSize>::Block::Block(Allocator *allocator)
 	: mStart(0), mEnd(0)
 {
 	mBytes = reinterpret_cast<Bytes *>(allocator->allocate(sizeof(Bytes) + mBlockSize));
-	mBytes->mReferenceCount = 0;
+	mBytes->mReferenceCount = 1;
 	mBytes->mStart = mBytes->mEnd = 0;
 }
 
@@ -601,13 +604,23 @@ bool Buffer<mBlockSize>::equals(const Buffer *buffer) const
 }
 
 /**
- * Returns the specified fragment of the buffer.
+ * Returns the specified fragment of the buffer as a new buffer.
  */
 template<Size16 mBlockSize>
 WriteBuffer<mBlockSize> *Buffer<mBlockSize>::region(Size offset, Size length)
 {
-	Allocator *allocator = actor()->dispatcher()->allocator();
 	WriteBuffer<mBlockSize> *buffer = new WriteBuffer<mBlockSize>(actor());
+	region(offset, length, buffer);
+	return buffer;
+}
+
+/**
+ * Appends the specified fragment of the buffer into other buffer.
+ */
+template<Size16 mBlockSize>
+void Buffer<mBlockSize>::region(Size offset, Size length, WriteBuffer<mBlockSize> *buffer)
+{
+	Allocator *allocator = actor()->dispatcher()->allocator();
 	for (Block *oldBlock = blockByOffset(&offset); oldBlock; oldBlock = mBlocks.next(oldBlock)) {
 		Size16 size = oldBlock->size();
 		if (offset + length < size) {
@@ -625,16 +638,12 @@ WriteBuffer<mBlockSize> *Buffer<mBlockSize>::region(Size offset, Size length)
 		offset = 0;
 		length -= size;
 	}
-
-	return buffer;
 }
 
 template<Size16 mBlockSize>
-Array<WriteBuffer<mBlockSize> *> *Buffer<mBlockSize>::split(char delimiter, Size maxElements)
+Size Buffer<mBlockSize>::doSplit(char delimiter, WriteBuffer<mBlockSize> **elements, Size maxElements)
 {
-	WriteBuffer<mBlockSize> *elements[maxElements];
 	Size nElements = 0;
-
 	Size previousOffset = 0;
 	Size currentOffset;
 	while (previousOffset < length() && (currentOffset = offsetOf(delimiter, previousOffset)) < length() && nElements < maxElements - 1) {
@@ -646,7 +655,22 @@ Array<WriteBuffer<mBlockSize> *> *Buffer<mBlockSize>::split(char delimiter, Size
 		elements[nElements++] = region(previousOffset, length() - previousOffset);
 	}
 
+	return nElements;
+}
+
+template<Size16 mBlockSize>
+Array<WriteBuffer<mBlockSize> *> *Buffer<mBlockSize>::split(char delimiter, Size maxElements)
+{
+	WriteBuffer<mBlockSize> *elements[maxElements];
+	Size nElements = doSplit(delimiter, elements, maxElements);
+
 	return Array<WriteBuffer<mBlockSize> *>::copy(allocator(), elements, nElements);
+}
+
+template<Size16 mBlockSize>
+Size Buffer<mBlockSize>::split(char delimiter, Array<WriteBuffer<mBlockSize> *> *elements)
+{
+	return doSplit(delimiter, elements->elements(), elements->length());
 }
 
 
@@ -765,10 +789,10 @@ void Buffer<mBlockSize>::Iterator::deleteBlock(Block *block)
 	if (block != mBlock)
 		return;
 
-	if ((mBlock = mBuffer->mBlocks.next(mBlock)) != 0 ||
-		(mBlock = mBuffer->mBlocks.last()) != 0) {
+	if ((mBlock = mBuffer->mBlocks.next(mBlock)) != 0)
 		mPosition = mBlock->start();
-	}
+	else if ((mBlock = mBuffer->mBlocks.previous(block)) != 0)
+		mPosition = mBlock->end();
 }
 
 }

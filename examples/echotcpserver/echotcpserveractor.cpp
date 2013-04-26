@@ -38,7 +38,7 @@ int main(void)
 }
 
 EchoTcpServerActor::EchoTcpServerActor(Stateplex::Dispatcher *dispatcher)
-	: Actor(dispatcher)
+	: Object(this), Actor(dispatcher)
 {
 	sockaddr_in address;
 	address.sin_family = AF_INET;
