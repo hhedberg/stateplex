@@ -16,15 +16,18 @@ private:
 	JsonObject *root;
 };
 
-/*** Inline implementations ***/
+/*** Inline Implementation ***/
 
 inline JsonDbExample::JsonDbExample()
 { 
+	
 }
 
 inline JsonDbExample::~JsonDbExample()
 { 
-	delete root;
+	if (root) {		
+		delete root;
+	}
 }
 
 void JsonDbExample::initDb(JsonDbActor *jsonActor, JsonClient *client)
@@ -38,7 +41,8 @@ void JsonDbExample::initDb(JsonDbActor *jsonActor, JsonClient *client)
 	root->findObject("Employee")->findObject("Tapio")->add(new JsonNumber(jsonActor, "Age", 24));
 
 	jsonActor->getRootObject("Employee/Juha/Age/", client, root, &JsonClient::showResult);
-	//jsonActor->setJsonObject("Employee/Juha/Age/", "14", client, root, &JsonClient::showResult);
+	jsonActor->setJsonObject("Employee/Juha/Age/", "14", client, root, &JsonClient::showResult);
+	
 }
 
 #endif // JSONDBEXAMPLE_H

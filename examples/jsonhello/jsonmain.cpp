@@ -13,10 +13,9 @@ int main()
 	Stateplex::Dispatcher dispatcher;
 	JsonDbActor jsonactor(&dispatcher);
 	JsonClient client(&dispatcher);
-	//JsonDbExample jsonDbExample;
+	JsonDbExample json;
 	
-	//jsonDbExample.initDb(&jsonactor, &client);
-	
+	json.initDb(&jsonactor, &client);
 	
 	Stateplex::List<JsonObject> mList;
 	JsonObject mFirst(&jsonactor,"mFirst");
@@ -119,7 +118,7 @@ int main()
 
 	dispatcher.run();
 
-  return 0;
+	return 0;
 }
 
 
