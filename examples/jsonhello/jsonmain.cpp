@@ -17,25 +17,9 @@ int main()
 	
 	json.initDb(&jsonactor, &client);
 	
-	Stateplex::List<JsonObject> mList;
+	/*Stateplex::List<JsonObject> mList;
 	JsonObject mFirst(&jsonactor,"mFirst");
 	JsonObject mSecond(&jsonactor,"mSecond");
-	JsonObject jsonDatabase(&jsonactor, "Json Database");
-	
-	jsonDatabase.add(new JsonObject(&jsonactor, "Stateplex"));
-	jsonDatabase.findObject("Stateplex")->add(new JsonObject(&jsonactor,"Employee"));
-	jsonDatabase.findObject("Stateplex")->findObject("Employee")->add(new JsonObject(&jsonactor, "Juha"));
-	jsonDatabase.findObject("Stateplex")->findObject("Employee")->add(new JsonObject(&jsonactor, "Tapio"));
-	
-	jsonDatabase.findObject("Stateplex")->findObject("Employee")->findObject("Juha")->add(new JsonNumber(&jsonactor,"Age", 24));
-	jsonDatabase.findObject("Stateplex")->findObject("Employee")->findObject("Tapio")->add(new JsonNumber(&jsonactor,"Age", 24));
-
-	jsonactor.getRootObject("Stateplex/Employee/Juha/", &client, &jsonDatabase, &JsonClient::showResult);
-	jsonactor.setJsonObject("Stateplex/Employee/Juha/", "Seppo", &client, &jsonDatabase, &JsonClient::showResult);
-	jsonactor.setJsonObject("Stateplex/Employee/Seppo/Age/", "14", &client, &jsonDatabase, &JsonClient::showResult);
-	
-
-	
 
 	//JsonData<const char> jsonChar(&jsonactor, "key", "value");
 	//int number = 17;
@@ -114,7 +98,7 @@ int main()
 	std::cout << "JSON SEARCH: " << mSecond.find("strKey")->key() << std::endl;
 	
 	//company.traverse();
-	jsonDatabase.traverse(); 
+	jsonDatabase.traverse(); */
 
 	dispatcher.run();
 

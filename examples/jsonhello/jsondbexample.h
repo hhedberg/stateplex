@@ -34,11 +34,11 @@ void JsonDbExample::initDb(JsonDbActor *jsonActor, JsonClient *client)
 {
 	root = new JsonObject(jsonActor, "Stateplex");
 	root->add(new JsonObject(jsonActor, "Employee"));
-	root->findObject("Employee")->add(new JsonObject(jsonActor, "Juha"));
-	root->findObject("Employee")->add(new JsonObject(jsonActor, "Tapio"));
+	root->getObject("Employee")->add(new JsonObject(jsonActor, "Juha"));
+	root->getObject("Employee")->add(new JsonObject(jsonActor, "Tapio"));
 
-	root->findObject("Employee")->findObject("Juha")->add(new JsonNumber(jsonActor, "Age", 24));
-	root->findObject("Employee")->findObject("Tapio")->add(new JsonNumber(jsonActor, "Age", 24));
+	root->getObject("Employee/Juha/")->add(new JsonNumber(jsonActor, "Age", 24));
+	root->getObject("Employee/Tapio/")->add(new JsonNumber(jsonActor, "Age", 24));
 
 	jsonActor->getRootObject("Employee/Juha/Age/", client, root, &JsonClient::showResult);
 	jsonActor->setJsonObject("Employee/Juha/Age/", "14", client, root, &JsonClient::showResult);

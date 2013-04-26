@@ -73,6 +73,14 @@ JsonItem *JsonObject::get(const char *path)
 	JsonItem *item = get(Stateplex::String::copy(allocator(), path));
 	return item;
 }
+
+JsonObject *JsonObject::getObject(const char *path)
+{
+	JsonObject *object = dynamic_cast<JsonObject *> (get(Stateplex::String::copy(allocator(), path)));
+	return object;
+	
+}
+
 JsonItem *JsonObject::get(Stateplex::String *path)
 {
 	std::vector<std::string> tokens;
