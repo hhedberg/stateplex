@@ -26,11 +26,18 @@ namespace Stateplex {
 
 HttpRequest *HbdpServer::instantiateHttpRequest(const HttpRequest::Embryo *embryo)
 {
-	WriteBuffer<> *uri = embryo->uri()->region(mPath->length(), embryo->uri()->length() - mPath->length());
-	Array<WriteBuffer<> *> *elements = uri->split('/', 3);
-	delete uri;
+	HttpRequest *httpRequest = 0;
 
-	if (elements->length() == 0) {
+	WriteBuffer<> uri(actor());
+	embryo->uri()->region(mPath->length(), embryo->uri()->length() - mPath->length(), &uri);
+	Array<WriteBuffer<> *> *elements = uri.split('/', 3);
+
+	if (elements->length() == 0 ) {
+		if (!embryo->method()->equals("GET")) {
+			httpRequest = new SimpleHttpRequest(embryo, "405 Method Not Allowed");
+			goto error;
+		}
+
 		char buffer[128];
 		Size length = snprintf(buffer, sizeof(buffer), "%lu", (long unsigned)actor()->dispatcher()->milliseconds());
 		// TODO: More random id
@@ -38,21 +45,36 @@ HttpRequest *HbdpServer::instantiateHttpRequest(const HttpRequest::Embryo *embry
 		HbdpConnection::Embryo connectionEmbryo(this, id);
 		HbdpConnection *connection = mConnectionFactoryMethod.invoke(&connectionEmbryo);
 		mConnections.addTail(connection);
-		return new SimpleHttpRequest(embryo, "200 OK", id->chars());
+		httpRequest = new SimpleHttpRequest(embryo, "200 OK", id->chars());
 	} else if (elements->length() == 2) {
+		if (!embryo->method()->equals("POST") && !embryo->method()->equals("DELETE")) {
+			httpRequest = new SimpleHttpRequest(embryo, "405 Method Not Allowed");
+			goto error;
+		}
+
 		for (HbdpConnection *connection = mConnections.first(); connection; connection = mConnections.next(connection)) {
 			if (elements->element(0)->equals(connection->id())) {
 				String *serialString = elements->element(1)->asString();
 				Size serialNumber = atol(serialString->chars());
 				serialString->destroy(allocator());
-				elements->destroy(allocator());
-				return connection->instantiateHttpRequest(embryo, serialNumber);
+				if (embryo->method()->equals("DELETE")) {
+					httpRequest = connection->instantiateHttpRequest(embryo, serialNumber, true);
+					connection->remove();
+					delete connection;
+				} else {
+					httpRequest = connection->instantiateHttpRequest(embryo, serialNumber, false);
+				}
+				break;
 			}
 		}
 	}
 
+error:
 	elements->destroy(allocator());
-	return new SimpleHttpRequest(embryo, "404 Not Found");
+	if (!httpRequest)
+		httpRequest = new SimpleHttpRequest(embryo, "404 Not Found");
+
+	return httpRequest;
 }
 
 }

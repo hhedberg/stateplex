@@ -21,6 +21,7 @@
 #include <sys/epoll.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <errno.h>
 
 #include "dispatcher.h"
 #include "actor.h"
@@ -136,12 +137,15 @@ void Dispatcher::run()
 		/* Receive external events i.e. poll sources */
 		n_events = epoll_wait(mEpollFd, events, MAX_EVENTS, timeout);
 		if (n_events == -1) {
-			perror("epoll_wait");
-			abort();
-		}
-		for (int i = 0; i < n_events; i++) {
-			Source *source = reinterpret_cast<Source *>(events[i].data.ptr);
-			source->handleReady(events[i].events & EPOLLIN, events[i].events & EPOLLOUT);
+			if (errno != EINTR) {
+				perror("epoll_wait");
+				abort();
+			}
+		} else {
+			for (int i = 0; i < n_events; i++) {
+				Source *source = reinterpret_cast<Source *>(events[i].data.ptr);
+				source->handleReady(events[i].events & EPOLLIN, events[i].events & EPOLLOUT);
+			}
 		}
 
 		/* Handle timeouts for waiting actors */
