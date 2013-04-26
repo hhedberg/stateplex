@@ -68,6 +68,11 @@ inline Downstream::Downstream(Actor *actor)
 inline Downstream::~Downstream()
 { }
 
+/*
+ * Set upstream
+ *
+ */
+
 inline void Downstream::setUpstream(Upstream *upstream)
 {
 	if (mUpstream == upstream)
