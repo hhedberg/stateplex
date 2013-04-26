@@ -117,7 +117,7 @@ int main()
 	company.traverse();
 	jsonDatabase.traverse(); */
 
-	//dispatcher.run();
+	dispatcher.run();
 
 	return 0;
 }
