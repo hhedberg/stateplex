@@ -11,4 +11,4 @@ protected:
 private:
 };
 
-#endif // JSONDB_H
+#endif // JSONINTERFACE_H
