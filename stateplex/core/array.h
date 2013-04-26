@@ -37,6 +37,7 @@ class Array {
 	static Size sizeOfLength(Size length);
 
 public:
+	Type *elements() const;
 	Type element(Size index) const;
 	Size length() const;
 
@@ -104,6 +105,16 @@ inline Size Array<Type>::sizeOfLength(Size length)
 		size = 1;
 
 	return size;
+}
+
+template<typename Type>
+Type *Array<Type>::elements() const
+{
+	Size size;
+	getLength(&size);
+
+	Array<Type> *self = const_cast<Array<Type> *>(this);
+	return *reinterpret_cast<Type **>(reinterpret_cast<char *>(self) + size);
 }
 
 template<typename Type>

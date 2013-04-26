@@ -52,8 +52,9 @@ class HbdpConnection : public Upstream, public ListItem {
 	String *mId;
 	Size32 mSerialNumber;
 	WriteBuffer<> mOut;
+	bool mEndReceived;
 
-	HttpRequest *instantiateHttpRequest(const HttpRequest::Embryo *embryo, Size serialNumber);
+	HttpRequest *instantiateHttpRequest(const HttpRequest::Embryo *embryo, Size serialNumber, bool close);
 	void handleEnd();
 	void endRequest();
 
@@ -76,7 +77,6 @@ public:
 	HbdpConnection(Actor *actor, const Embryo *embryo);
 	virtual ~HbdpConnection();
 
-	void close();
 	HbdpServer *hbdpServer() const;
 	const String *id() const;
 	void write(Buffer<> *data);
@@ -91,7 +91,7 @@ public:
 namespace Stateplex {
 
 inline HbdpConnection::HbdpConnection(Actor *actor, const Embryo *embryo)
-	: Object(actor), Upstream(actor), mHbdpServer(embryo->mHbdpServer), mHbdpRequest(0), mSerialNumber(0), mOut(actor)
+	: Object(actor), Upstream(actor), mHbdpServer(embryo->mHbdpServer), mHbdpRequest(0), mSerialNumber(0), mOut(actor), mEndReceived(false)
 {
 	mId = String::copy(allocator(), embryo->mId);
 }
