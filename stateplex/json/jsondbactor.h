@@ -55,15 +55,19 @@ template<typename Sender> JsonDbActor::JsonMessage::JsonMessage(JsonMessageType 
 
 inline void JsonDbActor::JsonMessage::handle(Actor *sender, JsonDbActor *receiver)
 {	
-	JsonItem *test;
+	JsonItem *test = NULL;
 	if(mType == JSON_MESSAGE_TYPE_GET) {
-		
 		test = dynamic_cast<JsonObject *>(mResult)->get(mPath);
 	} else {
 		test = dynamic_cast<JsonObject *>(mResult)->set(mPath, mParameter);
 	}
 	mResult = dynamic_cast<JsonItem *>(test);
-	invokeCallback(this);
+	
+	if(test == NULL) {
+		invokeCallback(NULL);
+	} else {
+		invokeCallback(this);
+	}
 }
 
 inline void JsonDbActor::JsonMessage::result() const

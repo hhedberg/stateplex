@@ -23,7 +23,9 @@ JsonClient::JsonClient(Stateplex::Dispatcher *dispatcher)
 
 void JsonClient::showResult(JsonDbActor::JsonMessage *message)
 {
-	message->result();
+	if(message != NULL) {
+		message->result();
+	}
 }
 
 #endif

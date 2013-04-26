@@ -20,6 +20,7 @@ public:
 	JsonItem *find(const char *target);
 	JsonObject *findObject(const char *target);
 	JsonItem *get(Stateplex::String *path);
+	JsonItem *get(const char *path);
 	JsonObject *set(Stateplex::String *path, Stateplex::String *parameter);
 	const char *key();
 	void setKey(Stateplex::String *str);

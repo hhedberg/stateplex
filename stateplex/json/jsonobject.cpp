@@ -68,48 +68,73 @@ void JsonObject::freeItems()
 	}
 
 }
-
+JsonItem *JsonObject::get(const char *path)
+{
+	JsonItem *item = get(Stateplex::String::copy(allocator(), path));
+	return item;
+}
 JsonItem *JsonObject::get(Stateplex::String *path)
 {
 	std::vector<std::string> tokens;
 	JsonItem *test = NULL;
 	JsonObject *test2 = NULL;
+	const char *rightOne;
 
 	std::string str(path->chars());
-
+	
 	tokenizepath(str, tokens);
+	rightOne = tokens.back().c_str();
 	
 	for (int i = 0; i < tokens.size(); i++) {
 		test2 = dynamic_cast<JsonObject *>(test);
 		if(test == NULL) {
-			if (find(tokens[i].c_str())->type() == JSON_OBJECT) {
-				test2 = dynamic_cast<JsonObject *> (find(tokens[i].c_str()));
-				test = dynamic_cast<JsonItem *> (test2);
-			} else {
-				test = find(tokens[i].c_str());
-			}
+			if (find(tokens[i].c_str()) != NULL) {
+				if (find(tokens[i].c_str())->type() == JSON_OBJECT) {
+					test2 = dynamic_cast<JsonObject *> (find(tokens[i].c_str()));
+					test = dynamic_cast<JsonItem *> (test2);
+	
+				} else {
+					if(find(tokens[i].c_str()) != NULL) {	
+						test = find(tokens[i].c_str());
+					}	
+				
+				}
 			
+			}
 			
 		} else {
-			
-			if(test2->find(tokens[i].c_str())->type() == JSON_OBJECT) {
-				test2 = dynamic_cast<JsonObject *> (test2->find(tokens[i].c_str()));
-				test = dynamic_cast<JsonItem *> (test2);
-			} else {
-				test = test2->find(tokens[i].c_str());
+			if(test2->find(tokens[i].c_str()) != NULL) {
+				if(test2->find(tokens[i].c_str())->type() == JSON_OBJECT) {
+					test2 = dynamic_cast<JsonObject *> (test2->find(tokens[i].c_str()));
+					test = dynamic_cast<JsonItem *> (test2);
+				} else {
+					if(test2->find(tokens[i].c_str()) != NULL) {
+						test = test2->find(tokens[i].c_str());
+					}
+				}
 			}
 		}
+		
 	}
 
 	ref();
+
+	if(strcmp(rightOne, test->key()) != 0) {
+		return NULL;
+	}
+	
 	return test;
 }
 
 JsonObject *JsonObject::set(Stateplex::String *path, Stateplex::String *parameter)
 {
-	JsonItem *test = const_cast<JsonItem *> (get(path));
+	JsonItem *test = NULL;
 	
-	std::cout << "seppo on taalla taas" << test->type();
+	if(get(path) != NULL) {
+		test = const_cast<JsonItem *> (get(path));
+	} else {
+		return NULL;
+	}
 	
 	switch(test->type()) {
 		
@@ -139,7 +164,7 @@ JsonObject *JsonObject::set(Stateplex::String *path, Stateplex::String *paramete
 			break;
 		*/
 		default:
-			return 0;
+			return NULL;
 			break;
 		
 	}
@@ -159,7 +184,7 @@ JsonObject *JsonObject::set(Stateplex::String *path, Stateplex::String *paramete
 
 JsonItem *JsonObject::find(const char *target)
 {
-	JsonItem *item;
+	JsonItem *item = NULL;
 	
 	for (Stateplex::ListIterator<JsonItem> iterator(mItems); iterator.hasCurrent(); iterator.subsequent()) {
 		if(strcmp(iterator.current()->key(), target) == 0) {
@@ -167,6 +192,7 @@ JsonItem *JsonObject::find(const char *target)
 			break;
 		}
 	}
+	
 	return item;
 }
 
