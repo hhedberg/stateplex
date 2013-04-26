@@ -40,6 +40,7 @@ public:
 	char *chars();
 	void destroy(Allocator *allocator);
 	Size length() const;
+	bool equals(const String *string) const;
 
 	static String *uninitialised(Allocator *allocator, Size length);
 	static String *copy(Allocator *allocator, const char *cString);
@@ -120,6 +121,19 @@ inline Size String::length() const
 	Size size;
 	return getLength(&size);
 }
+
+inline bool String::equals(const String *string) const
+{
+	Size size;
+	Size length = getLength(&size);
+	Size stringLength = string->getLength(&size);
+
+	if (length != stringLength)
+		return false;
+
+	return memcmp(reinterpret_cast<const char *>(this) + size, reinterpret_cast<const char *>(string) + size, length) == 0;
+}
+
 
 inline String *String::uninitialised(Allocator *allocator, Size length)
 {
