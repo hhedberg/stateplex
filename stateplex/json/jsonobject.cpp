@@ -22,6 +22,13 @@ void JsonObject::add(JsonItem *item)
 	mItems->addTail(item);
 }
 
+void JsonObject::add(Stateplex::String *path, JsonItem *item)
+{
+	JsonObject *tmp = NULL;
+	tmp = dynamic_cast<JsonObject *>(get(path));
+	tmp->add(item);
+}
+
 void JsonObject::traverse()
 {
 	int count = 0;

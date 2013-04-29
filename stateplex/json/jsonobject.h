@@ -5,6 +5,8 @@
 #include "jsonnumber.h"
 #include "jsonstring.h"
 #include "jsondata.h"
+#include "jsonbool.h"
+#include "jsondouble.h"
 #include <string>
 #include <vector>
 #include <iostream>
@@ -15,6 +17,7 @@ public:
     	JsonObject(Stateplex::Actor *owner, const char *key);
     	virtual ~JsonObject();
  	void add(JsonItem *item);
+	void add(Stateplex::String *path, JsonItem *item);
 	void traverse();
 	Stateplex::List<JsonItem> *getList();
 	JsonItem *find(const char *target);
