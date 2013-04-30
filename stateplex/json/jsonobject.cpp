@@ -279,3 +279,7 @@ void JsonObject::unref()
 	}
 }
 
+Stateplex::Size32 JsonObject::refcount() 
+{
+	return mRefcount;
+}

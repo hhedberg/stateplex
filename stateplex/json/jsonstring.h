@@ -15,6 +15,7 @@ public:
 	void setValue(Stateplex::String *str);
 	JsonType type();
 	void unref();
+	Stateplex::Size32 refcount();
 	
 protected:
 	void ref();

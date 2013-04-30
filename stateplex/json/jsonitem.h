@@ -26,6 +26,7 @@ public:
 	virtual const char *key() = 0;
 	virtual JsonType type() = 0;
 	virtual void unref() = 0;
+	virtual Stateplex::Size32 refcount() = 0;
 
 protected:
 	char *mKey;

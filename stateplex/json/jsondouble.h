@@ -14,6 +14,7 @@ public:
 	double value();
 	void setValue(double value);
 	void unref();
+	Stateplex::Size32 refcount();
 	
 protected:
 	void ref();

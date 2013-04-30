@@ -47,6 +47,11 @@ void JsonNumber::unref()
 	}
 }
 
+Stateplex::Size32 JsonNumber::refcount() 
+{
+	return mRefcount;
+}
+
 JsonNumber::~JsonNumber()
 {
         //dtor
