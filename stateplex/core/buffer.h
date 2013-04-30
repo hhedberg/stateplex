@@ -186,7 +186,7 @@ Buffer<mBlockSize>::Block::Block(Allocator *allocator, Block *block)
 }
 
 /**
- * Function that allcoates a specific block size
+ * Function that allocates a specific block size
  * and increase reference count.
  */
 
@@ -311,7 +311,6 @@ Size16 Buffer<mBlockSize>::Block::room() const
 /**
  * Function that compare the content of the memory block.
  *
- * @return	int.
  */
 
 template<Size16 mBlockSize>
@@ -374,7 +373,6 @@ void Buffer<mBlockSize>::Block::popped(Size16 length)
 
 /**
  * Function that split the allocated memory.
- *
  */
 
 template<Size16 mBlockSize>
@@ -545,7 +543,7 @@ String *Buffer<mBlockSize>::asString(Size offset, Size length) const
 }
 
 /*
- * Function that compare the value of the string.
+ * Function that compares the value of the string.
  *
  * @param *cString	chars to be compared. 
  */
@@ -580,7 +578,7 @@ int Buffer<mBlockSize>::compare(const char *cString, Size length) const
 	return 0;
 }
 /*
- * Compares the string length.
+ * Compares this string chars to string length.
  */
 
 template<Size16 mBlockSize>
@@ -600,7 +598,7 @@ int Buffer<mBlockSize>::compare(const Buffer *buffer) const
  * Compares the content of string.
  *
  * @param *cString	chars to be compared.
- * @retrun		True or false.
+ * @retrun		true or false.
  */
 
 template<Size16 mBlockSize>
@@ -634,7 +632,7 @@ bool Buffer<mBlockSize>::equals(const String *string) const
 }
 
 /*
- * compares this pointer buffer.
+ * Compares this pointer buffer.
  *
  * @return	  True or false.
  */

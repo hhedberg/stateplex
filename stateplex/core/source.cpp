@@ -40,6 +40,10 @@ void Source::manageDispatching()
 	}
 }
 
+/**
+ * Function that sets mode for read and write.
+ */
+
 void Source::setMode(bool readable, bool writable)
 {
 	if (mReadable == readable && mWritable == writable)

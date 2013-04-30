@@ -111,6 +111,10 @@ void WriteBuffer<mBlockSize>::pushToBlock(const char *cString, Size length, type
 	}
 }
 
+/*
+ *
+ *
+ */
 
 template<Size16 mBlockSize>
 typename Buffer<mBlockSize>::Block *WriteBuffer<mBlockSize>::splitBlock(Size offset)
@@ -130,6 +134,11 @@ typename Buffer<mBlockSize>::Block *WriteBuffer<mBlockSize>::splitBlock(Size off
 
 	return 0;
 }
+
+/*
+ *
+ *
+ */
 
 template<Size16 mBlockSize>
 WriteBuffer<mBlockSize>::WriteBuffer(Actor *actor)
@@ -164,6 +173,7 @@ void WriteBuffer<mBlockSize>::append(Buffer<> *buffer)
  * 
  * @param string	string to be added
  */
+
 template<Size16 mBlockSize>
 void WriteBuffer<mBlockSize>::append(const char *cString)
 {
@@ -173,6 +183,7 @@ void WriteBuffer<mBlockSize>::append(const char *cString)
 /**
  * Copies the given amount of bytes from the specified location into the end of the buffer.
  */
+
 template<Size16 mBlockSize>
 void WriteBuffer<mBlockSize>::append(const char *cString, Size length)
 {
@@ -182,6 +193,7 @@ void WriteBuffer<mBlockSize>::append(const char *cString, Size length)
 /**
  * Copies the contents of the given String into the end of the buffer.
  */
+
 template<Size16 mBlockSize>
 void WriteBuffer<mBlockSize>::append(const String *string)
 {

@@ -62,15 +62,23 @@ public:
 
 namespace Stateplex {
 
+/*
+ * Constructor.
+ */
+
 inline Upstream::Upstream(Actor *actor)
 	: Object(actor), mDownstream(0)
 { }
+
+/*
+ * Destructor
+ */
 
 inline Upstream::~Upstream()
 { }
 
 /*
- *
+ * Sets Downstream for specific downstream.
  */
 
 inline void Upstream::setDownstream(Downstream *downstream)
@@ -87,25 +95,45 @@ inline void Upstream::setDownstream(Downstream *downstream)
 		mDownstream->setUpstream(this);
 }
 
+/*
+ * Sends buffer to Downstream.
+ */
+
 inline void Upstream::sendToDownstream(Buffer<> *buffer) const
 {
 	mDownstream->receiveFromUpstream(buffer);
 }
+
+/*
+ * Sends character pointer data of size length to Downstream.
+ */
 
 inline void Upstream::sendToDownstream(const char *data, Size length) const
 {
 	mDownstream->receiveFromUpstream(data, length);
 }
 
+/*
+ * Sends whole string to Downstream.
+ */
+
 inline void Upstream::sendToDownstream(const char *cString) const
 {
 	mDownstream->receiveFromUpstream(cString, strlen(cString));
 }
 
+/*
+ * Sends string length to Downstream.
+ */
+
 inline void Upstream::sendToDownstream(const String *string) const
 {
 	mDownstream->receiveFromUpstream(string->chars(), string->length());
 }
+
+/*
+ * Sends drained to Downstream.
+ */
 
 inline void Upstream::sendDrainedToDownstream() const
 {

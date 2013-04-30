@@ -27,6 +27,10 @@
 
 namespace Stateplex {
 
+/*
+ *
+ */
+
 void UpstreamSource::handleReady(bool readyToRead, bool readyToWrite)
 {
 	if (readyToRead) {
@@ -51,10 +55,18 @@ void UpstreamSource::handleReady(bool readyToRead, bool readyToWrite)
 	}
 }
 
+/*
+ *
+ */
+
 void UpstreamSource::receiveDrainedFromDownstream()
 {
 	mWriteEof = true;
 }
+
+/*
+ * Recives character data of size length and writes to buffer.
+ */
 
 void UpstreamSource::receiveFromDownstream(const char *data, Size length)
 {
@@ -83,6 +95,10 @@ void UpstreamSource::receiveFromDownstream(const char *data, Size length)
 	mWriteBuffer = new WriteBuffer<>(actor());
 	mWriteBuffer->append(data, length);
 }
+
+/*
+ * Recives pointer buffer and writes to buffer.
+ */
 
 void UpstreamSource::receiveFromDownstream(Buffer<> *buffer)
 {
