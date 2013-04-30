@@ -5,6 +5,8 @@
  *      Author: maaalto
  */
 #include <iostream>
+#include <unistd.h>
+#include <fstream>
 #include "gtest/gtest.h"
 #include "../../stateplex/core/buffer.h"
 #include "../../stateplex/core/readbuffer.h"
@@ -18,17 +20,17 @@ class BufferTest : public testing::Test {
 protected:
 
         static Stateplex::Dispatcher *dispatcher;
-      //  static Stateplex::Actor myActor;
+        static Stateplex::Actor *myActor;
 
         static void SetUpTestCase()
         {
                 dispatcher = new Stateplex::Dispatcher();
-        //        myActor = new Stateplex::Actor(dispatcher);
+                myActor = new Stateplex::Actor(dispatcher);
 
         }
         static void TearDownTestCase()
         {
-        //      delete myActor;
+                delete myActor;
                 delete dispatcher;
         }
 
@@ -38,119 +40,171 @@ protected:
 };
 
 Stateplex::Dispatcher *BufferTest::dispatcher;
-//Stateplex::Dispatcher *BufferTest::myActor;
+Stateplex::Actor *BufferTest::myActor;
 
-        //Buffer tests
+
+//Buffer tests
 
 TEST_F(BufferTest, zeroLengthTest)
 {
-        Stateplex::Actor myActor(dispatcher);
-        Stateplex::WriteBuffer<1024> inputBuffer1(&myActor);
-        EXPECT_EQ(0, inputBuffer1.length());
+        Stateplex::WriteBuffer<1024> inputBuffer(myActor);
+        EXPECT_EQ(0, inputBuffer.length());
 }
 
-TEST_F(BufferTest, appendCStringTest)
+//WriteBuffer tests
+TEST_F(BufferTest, appendAndEqualsTests)
 {
-        Stateplex::Actor actor1(dispatcher);
-        //Stateplex::Actor actor2(&dispatcher);
+        //append cString
+        Stateplex::WriteBuffer<1024> inputBuffer(myActor);
+        inputBuffer.append("Marja");
+        EXPECT_EQ(inputBuffer.length(), 5);
 
-        Stateplex::WriteBuffer<1024> inputBuffer2(&actor1);
-        //Stateplex::WriteBuffer<1024> inputBuffer4(&actor1);
+        //append String
+        Stateplex::WriteBuffer<1024> inputBuffer1(myActor);
+        inputBuffer1.append(Stateplex::String::copy(myActor->allocator(), "Marja"));
+        EXPECT_NE(inputBuffer1.length(), 0);
+        EXPECT_TRUE(inputBuffer1.equals(Stateplex::String::copy(myActor->allocator(), "Marja")));
+        EXPECT_EQ(inputBuffer1.length(), 5);
 
-        inputBuffer2.append("Marja");
-        EXPECT_NE(inputBuffer2.length(), 0);
+        //append buffers
+        Stateplex::WriteBuffer<> *buffer1 = new Stateplex::WriteBuffer<>(myActor);
+        Stateplex::WriteBuffer<> *buffer2 = new Stateplex::WriteBuffer<>(myActor);
+        Stateplex::WriteBuffer<> *buffer3 = new Stateplex::WriteBuffer<>(myActor);
+        Stateplex::WriteBuffer<> *buffer4 = new Stateplex::WriteBuffer<>(myActor);
 
-}
+        buffer1->append("Marja ");
+        EXPECT_TRUE(buffer1->equals("Marja "));
+        EXPECT_EQ(buffer1->length(), 6);
 
-TEST_F(BufferTest, appendStringTest)
-{
-        Stateplex::Actor actor2(dispatcher);
-        Stateplex::WriteBuffer<1024> inputBuffer3(&actor2);
-        inputBuffer3.append(Stateplex::String::copy(actor2.allocator(), "Marja"));
-        EXPECT_NE(inputBuffer3.length(), 0);
-        EXPECT_TRUE(inputBuffer3.equals("Marja"));
-        EXPECT_EQ(inputBuffer3.length(), 5);
-}
+        buffer2->append("does coding and fails", 12);
+        buffer1->append(buffer2);
+        EXPECT_TRUE(buffer1->equals("Marja does coding and fails", 12));
+        EXPECT_EQ(buffer1->length(), 18);
 
-TEST_F(BufferTest, appendBuffersAndEqualsTest)
-{
-        Stateplex::Actor actor3(dispatcher);
-        Stateplex::Actor actor4(dispatcher);
-        Stateplex::Actor actor5(dispatcher);
-        Stateplex::WriteBuffer<> *buffer3 = new Stateplex::WriteBuffer<>(&actor3);
-        Stateplex::WriteBuffer<> *buffer4 = new Stateplex::WriteBuffer<>(&actor4);
-        Stateplex::WriteBuffer<> *buffer5 = new Stateplex::WriteBuffer<>(&actor5);
-
-        buffer3->append("Marja ");
-        EXPECT_TRUE(buffer3->equals("Marja "));
-        EXPECT_EQ(buffer3->length(), 6);
-
-        buffer4->append(Stateplex::String::copy(actor4.allocator(), "tries coding."));
-
-        buffer3->append(buffer4);
-        EXPECT_TRUE(buffer3->equals("Marja tries coding."));
+        buffer3->append(Stateplex::String::copy(myActor->allocator(), "and succeeds in it."));
+        EXPECT_TRUE(buffer3->equals(Stateplex::String::copy(myActor->allocator(), "and succeeds in it.")));
         EXPECT_EQ(buffer3->length(), 19);
 
-        buffer5->append(" And succeeds in it.", 13);
-        buffer3->append(buffer5);
+        buffer1->append(buffer3);
+        buffer4->append("Marja does coding and succeeds in it.");
+        EXPECT_TRUE(buffer1->equals(buffer4));
+        EXPECT_EQ(buffer1->length(), 37);
 
-        EXPECT_EQ(buffer3->length(), 32);
-        EXPECT_TRUE(buffer3->equals("Marja tries coding. And succeeds"));
-
+        delete buffer1;
+        delete buffer2;
         delete buffer3;
         delete buffer4;
-        delete buffer5;
 }
 
-TEST_F(BufferTest, insertTest)
+TEST_F(BufferTest, insertTests)
 {
-        Stateplex::Actor actor1(dispatcher);
-        Stateplex::WriteBuffer<> *buffer1 = new Stateplex::WriteBuffer<>(&actor1);
-        Stateplex::WriteBuffer<> *buffer2 = new Stateplex::WriteBuffer<>(&actor1);
+        Stateplex::WriteBuffer<> *buffer1 = new Stateplex::WriteBuffer<>(myActor);
+        Stateplex::WriteBuffer<> *buffer2 = new Stateplex::WriteBuffer<>(myActor);
+
         buffer1->insert(0xF867, "TestiCString");
         EXPECT_TRUE(buffer1->equals("TestiCString"));
         EXPECT_EQ(0, buffer1->compare("TestiCString"));
         EXPECT_EQ(0, buffer1->compare("TestiCString", 12));
 
-        buffer2->insert(0xF867,"Ritaharju school", 6 );
-        EXPECT_EQ(buffer2->length(), 6);
-        EXPECT_TRUE(buffer2->equals("Ritaharju school", 6));
+        buffer2->insert(0xF900,"Ritaharju school is best", 16 );
+        EXPECT_EQ(buffer2->length(), 16);
+        EXPECT_TRUE(buffer2->equals("Ritaharju school is best", 16));
 
-      //  buffer2->insert(0xF900, buffer1);
-       // EXPECT_TRUE(buffer2->equals("TestiCString"));
+        //buffer1->insert(0xF867, buffer2);
+                //tests/core/../../stateplex/core/writebuffer.h:275:86: error: no type named 'allocateMemory' in 'class Stateplex::Buffer<>::Block'
+        // EXPECT_EQ(buffer1->asString(0xF867, 15), "Ritaharju school");
+        // EXPECT_TRUE(buffer1->equals("Ritaharju school"));
 
-        //EXPECT_EQ(buffer1->asString(1000, 12), String myString.copy("TestiCString");
-        //EXPECT_EQ(buffer1->;
+        //buffer1->insert(0xF867, buffer2, 0xF900, 16);
+                //tests/core/../../stateplex/core/writebuffer.h:275:86: error: no type named 'allocateMemory' in 'class Stateplex::Buffer<>::Block'
+        // EXPECT_TRUE(buffer1->equals("Ritaharju school"));
 
         delete buffer1;
         delete buffer2;
 }
 
+//ReadBuffer tests
+TEST_F(BufferTest, pushTests)
+{
+        ssize_t size = 0;
+        int fd = open("myFile", std::fstream::in);
+
+        Stateplex::WriteBuffer<> *wBuffer = new Stateplex::WriteBuffer<>(myActor);
+        wBuffer->ensurePushLength(wBuffer->length());
+
+        if (fd > 0)
+                size = ::read(fd, wBuffer->pushPointer(), wBuffer->pushLength());
+        else return;
+
+        if (size>0)
+                wBuffer->pushed(size);
+
+        EXPECT_TRUE(wBuffer->length() == 30); //myFile contains 30 characters
+
+        close(fd);
+        delete wBuffer;
+}
+
+TEST_F(BufferTest, popTests)
+{
+        Stateplex::WriteBuffer<> *buffer1 = new Stateplex::WriteBuffer<>(myActor);
+        Stateplex::WriteBuffer<> *buffer2 = new Stateplex::WriteBuffer<>(myActor);
+
+        buffer1->append("First of May hassle");
+        EXPECT_STREQ(buffer1->popPointer(), "First of May hassle");
+        EXPECT_EQ(buffer1->popLength(), buffer1->length());
+
+        char c = buffer1->peek();
+        EXPECT_EQ(c, 'F');
+        if (c == 'F')buffer1->pop();
+
+        buffer1->popped(buffer1->popLength());
+        EXPECT_EQ(buffer1->popLength(), 0);
+        EXPECT_EQ(buffer1->length(), 0);
+
+        buffer2->append("My first Vappu");
+        EXPECT_STREQ(buffer2->popPointer(), "My first Vappu");
+        buffer2->poppedAll();
+        EXPECT_EQ(buffer2->popLength(), 0);
+
+        delete buffer1;
+        delete buffer2;
+
+}
+/*
+void ensurePushLength(Size16 length);
+        char *pushPointer() const;
+        Size16 pushLength() const;
+        void pushed(Size16 length);
+*/
 TEST_F(BufferTest, miscellaneousTests)
 {
-        Stateplex::Actor testActor(dispatcher);
-        Stateplex::WriteBuffer<> *buffer = new Stateplex::WriteBuffer<>(&testActor);
-        buffer->append("aaaab");
-        EXPECT_EQ(buffer->actor(), &testActor);
-        EXPECT_EQ(buffer->allocator(), testActor.allocator());
-       // EXPECT_EQ(buffer->asString(), Stateplex::String::copy));
+        Stateplex::WriteBuffer<> *buffer = new Stateplex::WriteBuffer<>(myActor);
+        EXPECT_EQ(buffer->actor(), myActor);
+        EXPECT_EQ(buffer->allocator(), myActor->allocator());
+
+        buffer->append("abcd");
+        Stateplex::String *myString = buffer->asString();
+       // Stateplex::String *myString1 = buffer->asString(2); //Doesn't compile
+       // Stateplex::String *myString2 = buffer->asString(0xF900, 3); //Doesn't compile
+
         delete buffer;
 }
 
 TEST_F(BufferTest, splitTest)
 {
-        Stateplex::Actor myActor2(dispatcher);
-        Stateplex::WriteBuffer<> *buffer2 = new Stateplex::WriteBuffer<>(&myActor2);
-        buffer2->append("Ritaharju school");
-        buffer2->split('a', 4);
-        EXPECT_TRUE(buffer2->equals("Rita"));
-        delete buffer2;
+        Stateplex::WriteBuffer<> *buffer = new Stateplex::WriteBuffer<>(myActor);
+        buffer->append("Ritaharju school");
+
+        buffer->split('a', 4);// offsetOf to be done
+        EXPECT_TRUE(buffer->equals("Rita"));
+
+        delete buffer;
 }
 
 TEST_F(BufferTest, regionTest)
 {
-        Stateplex::Actor actor(dispatcher);
-        Stateplex::WriteBuffer<> *inputBuffer = new Stateplex::WriteBuffer<>(&actor);
+        Stateplex::WriteBuffer<> *inputBuffer = new Stateplex::WriteBuffer<>(myActor);
 
         inputBuffer->region(0xF900, 100);
         EXPECT_EQ(inputBuffer->length(), 0);
@@ -160,8 +214,33 @@ TEST_F(BufferTest, regionTest)
         delete inputBuffer;
 }
 /*
+//Buffer Tests
+        String *asString() const;
+        String *asString(Size length) const;
+        String *asString(Size offset, Size length) const;
+        char charAt(Size offset) const;
+        int compare(const char *cString) const;
+        int compare(const char *cString, Size length) const;
+        int compare(const String *string) const;
+        int compare(const Buffer *buffer) const;
+        bool equals(const char *cString) const;
+        bool equals(const char *cString, Size length) const;
+        bool equals(const String *string) const;
+        bool equals(const Buffer *buffer) const;
+        Size length() const;
+        Size offsetOf(char c, Size fromOffset = 0);
+
+        WriteBuffer<mBlockSize> *region(Size offset, Size length);
+        void region(Size offset, Size length, WriteBuffer<mBlockSize> *buffer);
+        Array<WriteBuffer<mBlockSize> *> *split(char delimiter, Size maxElements);
+        Size split(char delimiter, Array<WriteBuffer<mBlockSize> *> *elements);
+
+        Size16 blockSize() const;
+
+
+
         //WriteBuffer tests
-        TEST_F(BufferTest, splitTest)
+        TEST_F(BufferTest, WriteBufferTest)
         {
 
         }
@@ -171,18 +250,6 @@ TEST_F(BufferTest, regionTest)
         {
            std::size_t size;
         }
-        TEST_F(BufferTest, IteratorTest)
-        {
-
-        }
-
-        //WriteBuffer tests
-        TEST_F(BufferTest, WriteBufferTest)
-        {
-
-        }
-
-        //ReadBuffer tests
         TEST_F(BufferTest, ReadBufferTest)
         {
 
@@ -197,6 +264,19 @@ TEST_F(BufferTest, regionTest)
         {
 
         }
-     */
+
+    //Iterator Tests
+            TEST_F(BufferTest, IteratorTest)
+        {
+
+        }
+           void advance(Size length = 1);
+                Size offset();
+                Size charBlockLength();
+                const char *charBlock();
+                Buffer<mBlockSize> *buffer() const;
+                bool hasCurrent();
+                char current();
+    */
 
 
