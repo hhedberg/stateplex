@@ -25,6 +25,9 @@
 namespace Stateplex {
 
 class JsonObject : public JsonItem {
+	friend class JsonArray;
+	friend class JsonDbActor;
+
 	struct Member : public ListItem {
 		String *mName;
 		Type mType;
@@ -38,15 +41,16 @@ class JsonObject : public JsonItem {
 		};
 	};
 
-	List<Member> mMembers;
+	List<Member> mMembers; // TODO: Use hashtable or similar instead.
+
+	JsonObject(JsonItem *parent);
 
 	Member *member(const String *name) const;
 	Member *replaceMember(const String *name);
 	void freeMemberValue(Member *m);
 
 public:
-	JsonObject(JsonItem *parent);
-	~JsonObject();
+	virtual ~JsonObject();
 
 	Type type(const String *name) const;
 	bool has(const String *name) const;
@@ -78,30 +82,6 @@ namespace Stateplex {
 inline JsonObject::JsonObject(JsonItem *parent)
 	: JsonItem(parent)
 { }
-
-inline JsonObject::Member *JsonObject::replaceMember(const String *name)
-{
-	Member *m = member(name);
-	if (m) {
-		freeMemberValue(m);
-	} else {
-		m = new Member();
-		m->mName = String::copy(Dispatcher::current()->allocator(), name);
-		mMembers.addTail(m);
-	}
-
-	return m;
-}
-
-inline void JsonObject::freeMemberValue(Member *m)
-{
-	if (m->mType == JSON_ITEM_TYPE_ARRAY)
-		delete m->mArray;
-	else if (m->mType == JSON_ITEM_TYPE_OBJECT)
-		delete m->mObject;
-	else if (m->mType == JSON_ITEM_TYPE_STRING)
-		m->mString->destroy(Dispatcher::current()->allocator());
-}
 
 inline JsonItem::Type JsonObject::type(const String *name) const
 {

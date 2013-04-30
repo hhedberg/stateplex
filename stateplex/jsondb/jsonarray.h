@@ -25,6 +25,8 @@
 namespace Stateplex {
 
 class JsonArray : public JsonItem {
+	friend class JsonObject;
+
 	struct Member : public ListItem {
 		Type mType;
 		union {
@@ -40,12 +42,13 @@ class JsonArray : public JsonItem {
 	List<Member> mMembers;
 	Size mLength;
 
+	JsonArray(JsonItem *parent);
+
 	Member *member(Size index) const;
 	void freeMemberValue(Member *m);
 
 public:
-	JsonArray(JsonItem *parent);
-	~JsonArray();
+	virtual ~JsonArray();
 
 	Size length() const;
 	Type type(Size index) const;
@@ -77,16 +80,6 @@ namespace Stateplex {
 inline JsonArray::JsonArray(JsonItem *parent)
 	: JsonItem(parent), mLength(0)
 { }
-
-inline void JsonArray::freeMemberValue(Member *m)
-{
-	if (m->mType == JSON_ITEM_TYPE_ARRAY)
-		delete m->mArray;
-	else if (m->mType == JSON_ITEM_TYPE_OBJECT)
-		delete m->mObject;
-	else if (m->mType == JSON_ITEM_TYPE_STRING)
-		m->mString->destroy(Dispatcher::current()->allocator());
-}
 
 inline Size JsonArray::length() const
 {

@@ -40,6 +40,16 @@ JsonArray::Member *JsonArray::member(Size index) const
 	return m;
 }
 
+void JsonArray::freeMemberValue(Member *m)
+{
+	if (m->mType == JSON_ITEM_TYPE_ARRAY)
+		delete m->mArray;
+	else if (m->mType == JSON_ITEM_TYPE_OBJECT)
+		delete m->mObject;
+	else if (m->mType == JSON_ITEM_TYPE_STRING)
+		m->mString->destroy(Dispatcher::current()->allocator());
+}
+
 JsonObject *JsonArray::appendObject()
 {
 	JsonObject *object = new JsonObject(this);

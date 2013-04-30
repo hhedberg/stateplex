@@ -42,6 +42,30 @@ JsonObject::Member *JsonObject::member(const String *name) const
 	return 0;
 }
 
+JsonObject::Member *JsonObject::replaceMember(const String *name)
+{
+	Member *m = member(name);
+	if (m) {
+		freeMemberValue(m);
+	} else {
+		m = new Member();
+		m->mName = String::copy(Dispatcher::current()->allocator(), name);
+		mMembers.addTail(m);
+	}
+
+	return m;
+}
+
+void JsonObject::freeMemberValue(Member *m)
+{
+	if (m->mType == JSON_ITEM_TYPE_ARRAY)
+		delete m->mArray;
+	else if (m->mType == JSON_ITEM_TYPE_OBJECT)
+		delete m->mObject;
+	else if (m->mType == JSON_ITEM_TYPE_STRING)
+		m->mString->destroy(Dispatcher::current()->allocator());
+}
+
 JsonObject *JsonObject::setObject(const String *name)
 {
 	JsonObject *object = new JsonObject(this);
