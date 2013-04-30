@@ -6,6 +6,8 @@
 #include "../core/string.h"
 #include "jsonobject.h"
 
+class Sender;
+
 enum JsonMessageType {
 	JSON_MESSAGE_TYPE_GET,
 	JSON_MESSAGE_TYPE_SET,
@@ -38,10 +40,14 @@ public:
 		void handle(Actor *sender, JsonDbActor *receiver);
 		
 	};
-
-	template<typename Sender> void getRootObject(const char *path, Sender *sender, JsonObject *item, void (Sender::*callbackFunction)(JsonMessage *message));
-	template<typename Sender> void setJsonObject(const char *path, const char *parameter, Sender *sender, JsonObject *item, void (Sender::*callbackFunction)(JsonMessage *message));
-	template<typename Sender> void addJson(const char *path, JsonItem *newItem, Sender *sender, JsonObject *item, void (Sender::*callbackFunction)(JsonMessage *message));
+	
+	Sender *mSender;
+	void (Sender::*mCallbackFunction)(JsonDbActor::JsonMessage *message);
+	
+	void getRootObject(const char *path, JsonObject *item);
+	void setJsonObject(const char *path, const char *parameter, JsonObject *item);
+	void addJson(const char *path, JsonItem *newItem, JsonObject *item);
+	template<typename Sender> void setClient(Sender *sender, void (Sender::*callbackFunction)(JsonMessage *message));
 };
 
 /*** Inline implementations ***/
@@ -109,22 +115,28 @@ inline JsonDbActor::JsonDbActor(Stateplex::Dispatcher *dispatcher)
 	: Object(this), Actor(dispatcher)
 { }
 
-template<typename Sender> void JsonDbActor::getRootObject(const char *path, Sender *sender, JsonObject *item, void (Sender::*callbackFunction)(JsonMessage *message))
+void JsonDbActor::getRootObject(const char *path, JsonObject *item)
 {
-	JsonMessage *rootObject = new JsonMessage(JSON_MESSAGE_TYPE_GET, Stateplex::String::copy(allocator(), path), sender, this, item, callbackFunction);
+	JsonMessage *rootObject = new JsonMessage(JSON_MESSAGE_TYPE_GET, Stateplex::String::copy(allocator(), path), mSender, this, item, mCallbackFunction);
 	queueMessage(rootObject);
 }
 
-template<typename Sender> void JsonDbActor::setJsonObject(const char *path, const char *parameter, Sender *sender, JsonObject *item, void (Sender::*callbackFunction)(JsonMessage *message))
+void JsonDbActor::setJsonObject(const char *path, const char *parameter, JsonObject *item)
 {
-	JsonMessage *rootObject = new JsonMessage(JSON_MESSAGE_TYPE_SET, Stateplex::String::copy(allocator(), path), Stateplex::String::copy(allocator(), parameter), sender, this, item, callbackFunction);
+	JsonMessage *rootObject = new JsonMessage(JSON_MESSAGE_TYPE_SET, Stateplex::String::copy(allocator(), path), Stateplex::String::copy(allocator(), parameter), mSender, this, item, mCallbackFunction);
 	queueMessage(rootObject);
 }
 
-template<typename Sender> void JsonDbActor::addJson(const char *path, JsonItem *newItem, Sender *sender, JsonObject *item, void (Sender::*callbackFunction)(JsonMessage *message))
+void JsonDbActor::addJson(const char *path, JsonItem *newItem, JsonObject *item)
 {
-	JsonMessage *rootObject = new JsonMessage(JSON_MESSAGE_TYPE_ADD, Stateplex::String::copy(allocator(), path), newItem, sender, this, item, callbackFunction);
+	JsonMessage *rootObject = new JsonMessage(JSON_MESSAGE_TYPE_ADD, Stateplex::String::copy(allocator(), path), newItem, mSender, this, item, mCallbackFunction);
 	queueMessage(rootObject);
 }
+
+/*template<typename Sender> void JsonDbActor::setClient(Sender *sender, void (Sender::*callbackFunction)(JsonMessage *message))
+{
+	//mSender = sender;
+	//mCallbackFunction = callbackFunction;
+}*/
 
 #endif

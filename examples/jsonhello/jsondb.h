@@ -9,7 +9,7 @@ class JsonDb
 public:
 	JsonDb();
         virtual ~JsonDb();
-	virtual void initDb(JsonDbActor *jsonActor, JsonClient *client) =0;
+	virtual void initDb(JsonDbActor *jsonActor, JsonClient *client, JsonAdapter *adapter) =0;
 protected:
 	
 private:

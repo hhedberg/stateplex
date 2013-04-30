@@ -8,6 +8,7 @@
 #include <stateplex/core/dispatcher.h>
 #include <stateplex/json/jsondbactor.h>
 #include "jsonclient.h"
+#include <stateplex/json/jsonadapter.h>
 #include "jsondbexample.h"
 
 int main()
@@ -15,9 +16,10 @@ int main()
 	Stateplex::Dispatcher dispatcher;
 	JsonDbActor jsonactor(&dispatcher);
 	JsonClient client(&dispatcher);
+	JsonAdapter adapter;
 	JsonDbExample json;
 	
-	json.initDb(&jsonactor, &client);
+	json.initDb(&jsonactor, &client, &adapter);
 	
 	/*Stateplex::List<JsonObject> mList;
 	JsonObject mFirst(&jsonactor,"mFirst");
