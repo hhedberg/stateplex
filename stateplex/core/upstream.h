@@ -26,6 +26,10 @@
 
 namespace Stateplex {
 
+/** 
+ * @brief Used to set the upstream.
+ */
+
 class Downstream;
 class String;
 
@@ -71,7 +75,7 @@ inline Upstream::Upstream(Actor *actor)
 { }
 
 /*
- * Destructor
+ * Destructor.
  */
 
 inline Upstream::~Upstream()
