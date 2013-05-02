@@ -21,15 +21,27 @@
 
 namespace Stateplex {
 
+/*
+ * Recieves drained from Upstream.
+ */
+
 void EchoStream::receiveDrainedFromUpstream()
 {
 	sendDrainedToUpstream();
 }
 
+/*
+ * Recieves character pointer data of size length from Upstream.
+ */
+
 void EchoStream::receiveFromUpstream(const char *data, Size length)
 {
 	sendToUpstream(data, length);
 }
+
+/*
+ * Recives pointer buffer from Upstream.
+ */
 
 void EchoStream::receiveFromUpstream(Buffer<> *buffer)
 {
