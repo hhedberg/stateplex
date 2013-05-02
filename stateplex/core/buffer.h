@@ -831,7 +831,7 @@ Size Buffer<mBlockSize>::Iterator::charBlockLength()
 }
 
 /**
- * 
+ * Returns pointer to block position.
  */
 
 template<Size16 mBlockSize>
@@ -854,7 +854,7 @@ Buffer<mBlockSize> *Buffer<mBlockSize>::Iterator::buffer() const
 }
 
 /**
- * 
+ * Returns the current position of block.
  */
 
 template<Size16 mBlockSize>
@@ -864,7 +864,7 @@ bool Buffer<mBlockSize>::Iterator::hasCurrent()
 }
 
 /**
- * 
+ * Returns pointer to current position of block.
  */
 
 template<Size16 mBlockSize>
