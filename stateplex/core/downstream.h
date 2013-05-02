@@ -25,6 +25,10 @@
 
 namespace Stateplex {
 
+/** 
+ * @brief Used to set the downstream.
+ */
+
 class Upstream;
 
 class Downstream : public virtual Object {
@@ -124,7 +128,7 @@ inline void Downstream::sendToUpstream(const char *cString) const
 }
 
 /*
- * Sends pointer string to upstream.
+ * Sends pointer string to Upstream.
  */
 
 inline void Downstream::sendToUpstream(const String *string) const
