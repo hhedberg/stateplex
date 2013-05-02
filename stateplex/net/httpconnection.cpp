@@ -31,7 +31,7 @@ void HttpConnection::close()
 		delete mHttpRequest;
 }
 
-void HttpConnection::receiveDrainedFromUpstream()
+void HttpConnection::receiveEnd()
 {
 	if (mHttpRequest) {
 		mHttpRequest->receiveAbort();
@@ -41,13 +41,13 @@ void HttpConnection::receiveDrainedFromUpstream()
 	close();
 }
 
-void HttpConnection::receiveFromUpstream(const char *data, Size length)
+void HttpConnection::receive(const String *string)
 {
-	mInputBuffer.append(data, length);
+	mInputBuffer.append(string);
 	receive();
 }
 
-void HttpConnection::receiveFromUpstream(Buffer<> *buffer)
+void HttpConnection::receive(Buffer<> *buffer)
 {
 	mInputBuffer.append(buffer);
 	receive();

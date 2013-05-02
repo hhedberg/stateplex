@@ -1,7 +1,7 @@
 /*
  * Stateplex - A server-side actor model library.
  *
- * net/httpserver.cpp
+ * core/identityfilter.h
  *
  * (c) 2013 Henrik Hedberg <henrik.hedberg@innologies.fi>
  *
@@ -17,24 +17,38 @@
  * Authors: Henrik Hedberg
  */
 
-#include "httpserver.h"
-#include "httpconnection.h"
+#ifndef INCLUDED_STATEPLEX_IDENTITY_FILTER_H
+#define INCLUDED_STATEPLEX_IDENTITY_FILTER_H
+
+#include "filter.h"
 
 namespace Stateplex {
 
-TcpConnection *HttpServer::instantiateTcpConnection(const TcpConnection::Embryo *embryo)
-{
-	TcpConnection *tcpConnection = new TcpConnection(embryo->mTcpServer->actor(), embryo);
-	HttpConnection *httpConnection = new HttpConnection(embryo->mTcpServer->actor(), this, tcpConnection);
-	tcpConnection->setReceiver(httpConnection);
+class IdentityFilter : public Object, public Filter {
+protected:
+	virtual void receiveEnd();
+	virtual void receive(const String *string);
+	virtual void receive(Buffer<> *buffer);
 
-	return tcpConnection;
-}
+public:
+	IdentityFilter(Actor *actor, Receiver *receiver);
+	virtual ~IdentityFilter();
 
-HttpRequest *HttpServer::instantiateHttpRequest(const HttpRequest::Embryo *embryo)
-{
-	/* TODO: take the path into account */
-	return mRequestFactoryMethod.invoke(embryo);
-}
+};
 
 }
+
+/*** Inline implementations ***/
+
+namespace Stateplex {
+
+inline IdentityFilter::IdentityFilter(Actor *actor, Receiver *receiver)
+	: Object(actor), Filter(receiver)
+{ }
+
+inline IdentityFilter::~IdentityFilter()
+{ }
+
+}
+
+#endif

@@ -1,7 +1,7 @@
 /*
  * Stateplex - A server-side actor model library.
  *
- * core/echostream.h
+ * core/identityfilter.cpp
  *
  * (c) 2013 Henrik Hedberg <henrik.hedberg@innologies.fi>
  *
@@ -17,40 +17,23 @@
  * Authors: Henrik Hedberg
  */
 
-#ifndef INCLUDED_STATEPLEX_ECHO_STREAM_H
-#define INCLUDED_STATEPLEX_ECHO_STREAM_H
-
-#include "downstream.h"
+#include "identityfilter.h"
 
 namespace Stateplex {
 
-class EchoStream : public Downstream {
-protected:
-	virtual void receiveDrainedFromUpstream();
-	virtual void receiveFromUpstream(const char *data, Size length);
-	virtual void receiveFromUpstream(Buffer<> *buffer);
-
-public:
-	EchoStream(Actor *actor);
-	virtual ~EchoStream();
-
-};
-
+void IdentityFilter::receiveEnd()
+{
+	receiver()->receiveEnd();
 }
 
-/*** Inline implementations ***/
-
-#include "upstream.h"
-
-namespace Stateplex {
-
-inline EchoStream::EchoStream(Actor *actor)
-	: Object(actor), Downstream(actor)
-{ }
-
-inline EchoStream::~EchoStream()
-{ }
-
+void IdentityFilter::receive(const String *string)
+{
+	receiver()->receive(string);
 }
 
-#endif
+void IdentityFilter::receive(Buffer<> *buffer)
+{
+	receiver()->receive(buffer);
+}
+
+}

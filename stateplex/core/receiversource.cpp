@@ -22,12 +22,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "upstreamsource.h"
+#include "receiversource.h"
 #include "writebuffer.h"
 
 namespace Stateplex {
 
-void UpstreamSource::handleReady(bool readyToRead, bool readyToWrite)
+void ReceiverSource::handleReady(bool readyToRead, bool readyToWrite)
 {
 	if (readyToRead) {
 		WriteBuffer<> buffer(actor());
@@ -40,10 +40,10 @@ void UpstreamSource::handleReady(bool readyToRead, bool readyToWrite)
 			}
 		} else if (size == 0) {
 			mReadEof = true;
-			sendDrainedToDownstream();
+			mReceiver->receiveEnd();
 		} else {
 			buffer.pushed(size);
-			sendToDownstream(&buffer);
+			mReceiver->receive(&buffer);
 		}
 	}
 
@@ -51,12 +51,12 @@ void UpstreamSource::handleReady(bool readyToRead, bool readyToWrite)
 	}
 }
 
-void UpstreamSource::receiveDrainedFromDownstream()
+void ReceiverSource::receiveEnd()
 {
 	mWriteEof = true;
 }
 
-void UpstreamSource::receiveFromDownstream(const char *data, Size length)
+void ReceiverSource::receive(const char *data, Size length)
 {
 	if (mWriteBuffer) {
 		mWriteBuffer->append(data, length);
@@ -84,7 +84,12 @@ void UpstreamSource::receiveFromDownstream(const char *data, Size length)
 	mWriteBuffer->append(data, length);
 }
 
-void UpstreamSource::receiveFromDownstream(Buffer<> *buffer)
+void ReceiverSource::receive(const String *string)
+{
+	receive(string->chars(), string->length());
+}
+
+void ReceiverSource::receive(Buffer<> *buffer)
 {
 	if (mWriteBuffer) {
 		mWriteBuffer->append(buffer);
@@ -94,7 +99,7 @@ void UpstreamSource::receiveFromDownstream(Buffer<> *buffer)
 	Buffer<>::Iterator iterator(buffer);
 	Size length;
 	while ((length = iterator.charBlockLength()) > 0) {
-		receiveFromDownstream(iterator.charBlock(), length);
+		receive(iterator.charBlock(), length);
 		iterator.advance(length);
 	}
 }

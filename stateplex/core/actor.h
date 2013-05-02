@@ -38,7 +38,7 @@ template<typename T> class Message;
  * passing.
  */
 
-class Actor : public virtual Object, public ListItem {
+class Actor : public Object, public ListItem {
 	friend class Dispatcher;
 
 	Dispatcher *mDispatcher;

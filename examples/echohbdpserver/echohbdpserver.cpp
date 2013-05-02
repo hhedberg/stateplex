@@ -26,7 +26,7 @@
 #include <stateplex/net/httprequest.h>
 #include <stateplex/net/hbdpserver.h>
 #include <stateplex/net/hbdpconnection.h>
-#include <stateplex/core/echostream.h>
+#include <stateplex/core/identityfilter.h>
 
 #include "echohbdpserver.h"
 
@@ -41,7 +41,7 @@ int main(void)
 
 
 EchoActor::EchoActor(Stateplex::Dispatcher *dispatcher)
-	: Object(this), Actor(dispatcher)
+	: Actor(dispatcher)
 {
 	sockaddr_in address;
 	address.sin_family = AF_INET;
@@ -56,8 +56,8 @@ EchoActor::EchoActor(Stateplex::Dispatcher *dispatcher)
 Stateplex::HbdpConnection *EchoActor::instantiateHbdpConnection(const Stateplex::HbdpConnection::Embryo *embryo)
 {
 	Stateplex::HbdpConnection *hbdpConnection = new Stateplex::HbdpConnection(this, embryo);
-	Stateplex::EchoStream *echoStream = new Stateplex::EchoStream(this);
-	hbdpConnection->setDownstream(echoStream);
+	Stateplex::IdentityFilter *identityFilter = new Stateplex::IdentityFilter(this, hbdpConnection);
+	hbdpConnection->setReceiver(identityFilter);
 
 	return hbdpConnection;
 }

@@ -1,7 +1,7 @@
 /*
  * Stateplex - A server-side actor model library.
  *
- * core/echostream.cpp
+ * core/receiver.h
  *
  * (c) 2013 Henrik Hedberg <henrik.hedberg@innologies.fi>
  *
@@ -17,23 +17,47 @@
  * Authors: Henrik Hedberg
  */
 
-#include "echostream.h"
+#ifndef INCLUDED_STATEPLEX_FILTER_H
+#define INCLUDED_STATEPLEX_FILTER_H
+
+#include "receiver.h"
 
 namespace Stateplex {
 
-void EchoStream::receiveDrainedFromUpstream()
-{
-	sendDrainedToUpstream();
-}
+class String;
 
-void EchoStream::receiveFromUpstream(const char *data, Size length)
-{
-	sendToUpstream(data, length);
-}
+class Filter : public Receiver {
+	Receiver *mReceiver;
 
-void EchoStream::receiveFromUpstream(Buffer<> *buffer)
-{
-	sendToUpstream(buffer);
-}
+public:
+	Filter(Receiver *receiver = 0);
+
+	Receiver *receiver() const;
+	void setReceiver(Receiver *receiver);
+};
 
 }
+
+/*** Inline implementations ***/
+
+#include "string.h"
+
+namespace Stateplex {
+
+Filter::Filter(Receiver *receiver)
+	: mReceiver(receiver)
+{ }
+
+inline Receiver *Filter::receiver() const
+{
+	return mReceiver;
+}
+
+inline void Filter::setReceiver(Receiver *receiver)
+{
+	mReceiver = receiver;
+}
+
+}
+
+#endif
