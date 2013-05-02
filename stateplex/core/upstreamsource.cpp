@@ -28,7 +28,7 @@
 namespace Stateplex {
 
 /*
- *
+ * Handles ready, read and write to buffer. 
  */
 
 void UpstreamSource::handleReady(bool readyToRead, bool readyToWrite)
@@ -56,7 +56,7 @@ void UpstreamSource::handleReady(bool readyToRead, bool readyToWrite)
 }
 
 /*
- *
+ * Receives drained from Downstream.
  */
 
 void UpstreamSource::receiveDrainedFromDownstream()
@@ -65,7 +65,7 @@ void UpstreamSource::receiveDrainedFromDownstream()
 }
 
 /*
- * Recives character data of size length and writes to buffer.
+ * Receives character data of size length and writes to buffer.
  */
 
 void UpstreamSource::receiveFromDownstream(const char *data, Size length)
@@ -97,7 +97,7 @@ void UpstreamSource::receiveFromDownstream(const char *data, Size length)
 }
 
 /*
- * Recives pointer buffer and writes to buffer.
+ * Receives pointer buffer and writes to buffer.
  */
 
 void UpstreamSource::receiveFromDownstream(Buffer<> *buffer)
