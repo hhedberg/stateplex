@@ -16,7 +16,7 @@ int main()
 	Stateplex::Dispatcher dispatcher;
 	JsonDbActor jsonactor(&dispatcher);
 	JsonClient client(&dispatcher);
-	JsonAdapter adapter;
+	JsonAdapter<JsonClient, JsonDbActor::JsonMessage> adapter;
 	JsonDbExample json;
 	
 	json.initDb(&jsonactor, &client, &adapter);

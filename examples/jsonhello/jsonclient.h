@@ -5,19 +5,20 @@
 #include <stateplex/core/callbackmessage.h>
 #include "jsoninterface.h"
 #include <stateplex/json/jsondbactor.h>
+#include <stateplex/json/jsonadapter.h>
 
 class JsonClient : public Stateplex::Actor {
 	
-	JsonInterface *mSource;
+	JsonAdapter<JsonClient, JsonDbActor::JsonMessage> *mSource;
 
 public:
 	JsonClient(Stateplex::Dispatcher *dispatcher);
 
 	void showResult(JsonDbActor::JsonMessage *message);
-	void plugin(JsonInterface *source);
-	virtual void get(const char *path, JsonObject *item);
-	virtual void set(const char *path, const char *parameter, JsonObject *item);
-	virtual void add(const char *path, JsonItem *newItem, JsonObject *item);
+	void plugin(JsonAdapter<JsonClient, JsonDbActor::JsonMessage> *source);
+	template<class T, class M> void get(const char *path, JsonObject *item, void(T::*function)(M *message));
+	template<class T, class M> void set(const char *path, const char *parameter, JsonObject *item, void(T::*function)(M *message));
+	template<class T, class M> void add(const char *path, JsonItem *newItem, JsonObject *item, void(T::*function)(M *message));
 };
 
 /*** Inline implementations ***/
@@ -34,24 +35,27 @@ void JsonClient::showResult(JsonDbActor::JsonMessage *message)
 	}
 }
 
-inline void JsonClient::plugin(JsonInterface *source)
+inline void JsonClient::plugin(JsonAdapter<JsonClient, JsonDbActor::JsonMessage> *source)
 {
 	mSource = source;
 }
 
-inline void JsonClient::get(const char *path, JsonObject *item)
+template<class T, class M>
+inline void JsonClient::get(const char *path, JsonObject *item, void(T::*function)(M *message))
 {
-	mSource->get(path, item);
+	mSource->get(path, item, this, function);
 }
 
-inline void JsonClient::set(const char *path, const char *parameter, JsonObject *item)
+template<class T, class M>
+inline void JsonClient::set(const char *path, const char *parameter, JsonObject *item, void(T::*function)(M *message))
 {
-	mSource->set(path, parameter, item);
+	mSource->set(path, parameter, item, this, function);
 }
 
-inline void JsonClient::add(const char *path, JsonItem *newItem, JsonObject *item)
+template<class T, class M>
+inline void JsonClient::add(const char *path, JsonItem *newItem, JsonObject *item, void(T::*function)(M *message))
 {
-	mSource->add(path, newItem, item);
+	mSource->add(path, newItem, item, this, function);
 }
 
 

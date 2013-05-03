@@ -4,16 +4,15 @@
 #include "../../examples/jsonhello/jsoninterface.h"
 #include "jsondbactor.h"
 
-class Sender;
-
-class JsonAdapter : public JsonInterface
+template<class T, class M>
+class JsonAdapter : public JsonInterface<T,M>
 {
 public:
 	JsonAdapter();
 	~JsonAdapter();
-	void set(const char *path, const char *value, JsonObject *item);
-	void get(const char *path, JsonObject *item);
-	void add(const char *path, JsonItem *newItem, JsonObject *item);
+	void set(const char *path, const char *parameter, JsonObject *item, T *sender, void(T::*function)(M *message));
+	void get(const char *path, JsonObject *item, T *sender, void(T::*function)(M *message));
+	void add(const char *path, JsonItem *newItem, JsonObject *item, T *sender, void(T::*function)(M *message));
 	
 	void plugin(JsonDbActor *source);
 private:
@@ -28,31 +27,38 @@ protected:
 
 /*** Inline implementation ***/
 
-inline void JsonAdapter::set(const char *path, const char *parameter, JsonObject *item)
+template<class T, class M>
+inline void JsonAdapter<T,M>::set(const char *path, const char *parameter, JsonObject *item, T *sender, void(T::*function)(M *message))
 {
-	mSource->setJsonObject(path, parameter, item);
+	mSource->setJsonObject(path, parameter, item, sender, function);
 }
 
-inline void JsonAdapter::get(const char *path, JsonObject *item)
+template<class T, class M>
+inline void JsonAdapter<T,M>::get(const char *path, JsonObject *item, T *sender, void(T::*function)(M *message))
 {
-	mSource->getRootObject(path, item);
+	mSource->getRootObject(path, item, sender, function);
 }
 
-inline void JsonAdapter::add(const char *path, JsonItem *newItem, JsonObject *item)
+template<class T, class M>
+inline void JsonAdapter<T,M>::add(const char *path, JsonItem *newItem, JsonObject *item, T *sender, void(T::*function)(M *message))
 {
-	mSource->addJson(path, newItem, item);
+	mSource->addJson(path, newItem, item, sender, function);
 }
 
-inline void JsonAdapter::plugin(JsonDbActor *source)
+template<class T, class M>
+inline void JsonAdapter<T,M>::plugin(JsonDbActor *source)
 {
 	mSource = source;
 }
 
-JsonAdapter::JsonAdapter() 
+template<class T, class M>
+JsonAdapter<T,M>::JsonAdapter() 
 { 
 	//ctor
 }
-JsonAdapter::~JsonAdapter()
+
+template<class T, class M>
+JsonAdapter<T,M>::~JsonAdapter()
 {
 	//dtor
 }
