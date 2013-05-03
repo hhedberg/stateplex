@@ -781,7 +781,7 @@ bool Buffer<mBlockSize>::Iterator::ensureBlock()
 }
 
 /* 
- * Allocates block in advance.
+ *
  */
 
 template<Size16 mBlockSize>
