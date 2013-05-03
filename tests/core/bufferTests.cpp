@@ -103,20 +103,20 @@ TEST_F(BufferTest, insertAndCompareTests)
         Stateplex::WriteBuffer<> *buffer3 = new Stateplex::WriteBuffer<>(myActor);
         Stateplex::WriteBuffer<> *buffer4 = new Stateplex::WriteBuffer<>(myActor);
 
-        buffer1->insert(0xF867, "TestiCString");
+        buffer1->insert(2, "TestiCString");
         EXPECT_TRUE(buffer1->equals("TestiCString"));
         EXPECT_EQ(0, buffer1->compare("TestiCString"));
         EXPECT_EQ(0, buffer1->compare("TestiCString", 12));
 
-        buffer2->insert(0xF900,"Ritaharju school is best", 16 );//All of the string is inserted
+        buffer2->insert(2,"Ritaharju school is best", 16 );//All of the string is inserted
         EXPECT_EQ(buffer2->length(), 24);
         EXPECT_TRUE(buffer2->equals("Ritaharju school is best", 24));
 
-        buffer3->insert(0xF867, buffer2);
+        //buffer3->insert(2, buffer1);
                 //tests/core/../../stateplex/core/writebuffer.h:275:86: error: no type named 'allocateMemory' in 'class Stateplex::Buffer<>::Block'
         // EXPECT_EQ(buffer1->asString(0xF867, 15), "Ritaharju school");
         // EXPECT_TRUE(buffer1->equals("Ritaharju school"));
-        EXPECT_EQ(buffer1->equals());
+        //EXPECT_EQ(buffer3->equals());
 
         //buffer4->insert(0xF867, buffer2, 0xF900, 16);
                 //tests/core/../../stateplex/core/writebuffer.h:275:86: error: no type named 'allocateMemory' in 'class Stateplex::Buffer<>::Block'
@@ -168,7 +168,8 @@ TEST_F(BufferTest, popTests)
         buffer2->append("My first Vappu");
         EXPECT_TRUE(buffer2->equals("My first Vappu"));
 
-//      EXPECT_STREQ(buffer2->popPointer(), "My first Vappu");
+        //EXPECT_STREQ(buffer2->popPointer(), "My first Vappu"); Returns "My first Vappuassle"
+
         buffer2->poppedAll();
         EXPECT_EQ(buffer2->popLength(), 0);
 
@@ -184,9 +185,9 @@ TEST_F(BufferTest, miscellaneousTests)
 
         buffer->append("abcd");
         EXPECT_EQ(buffer->charAt(2), 'c');
-        Stateplex::String *myString = buffer->asString();
-       // Stateplex::String *myString1 = buffer->asString(2); //Doesn't compile
-       // Stateplex::String *myString2 = buffer->asString(0xF900, 3); //Doesn't compile
+
+        //Stateplex::String myString = buffer->asString();bufferTests.cpp:189:55: error: conversion from 'Stateplex::String*' to non-scalar type 'Stateplex::String' requested
+       //Stateplex::String *myString2 = buffer->asString(0xF900, 3); //Doesn't compile
 
         delete buffer;
 }
