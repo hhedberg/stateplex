@@ -198,7 +198,7 @@ Buffer<mBlockSize>::Block::Block(Allocator *allocator, Block *block, Size16 offs
 }
 
 /**
- * Fucntion that destroy the allocated block when refernce count decreases.
+ * Fucntion that destroy the allocated block when refernce count decreases 0.
  */
 
 template<Size16 mBlockSize>
@@ -309,8 +309,7 @@ Size16 Buffer<mBlockSize>::Block::room() const
 }
 
 /**
- * Function that compare the content of the memory block.
- *
+ * Function that compares the content of the memory block.
  */
 
 template<Size16 mBlockSize>
@@ -577,6 +576,7 @@ int Buffer<mBlockSize>::compare(const char *cString, Size length) const
 
 	return 0;
 }
+
 /*
  * Compares this string chars to string length.
  */
@@ -658,6 +658,7 @@ WriteBuffer<mBlockSize> *Buffer<mBlockSize>::region(Size offset, Size length)
 /**
  * Appends the specified fragment of the buffer into other buffer.
  */
+
 template<Size16 mBlockSize>
 void Buffer<mBlockSize>::region(Size offset, Size length, WriteBuffer<mBlockSize> *buffer)
 {
@@ -702,6 +703,10 @@ Size Buffer<mBlockSize>::doSplit(char delimiter, WriteBuffer<mBlockSize> **eleme
 
 	return nElements;
 }
+
+/*
+ * 
+ */
 
 template<Size16 mBlockSize>
 Array<WriteBuffer<mBlockSize> *> *Buffer<mBlockSize>::split(char delimiter, Size maxElements)
@@ -753,7 +758,7 @@ Buffer<mBlockSize>::Iterator::~Iterator()
 }
 
 /**
- * Function that ensures if the block is in the right position or not.
+ * Function that ensures if member variable inline accordingly.
  *
  * @return	True or False.
  */
@@ -826,7 +831,7 @@ Size Buffer<mBlockSize>::Iterator::charBlockLength()
 }
 
 /**
- * 
+ * Returns pointer to block position.
  */
 
 template<Size16 mBlockSize>
@@ -849,7 +854,7 @@ Buffer<mBlockSize> *Buffer<mBlockSize>::Iterator::buffer() const
 }
 
 /**
- * 
+ * Returns the current position of block.
  */
 
 template<Size16 mBlockSize>
@@ -859,7 +864,7 @@ bool Buffer<mBlockSize>::Iterator::hasCurrent()
 }
 
 /**
- * 
+ * Returns pointer to current position of block.
  */
 
 template<Size16 mBlockSize>

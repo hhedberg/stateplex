@@ -54,10 +54,18 @@ public:
 #include "actor.h"
 
 namespace Stateplex {
+
+/*
+ * Constructor.
+ */
 	
 inline UpstreamSource::UpstreamSource(Actor *actor, int fd, bool readable, bool writable, bool enabled)
 	: Object(actor), Upstream(actor), Source(actor, fd, readable, writable, enabled), mWriteBuffer(0), mReadEof(false), mWriteEof(false)
 { }
+
+/* 
+ * Destructor.
+ */
 
 inline UpstreamSource::~UpstreamSource()
 { }

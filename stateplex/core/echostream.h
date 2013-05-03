@@ -44,9 +44,17 @@ public:
 
 namespace Stateplex {
 
+/*
+ * Constructor.
+ */
+
 inline EchoStream::EchoStream(Actor *actor)
 	: Object(actor), Downstream(actor)
 { }
+
+/*
+ * Destructor.
+ */
 
 inline EchoStream::~EchoStream()
 { }

@@ -72,6 +72,9 @@ public:
 
 namespace Stateplex {
 
+/*
+ * Allocates block to buffer after or before previous block.
+ */
 
 template<Size16 mBlockSize>
 typename Buffer<mBlockSize>::Block *WriteBuffer<mBlockSize>::allocateBlock(typename Buffer<mBlockSize>::Block *previousBlock)
@@ -85,6 +88,10 @@ typename Buffer<mBlockSize>::Block *WriteBuffer<mBlockSize>::allocateBlock(typen
 
 	return block;
 }
+
+/*
+ * 
+ */
 
 template<Size16 mBlockSize>
 typename Buffer<mBlockSize>::Block *WriteBuffer<mBlockSize>::ensurePush(typename Buffer<mBlockSize>::Block *block, Size length)
@@ -136,7 +143,7 @@ typename Buffer<mBlockSize>::Block *WriteBuffer<mBlockSize>::splitBlock(Size off
 }
 
 /*
- *
+ * Constructor for 
  *
  */
 
@@ -171,7 +178,7 @@ void WriteBuffer<mBlockSize>::append(Buffer<> *buffer)
 /**
  * Copies the C string into the end of the buffer.
  * 
- * @param string	string to be added
+ * @param string	string to be added.
  */
 
 template<Size16 mBlockSize>
