@@ -207,8 +207,7 @@ inline void String::destroy(Allocator *allocator)
 	const char *contents;
 	Size length = getLength(&contents);
 	Size size = sizeOfLength(length);
-	size += length + 1;
-	allocator->deallocate(reinterpret_cast<void *>(this), size);
+	allocator->deallocate(reinterpret_cast<void *>(this), size + length + 1);
 }
 
 inline String String::reference(const char *cString)
