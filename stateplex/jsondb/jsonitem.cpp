@@ -39,7 +39,7 @@ void JsonItem::notifyElementInserted(JsonArray *array, int index) const
 {
 	const JsonItem *item = this;
 	do {
-		for (Observer *o = mObservers.first(); o; o = mObservers.next(o)) {
+		for (Observer *o = item->mObservers.first(); o; o = item->mObservers.next(o)) {
 			o->elementInserted(array, index);
 		}
 		item = item->mParent;
@@ -50,7 +50,7 @@ void JsonItem::notifyElementRemoved(JsonArray *array, int index) const
 {
 	const JsonItem *item = this;
 	do {
-		for (Observer *o = mObservers.first(); o; o = mObservers.next(o)) {
+		for (Observer *o = item->mObservers.first(); o; o = item->mObservers.next(o)) {
 			o->elementRemoved(array, index);
 		}
 		item = item->mParent;
@@ -61,7 +61,7 @@ void JsonItem::notifyMemberSet(JsonObject *object, const String *name) const
 {
 	const JsonItem *item = this;
 	do {
-		for (Observer *o = mObservers.first(); o; o = mObservers.next(o)) {
+		for (Observer *o = item->mObservers.first(); o; o = item->mObservers.next(o)) {
 			o->memberSet(object, name);
 		}
 		item = item->mParent;
@@ -73,7 +73,7 @@ void JsonItem::notifyMemberUnset(JsonObject *object, const String *name) const
 {
 	const JsonItem *item = this;
 	do {
-		for (Observer *o = mObservers.first(); o; o = mObservers.next(o)) {
+		for (Observer *o = item->mObservers.first(); o; o = item->mObservers.next(o)) {
 			o->memberUnset(object, name);
 		}
 		item = item->mParent;
