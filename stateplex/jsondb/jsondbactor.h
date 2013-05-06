@@ -61,7 +61,7 @@ public:
 namespace Stateplex {
 
 inline JsonDbActor::JsonDbActor(Dispatcher *dispatcher)
-	: Object(this), Actor(dispatcher)
+	: Actor(dispatcher)
 { }
 
 inline JsonObject *JsonDbActor::root(const String *name) const

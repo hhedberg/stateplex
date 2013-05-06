@@ -37,6 +37,7 @@ class JsonArray : public JsonItem {
 			double mDecimal;
 			bool mBoolean;
 		};
+		String *mEscaped;
 	};
 
 	List<Member> mMembers;
@@ -65,7 +66,9 @@ public:
 	void appendString(const String *string);
 	void appendBoolean(bool boolean);
 	void appendNull();
+	virtual Type type() const;
 	void remove(Size index);
+	virtual void send(Receiver *stream, Size depth) const;
 };
 
 }

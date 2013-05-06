@@ -54,7 +54,7 @@ JsonObject *JsonDbActor::createRoot(const String *name)
 	void *memory = allocator()->allocate(sizeof(Root));
 	Root *r = new(memory) Root;
 	r->mName = String::copy(allocator(), name);
-	r->mObject = new JsonObject(0);
+	r->mObject = new JsonObject(this);
 	mRoots.addTail(r);
 
 	return r->mObject;

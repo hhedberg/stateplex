@@ -39,23 +39,28 @@ class JsonObject : public JsonItem {
 			double mDecimal;
 			bool mBoolean;
 		};
+		String *mEscaped;
 	};
 
 	List<Member> mMembers; // TODO: Use hashtable or similar instead.
 
+	JsonObject(Actor *actor);
 	JsonObject(JsonItem *parent);
 
 	Member *member(const String *name) const;
 	Member *replaceMember(const String *name);
 	void freeMemberValue(Member *m);
+	void escapeMember(Member *m) const;
 
 public:
 	virtual ~JsonObject();
 
+	const String *asString(const String *name) const;
 	Type type(const String *name) const;
 	bool has(const String *name) const;
 	JsonObject *object(const String *name) const;
 	JsonArray *array(const String *name) const;
+	JsonItem *item(const String *name) const;
 	long int integer(const String *name, long int defaultValue = 0) const;
 	double decimal(const String *name, double defaultValue = 0.0) const;
 	const String *string(const String *name, const String *defaultValue = 0) const;
@@ -67,7 +72,9 @@ public:
 	void setString(const String *name, const String *string);
 	void setBoolean(const String *name, bool boolean);
 	void setNull(const String *name);
+	virtual Type type() const;
 	void unset(const String *name);
+	virtual void send(Receiver *receiver, Size depth) const;
 };
 
 }
@@ -78,6 +85,10 @@ public:
 #include "jsonarray.h"
 
 namespace Stateplex {
+
+inline JsonObject::JsonObject(Actor *actor)
+	: JsonItem(actor)
+{ }
 
 inline JsonObject::JsonObject(JsonItem *parent)
 	: JsonItem(parent)

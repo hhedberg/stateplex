@@ -23,6 +23,7 @@
 #include <stateplex/jsondb/jsondbactor.h>
 #include <stateplex/jsondb/jsonobject.h>
 #include <stateplex/core/string.h>
+#include <stateplex/core/terminalreceiver.h>
 
 using namespace Stateplex;
 
@@ -38,6 +39,7 @@ int main(void)
 {
 	Dispatcher dispatcher;
 	JsonDbActor db(&dispatcher);
+	Stateplex::TerminalReceiver terminal(&db);
 
 	String *name = String::copy(dispatcher.allocator(), "test");
 	db.createRoot(name);
@@ -53,14 +55,17 @@ int main(void)
 	root->setDecimal(set1, 12.3);
 
 	std::cout << root->decimal(get1) << std::endl;
+	root->send(&terminal, 3);
 
 	JsonObject *object1 = root->setObject(set1);
 	object1->setInteger(set1, 23);
 
 	std::cout << root->decimal(get1) << std::endl;
+	root->send(&terminal, 3);
 
 	JsonObject *object2 = root->object(get1);
 	std::cout << object2->integer(get1) << std::endl;
+	root->send(&terminal, 3);
 
 	JsonArray *array1 = root->setArray(set1);
 	String *string = String::copy(dispatcher.allocator(), "value");
@@ -69,18 +74,22 @@ int main(void)
 	JsonObject *object3 = root->object(get1);
 
 	std::cout << object3 << std::endl;
+	root->send(&terminal, 3);
 
 	JsonArray *array2 = root->array(get1);
 
 	std::cout << "*" << array2 << std::endl;
 	std::cout << array2->length() << std::endl;
 	std::cout << array2->string(0)->chars() << std::endl;
+	root->send(&terminal, 3);
 
 	set1->destroy(dispatcher.allocator());
 	get1->destroy(dispatcher.allocator());
 	string->destroy(dispatcher.allocator());
 
-	root->removeObserver(&observer);
+	observer.remove();
+
+	root->send(&terminal, 3);
 
 	return 0;
 }

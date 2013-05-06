@@ -17,7 +17,11 @@
  * Authors: Henrik Hedberg
  */
 
+#include <stdio.h>
+
 #include "jsonitem.h"
+#include "jsonobject.h"
+#include "../core/writebuffer.h"
 
 namespace Stateplex {
 
@@ -75,6 +79,40 @@ void JsonItem::notifyMemberUnset(JsonObject *object, const String *name) const
 		item = item->mParent;
 	} while (item);
 
+}
+
+String *JsonItem::escape(long int integer) const
+{
+	char buffer[128];
+	Size length = snprintf(buffer, sizeof(buffer), "%ld", integer);
+	return String::copy(allocator(), buffer, length);
+}
+
+String *JsonItem::escape(double decimal) const
+{
+	char buffer[128];
+	Size length = snprintf(buffer, sizeof(buffer), "%lf", decimal);
+	return String::copy(allocator(), buffer, length);
+}
+
+String *JsonItem::escape(const String *string) const
+{
+	WriteBuffer<> buffer(actor());
+	buffer.append("\"", 1);
+	const char *chars = string->chars();
+	for (Size i = 0; i < string->length(); i++) {
+		switch (chars[i]) {
+		case '"':
+			buffer.append("\\\"", 2);
+			break;
+		default:
+			buffer.append(&chars[i], 1);
+			break;
+		}
+	}
+	buffer.append("\"", 1);
+
+	return buffer.asString();
 }
 
 }
