@@ -19,7 +19,7 @@
 
 #include "terminalreceiver.h"
 
-#include <ostream>
+#include <iostream>
 
 namespace Stateplex {
 
