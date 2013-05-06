@@ -497,7 +497,7 @@ void Buffer<mBlockSize>::region(Size offset, Size length, WriteBuffer<mBlockSize
 	Allocator *allocator = actor()->dispatcher()->allocator();
 	for (Block *oldBlock = blockByOffset(&offset); oldBlock; oldBlock = mBlocks.next(oldBlock)) {
 		Size16 size = oldBlock->size();
-		if (offset + length < size) {
+		if (offset + length <= size) {
 			void *memory = Block::allocateMemory(allocator);
 			Block *newBlock = new(memory) Block(allocator, oldBlock, offset, length);
 			buffer->mBlocks.addTail(newBlock);
