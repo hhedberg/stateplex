@@ -115,6 +115,15 @@ const String *JsonObject::asString(const String *name) const
 	return m->mEscaped;
 }
 
+const String *JsonObject::name(JsonItem *item) const
+{
+	for (Member *m = mMembers.first(); m; m = mMembers.next(m)) {
+		if (m->mObject == item)
+			return m->mName;
+	}
+
+	return 0;
+}
 
 JsonObject *JsonObject::setObject(const String *name)
 {

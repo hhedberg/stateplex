@@ -65,6 +65,7 @@ public:
 	double decimal(const String *name, double defaultValue = 0.0) const;
 	const String *string(const String *name, const String *defaultValue = 0) const;
 	bool boolean(const String *name, bool defaultValue = false) const;
+	const String *name(JsonItem *item) const;
 	JsonObject *setObject(const String *name);
 	JsonArray *setArray(const String *name);
 	void setInteger(const String *name, long int integer);
