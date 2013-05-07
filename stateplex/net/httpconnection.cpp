@@ -25,8 +25,6 @@ namespace Stateplex {
 
 void HttpConnection::close()
 {
-	bool keepAlive = mKeepAlive;
-
 	if (mHttpRequest)
 		delete mHttpRequest;
 }
@@ -176,15 +174,14 @@ HttpConnection::ProcessResult HttpConnection::process()
 		}
 	} break;
 	case STATE_DATA: {
-		bool ok;
 		if (mInputBuffer.length() > mHttpRequest->mDataLeft) {
 			WriteBuffer<> *buffer = mInputBuffer.region(0, mHttpRequest->mDataLeft);
 			mInputBuffer.popped(mHttpRequest->mDataLeft);
 			mHttpRequest->mDataLeft = 0;
-			ok = mHttpRequest->receiveData(buffer);
+			mHttpRequest->receiveData(buffer);
 			delete buffer;
 		} else {
-			ok = mHttpRequest->receiveData(&mInputBuffer);
+			mHttpRequest->receiveData(&mInputBuffer);
 			mHttpRequest->mDataLeft -= mInputBuffer.length();
 			mInputBuffer.poppedAll();
 		}
