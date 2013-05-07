@@ -53,7 +53,7 @@ void GreeterActor::GreetingMessage::handle(Actor *sender, GreeterActor *receiver
 }
 
 GreeterActor::GreeterActor(Stateplex::Dispatcher *dispatcher)
-	: Object(this), Actor(dispatcher)
+	: Actor(dispatcher)
 { }
 
 void GreeterActor::greet(Stateplex::Actor *sender, const char *text)

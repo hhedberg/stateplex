@@ -28,8 +28,10 @@ namespace Stateplex {
 
 class JsonObject;
 class JsonArray;
+class Receiver;
 
-class JsonItem {
+class JsonItem : public Object {
+	friend class JsonArray;
 public:
 	enum Type {
 		JSON_ITEM_TYPE_INVALID = -1,
@@ -56,19 +58,27 @@ private:
 	List<Observer> mObservers;
 
 protected:
+	JsonItem(Actor *actor);
 	JsonItem(JsonItem *parent);
 
 	void notifyElementInserted(JsonArray *array, int index) const;
 	void notifyElementRemoved(JsonArray *array, int index) const;
 	void notifyMemberSet(JsonObject *object, const String *name) const;
 	void notifyMemberUnset(JsonObject *object, const String *name) const;
+	String *escape(long int integer) const;
+	String *escape(double decimal) const;
+	String *escape(const String *string) const;
 
 public:
 	virtual ~JsonItem();
 
 	JsonItem *parent() const;
+	void send(Receiver *receiver) const;
+	virtual void send(Receiver *receiver, Size depth) const = 0;
+	virtual Type type() const = 0;
+	bool isObject() const;
+	bool isArray() const;
 	void addObserver(Observer *observer);
-	void removeObserver(Observer *observer);
 };
 
 }
@@ -78,9 +88,13 @@ public:
 #include "../core/source.h"
 
 namespace Stateplex {
-	
+
+inline JsonItem::JsonItem(Actor *actor)
+	: Object(actor), mParent(0)
+{ }
+
 inline JsonItem::JsonItem(JsonItem *parent)
-	: mParent(parent)
+	: Object(parent->actor()), mParent(parent)
 { }
 
 inline JsonItem *JsonItem::parent() const
@@ -93,10 +107,21 @@ inline void JsonItem::addObserver(Observer *observer)
 	mObservers.addTail(observer);
 }
 
-inline void JsonItem::removeObserver(Observer *observer)
+inline void JsonItem::send(Receiver *receiver) const
 {
-	observer->remove();
+	send(receiver, 0xffffffff); // TODO: size_max
+}
+
+inline bool JsonItem::isObject() const
+{
+	return type() == JSON_ITEM_TYPE_OBJECT;
+}
+
+inline bool JsonItem::isArray() const
+{
+	return type() == JSON_ITEM_TYPE_ARRAY;
 }
 
 }
+
 #endif

@@ -95,11 +95,11 @@ public:
 
 	HttpConnection *httpConnection() const;
 
-	void sendStatus(const char *status, Size statusLength);
+	void sendStatus(const String *status);
 	void sendStatus(Buffer<> *status);
-	void sendHeader(const char *name, Size nameLength, const char *value, Size valueLength);
+	void sendHeader(const String *name, const String *value);
 	void sendHeader(Buffer<> *name, Buffer<> *value);
-	void sendData(const char *data, Size dataLength);
+	void sendData(const String *data);
 	void sendData(Buffer<> *data);
 	void sendEnd();
 };

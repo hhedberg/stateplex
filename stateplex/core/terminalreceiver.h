@@ -1,7 +1,7 @@
 /*
  * Stateplex - A server-side actor model library.
  *
- * core/echostream.cpp
+ * core/terminalreceiver.h
  *
  * (c) 2013 Henrik Hedberg <henrik.hedberg@innologies.fi>
  *
@@ -17,23 +17,36 @@
  * Authors: Henrik Hedberg
  */
 
-#include "echostream.h"
+#ifndef INCLUDED_STATEPLEX_TERMINAL_RECEIVER_H
+#define INCLUDED_STATEPLEX_TERMINAL_RECEIVER_H
+
+#include "receiver.h"
 
 namespace Stateplex {
 
-void EchoStream::receiveDrainedFromUpstream()
-{
-	sendDrainedToUpstream();
-}
+class TerminalReceiver : public Object, public Receiver {
+public:
+	TerminalReceiver(Actor *actor);
+	virtual ~TerminalReceiver();
 
-void EchoStream::receiveFromUpstream(const char *data, Size length)
-{
-	sendToUpstream(data, length);
-}
-
-void EchoStream::receiveFromUpstream(Buffer<> *buffer)
-{
-	sendToUpstream(buffer);
-}
+	virtual void receiveEnd();
+	virtual void receive(const String *string);
+	virtual void receive(Buffer<> *buffer);
+};
 
 }
+
+/*** Inline implementations ***/
+
+namespace Stateplex {
+
+TerminalReceiver::TerminalReceiver(Actor *actor)
+	: Object(actor)
+{ }
+
+TerminalReceiver::~TerminalReceiver()
+{ }
+
+}
+
+#endif

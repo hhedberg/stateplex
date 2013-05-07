@@ -18,6 +18,8 @@
  */
 
 #include "jsonobject.h"
+#include "../core/receiver.h"
+#include "../core/writebuffer.h"
 
 namespace Stateplex {
 
@@ -27,7 +29,7 @@ JsonObject::~JsonObject()
 	for (Member *m = mMembers.first(); m; m = n) {
 		n = mMembers.next(m);
 		freeMemberValue(m);
-		m->mName->destroy(Dispatcher::current()->allocator());
+		m->mName->destroy(allocator());
 		delete m;
 	}
 }
@@ -37,6 +39,87 @@ JsonObject::Member *JsonObject::member(const String *name) const
 	for (Member *m = mMembers.first(); m; m = mMembers.next(m)) {
 		if (m->mName->equals(name))
 			return m;
+	}
+
+	return 0;
+}
+
+JsonObject::Member *JsonObject::replaceMember(const String *name)
+{
+	Member *m = member(name);
+	if (m) {
+		freeMemberValue(m);
+	} else {
+		m = new Member();
+		m->mName = String::copy(allocator(), name);
+		m->mEscaped = 0;
+		mMembers.addTail(m);
+	}
+
+	return m;
+}
+
+void JsonObject::freeMemberValue(Member *m)
+{
+	if (m->mType == JSON_ITEM_TYPE_ARRAY)
+		delete m->mArray;
+	else if (m->mType == JSON_ITEM_TYPE_OBJECT)
+		delete m->mObject;
+	else if (m->mType == JSON_ITEM_TYPE_STRING)
+		m->mString->destroy(allocator());
+	if (m->mEscaped) {
+		m->mEscaped->destroy(allocator());
+		m->mEscaped = 0;
+	}
+}
+
+void JsonObject::escapeMember(Member *m) const
+{
+	WriteBuffer<> buffer(actor());
+	String *name = escape(m->mName);
+	buffer.append(name);
+	name->destroy(allocator());
+	buffer.append(":", 1);
+	if (m->mType == JSON_ITEM_TYPE_BOOLEAN) {
+		if(m->mBoolean) {
+			buffer.append("true", 4);
+		} else {
+			buffer.append("false", 5);
+		}
+	} else if (m->mType == JSON_ITEM_TYPE_DECIMAL) {
+		String *decimal = escape(m->mDecimal);
+		buffer.append(decimal);
+		decimal->destroy(allocator());
+	} else if (m->mType == JSON_ITEM_TYPE_INTEGER) {
+		String *integer = escape(m->mInteger);
+		buffer.append(integer);
+		integer->destroy(allocator());
+	} else if (m->mType == JSON_ITEM_TYPE_NULL) {
+		buffer.append("null", 4);
+	} else if (m->mType == JSON_ITEM_TYPE_STRING) {
+		String *string = escape(m->mString);
+		buffer.append(string);
+		string->destroy(allocator());
+	}
+	m->mEscaped = buffer.asString();
+}
+
+const String *JsonObject::asString(const String *name) const
+{
+	Member *m = member(name);
+	if (!m)
+		return 0;
+
+	if (!m->mEscaped)
+		escapeMember(m);
+	return m->mEscaped;
+}
+
+const String *JsonObject::name(JsonItem *item) const
+{
+	for (Member *m = mMembers.first(); m; m = mMembers.next(m)) {
+		if (m->mObject == item)
+			return m->mName;
 	}
 
 	return 0;
@@ -110,6 +193,11 @@ void JsonObject::setNull(const String *name)
 	notifyMemberSet(this, name);
 }
 
+JsonItem::Type JsonObject::type() const
+{
+	return JSON_ITEM_TYPE_OBJECT;
+}
+
 void JsonObject::unset(const String *name)
 {
 	Member *m = member(name);
@@ -121,6 +209,31 @@ void JsonObject::unset(const String *name)
 	delete m;
 
 	notifyMemberUnset(this, name);
+}
+
+void JsonObject::send(Receiver *receiver, Size depth) const
+{
+	receiver->receive("{", 1);
+	if (depth > 0) {
+		bool first = true;
+		for (Member *m = mMembers.first(); m; m = mMembers.next(m)) {
+			if (first) {
+				first = false;
+			} else {
+				receiver->receive(",", 1);
+			}
+			if (!m->mEscaped)
+				escapeMember(m);
+			receiver->receive(m->mEscaped);
+
+			if (m->mType == JSON_ITEM_TYPE_ARRAY) {
+				m->mArray->send(receiver, depth - 1);
+			} else if (m->mType == JSON_ITEM_TYPE_OBJECT) {
+				m->mObject->send(receiver, depth - 1);
+			}
+		}
+	}
+	receiver->receive("}", 1);
 }
 
 }

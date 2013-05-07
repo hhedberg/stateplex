@@ -18,6 +18,7 @@
  */
 
 #include "jsonarray.h"
+#include "../core/receiver.h"
 
 namespace Stateplex {
 
@@ -38,6 +39,16 @@ JsonArray::Member *JsonArray::member(Size index) const
 		m = mMembers.next(m);
 
 	return m;
+}
+
+void JsonArray::freeMemberValue(Member *m)
+{
+	if (m->mType == JSON_ITEM_TYPE_ARRAY)
+		delete m->mArray;
+	else if (m->mType == JSON_ITEM_TYPE_OBJECT)
+		delete m->mObject;
+	else if (m->mType == JSON_ITEM_TYPE_STRING)
+		m->mString->destroy(Dispatcher::current()->allocator());
 }
 
 JsonObject *JsonArray::appendObject()
@@ -123,6 +134,11 @@ void JsonArray::appendNull()
 	notifyElementInserted(this, mLength);
 }
 
+JsonItem::Type JsonArray::type() const
+{
+	return JSON_ITEM_TYPE_ARRAY;
+}
+
 void JsonArray::remove(Size index)
 {
 	if (index >= mLength)
@@ -135,6 +151,48 @@ void JsonArray::remove(Size index)
 	mLength--;
 
 	notifyElementRemoved(this, index);
+}
+
+void JsonArray::send(Receiver *receiver, Size depth) const
+{
+	receiver->receive("[", 1);
+	if (depth > 0) {
+		bool first = true;
+		for (Member *m = mMembers.first(); m; m = mMembers.next(m)) {
+			if (first) {
+				first = false;
+			} else {
+				receiver->receive(",", 1);
+			}
+			if (m->mEscaped) {
+				receiver->receive(m->mEscaped);
+			} else {
+				if (m->mType == JSON_ITEM_TYPE_BOOLEAN) {
+					if(m->mBoolean) {
+						receiver->receive("true", 4);
+					} else {
+						receiver->receive("false", 5);
+					}
+				} else if (m->mType == JSON_ITEM_TYPE_DECIMAL) {
+					m->mEscaped = escape(m->mDecimal);
+					receiver->receive(m->mEscaped);
+				} else if (m->mType == JSON_ITEM_TYPE_INTEGER) {
+					m->mEscaped = escape(m->mInteger);
+					receiver->receive(m->mEscaped);
+				} else if (m->mType == JSON_ITEM_TYPE_NULL) {
+					receiver->receive("null", 4);
+				} else if (m->mType == JSON_ITEM_TYPE_STRING) {
+					m->mEscaped = escape(m->mString);
+					receiver->receive(m->mEscaped);
+				} else if (m->mType == JSON_ITEM_TYPE_ARRAY) {
+					m->mArray->send(receiver, depth - 1);
+				} else if (m->mType == JSON_ITEM_TYPE_OBJECT) {
+					m->mObject->send(receiver, depth - 1);
+				}
+			}
+		}
+	}
+	receiver->receive("]", 1);
 }
 
 }

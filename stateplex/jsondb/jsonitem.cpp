@@ -17,7 +17,11 @@
  * Authors: Henrik Hedberg
  */
 
+#include <stdio.h>
+
 #include "jsonitem.h"
+#include "jsonobject.h"
+#include "../core/writebuffer.h"
 
 namespace Stateplex {
 
@@ -35,7 +39,7 @@ void JsonItem::notifyElementInserted(JsonArray *array, int index) const
 {
 	const JsonItem *item = this;
 	do {
-		for (Observer *o = mObservers.first(); o; o = mObservers.next(o)) {
+		for (Observer *o = item->mObservers.first(); o; o = item->mObservers.next(o)) {
 			o->elementInserted(array, index);
 		}
 		item = item->mParent;
@@ -46,7 +50,7 @@ void JsonItem::notifyElementRemoved(JsonArray *array, int index) const
 {
 	const JsonItem *item = this;
 	do {
-		for (Observer *o = mObservers.first(); o; o = mObservers.next(o)) {
+		for (Observer *o = item->mObservers.first(); o; o = item->mObservers.next(o)) {
 			o->elementRemoved(array, index);
 		}
 		item = item->mParent;
@@ -57,7 +61,7 @@ void JsonItem::notifyMemberSet(JsonObject *object, const String *name) const
 {
 	const JsonItem *item = this;
 	do {
-		for (Observer *o = mObservers.first(); o; o = mObservers.next(o)) {
+		for (Observer *o = item->mObservers.first(); o; o = item->mObservers.next(o)) {
 			o->memberSet(object, name);
 		}
 		item = item->mParent;
@@ -69,12 +73,46 @@ void JsonItem::notifyMemberUnset(JsonObject *object, const String *name) const
 {
 	const JsonItem *item = this;
 	do {
-		for (Observer *o = mObservers.first(); o; o = mObservers.next(o)) {
+		for (Observer *o = item->mObservers.first(); o; o = item->mObservers.next(o)) {
 			o->memberUnset(object, name);
 		}
 		item = item->mParent;
 	} while (item);
 
+}
+
+String *JsonItem::escape(long int integer) const
+{
+	char buffer[128];
+	Size length = snprintf(buffer, sizeof(buffer), "%ld", integer);
+	return String::copy(allocator(), buffer, length);
+}
+
+String *JsonItem::escape(double decimal) const
+{
+	char buffer[128];
+	Size length = snprintf(buffer, sizeof(buffer), "%lf", decimal);
+	return String::copy(allocator(), buffer, length);
+}
+
+String *JsonItem::escape(const String *string) const
+{
+	WriteBuffer<> buffer(actor());
+	buffer.append("\"", 1);
+	const char *chars = string->chars();
+	for (Size i = 0; i < string->length(); i++) {
+		switch (chars[i]) {
+		case '"':
+			buffer.append("\\\"", 2);
+			break;
+		default:
+			buffer.append(&chars[i], 1);
+			break;
+		}
+	}
+	buffer.append("\"", 1);
+
+	return buffer.asString();
 }
 
 }

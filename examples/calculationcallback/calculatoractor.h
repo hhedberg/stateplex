@@ -62,7 +62,7 @@ inline int CalculatorActor::CalculationMessage::result() const
 }
 
 inline CalculatorActor::CalculatorActor(Stateplex::Dispatcher *dispatcher)
-	: Object(this), Actor(dispatcher)
+	: Actor(dispatcher)
 { }
 
 template<typename Sender> void CalculatorActor::calculateSum(Sender *sender, int x, int y, void (Sender::*callbackFunction)(CalculationMessage *message))

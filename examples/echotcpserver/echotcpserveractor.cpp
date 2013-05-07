@@ -23,7 +23,7 @@
 #include <stateplex/core/dispatcher.h>
 #include <stateplex/net/tcpserver.h>
 #include <stateplex/net/tcpconnection.h>
-#include <stateplex/core/echostream.h>
+#include <stateplex/core/identityfilter.h>
 #include <stateplex/core/buffer.h>
 
 #include "echotcpserveractor.h"
@@ -38,7 +38,7 @@ int main(void)
 }
 
 EchoTcpServerActor::EchoTcpServerActor(Stateplex::Dispatcher *dispatcher)
-	: Object(this), Actor(dispatcher)
+	: Actor(dispatcher)
 {
 	sockaddr_in address;
 	address.sin_family = AF_INET;
@@ -51,8 +51,8 @@ EchoTcpServerActor::EchoTcpServerActor(Stateplex::Dispatcher *dispatcher)
 Stateplex::TcpConnection *EchoTcpServerActor::instantiateTcpConnection(const Stateplex::TcpConnection::Embryo *embryo)
 {
 	Stateplex::TcpConnection *tcpConnection = new Stateplex::TcpConnection(this, embryo);
-	Stateplex::EchoStream *echoStream = new Stateplex::EchoStream(this);
-	tcpConnection->setDownstream(echoStream);
+	Stateplex::IdentityFilter *identityFilter = new Stateplex::IdentityFilter(this, tcpConnection);
+	tcpConnection->setReceiver(identityFilter);
 
 	return tcpConnection;
 }

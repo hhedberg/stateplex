@@ -28,7 +28,7 @@ bool HbdpConnection::HbdpRequest::receiveHeader(Buffer<> *name, Buffer<> *value)
 
 bool HbdpConnection::HbdpRequest::receiveData(Buffer<> *data)
 {
-	mHbdpConnection->sendToDownstream(data);
+	mHbdpConnection->mReceiver->receive(data);
 	return true;
 }
 
@@ -87,23 +87,23 @@ HbdpServer *HbdpConnection::hbdpServer() const
 	return mHbdpServer;
 }
 
-void HbdpConnection::receiveDrainedFromDownstream()
+void HbdpConnection::receiveEnd()
 {
 	// TODO
 }
 
-void HbdpConnection::receiveFromDownstream(const char *data, Size length)
+void HbdpConnection::receive(const String *string)
 {
 	if (!mHbdpRequest || !mEndReceived) {
-		mOut.append(data);
+		mOut.append(string);
 		return;
 	}
 
-	mHbdpRequest->sendData(data, length);
+	mHbdpRequest->sendData(string);
 	endRequest();
 }
 
-void HbdpConnection::receiveFromDownstream(Buffer<> *buffer)
+void HbdpConnection::receive(Buffer<> *buffer)
 {
 	if (!mHbdpRequest || !mEndReceived) {
 		mOut.append(buffer);
