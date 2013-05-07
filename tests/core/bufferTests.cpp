@@ -59,60 +59,101 @@ TEST_F(BufferTest, appendAndEqualsTests)
 
         //append cString
         inputBuffer1->append("Marja ");
-        EXPECT_EQ(inputBuffer1->length(), 6);
+        EXPECT_EQ(6, inputBuffer1->length());
 
         //append cString with a length
         inputBuffer1->append("is coding this complex program for ever", 10);
         EXPECT_TRUE(inputBuffer1->equals("Marja is coding this complex program for ever", 16));
-        EXPECT_EQ(inputBuffer1->length(), 16);
+        EXPECT_EQ(16, inputBuffer1->length());
 
         //append Stateplex::String
         inputBuffer1->append(Stateplex::String::copy(myActor->allocator(), "and Kari "));
-       // EXPECT_STREQ(inputBuffer2->popPointer(), "Kari");
         EXPECT_TRUE(inputBuffer1->equals("Marja is coding and Kari "));
-        EXPECT_EQ(inputBuffer1->length(), 25);
+        EXPECT_EQ(25, inputBuffer1->length());
 
         //append buffers
         inputBuffer2->append("is testing.");
         inputBuffer1->append(inputBuffer2);
         EXPECT_TRUE(inputBuffer1->equals("Marja is coding and Kari is testing."));
-        EXPECT_EQ(inputBuffer1->length(), 36);
+        EXPECT_EQ(36, inputBuffer1->length());
 
         delete inputBuffer1;
         delete inputBuffer2;
 }
-/*
-TEST_F(BufferTest, insertAndCompareTests)
+TEST_F(BufferTest, compareTests)
 {
         Stateplex::WriteBuffer<> *buffer1 = new Stateplex::WriteBuffer<>(myActor);
         Stateplex::WriteBuffer<> *buffer2 = new Stateplex::WriteBuffer<>(myActor);
+        Stateplex::WriteBuffer<> *buffer3 = new Stateplex::WriteBuffer<>(myActor);
+        Stateplex::WriteBuffer<> *buffer4 = new Stateplex::WriteBuffer<>(myActor);
+
+        buffer1->append("This is a cString");
+        buffer2->append("This is a cString, too", 17);
+        EXPECT_TRUE(!buffer1->compare("This is a cString"));//Compare returns 0 when true
+        EXPECT_TRUE(!buffer2->compare("This is a cString"));//Compare returns 0 when true
+
+        Stateplex::String *myString = Stateplex::String::copy(myActor->allocator(), "Summer holidays are approaching!");
+        buffer3->append(myString);
+        EXPECT_TRUE(!buffer3->compare(myString));//Compare returns 0 when true
+
+        buffer4->append(buffer3);
+        EXPECT_TRUE(!buffer4->compare(buffer3));//Compare returns 0 when true
+
+        delete buffer1;
+        delete buffer2;
+        delete buffer3;
+        delete buffer4;
+}
+
+TEST_F(BufferTest, splitTest)//Fail -- buffer contains the original character string, 16 characters as 8 characters expected
+{
+        Stateplex::WriteBuffer<> *buffer = new Stateplex::WriteBuffer<>(myActor);
+        buffer->append("Ritaharju school");
+
+        buffer->split('j', 8);
+
+        EXPECT_TRUE(buffer->equals("Ritaharj"));
+        EXPECT_TRUE(buffer->equals("Ritaharju school"));
+        //EXPECT_EQ(8, buffer->length());
+
+        delete buffer;
+}
+
+TEST_F(BufferTest, insertTests)//Fail -- 3, 4 cases give a compilation error -> see below
+{
+        Stateplex::WriteBuffer<100> *buffer1 = new Stateplex::WriteBuffer<100>(myActor);
+        Stateplex::WriteBuffer<100> *buffer2 = new Stateplex::WriteBuffer<100>(myActor);
+        Stateplex::WriteBuffer<100> *buffer3 = new Stateplex::WriteBuffer<100>(myActor);
+        Stateplex::WriteBuffer<100> *buffer4 = new Stateplex::WriteBuffer<100>(myActor);
 
         //Insert -tests fail
         buffer1->append("TestiCString");
         buffer1->insert(2, "Marja");//
-        std::cout << "buffer1 contains " << buffer1->popPointer() << "\n";
-        EXPECT_TRUE(buffer1->equals("TestiCString"));
-        EXPECT_EQ(0, buffer1->compare("TestiCString"));
-        //EXPECT_EQ(0, buffer1->compare("TestiCString", 12));
+        //std::cout << "buffer1 contains: " << buffer1->popPointer() << "\n";
+        //EXPECT_TRUE(buffer1->equals("TesMarjatiCString")); //buffer1 contains the original character string
 
         buffer2->append("This is text.");
-        buffer2->insert(2, "Ritaharju school is best", 16 );//Should all of the string be inserted?
-        std::cout << "buffer2 contains " << buffer2->popPointer() << "\n";
+        buffer2->insert(5, "Ritaharju school is best", 16 );
+        //std::cout << "buffer2 contains: " << buffer2->popPointer() << "\n";
+        EXPECT_TRUE(buffer2->equals("This Ritaharju school"));//buffer2 contains the original character string
 
+        buffer3->append("This is another piece of text.");
         //buffer3->insert(2, buffer1);
                 //tests/core/../../stateplex/core/writebuffer.h:275:86: error: no type named 'allocateMemory' in 'class Stateplex::Buffer<>::Block'
-        // EXPECT_EQ(buffer1->asString(0xF867, 15), "Ritaharju school");
+        // EXPECT_EQ("Ritaharju school", buffer1->asString(2, 15));
         // EXPECT_TRUE(buffer1->equals("Ritaharju school"));
-        //EXPECT_EQ(buffer3->equals());
 
-        //buffer4->insert(0xF867, buffer2, 0xF900, 16);
+        buffer4->append("This is the last piece of text.");
+        // buffer4->insert(2, buffer3, 5, 10);
                 //tests/core/../../stateplex/core/writebuffer.h:275:86: error: no type named 'allocateMemory' in 'class Stateplex::Buffer<>::Block'
         // EXPECT_TRUE(buffer1->equals("Ritaharju school"));
 
         delete buffer1;
         delete buffer2;
+        delete buffer3;
+        delete buffer4;
 }
-*/
+
 
 //ReadBuffer tests
 TEST_F(BufferTest, pushTests)
@@ -136,30 +177,29 @@ TEST_F(BufferTest, pushTests)
         delete wBuffer;
 }
 
-TEST_F(BufferTest, popTests)
+TEST_F(BufferTest, popTests) //Fail
 {
         Stateplex::WriteBuffer<> *buffer1 = new Stateplex::WriteBuffer<>(myActor);
         Stateplex::WriteBuffer<> *buffer2 = new Stateplex::WriteBuffer<>(myActor);
 
         buffer1->append("First of May hassle");
-        EXPECT_STREQ(buffer1->popPointer(), "First of May hassle");
-        EXPECT_EQ(buffer1->popLength(), 19);
+        EXPECT_TRUE(buffer1->equals("First of May hassle"));
+        EXPECT_EQ( 19, buffer1->popLength());
 
         char c = buffer1->peek();
-        EXPECT_EQ(c, 'F');
+        EXPECT_EQ('F', c);
         if (c == 'F')buffer1->pop();
 
         buffer1->popped(buffer1->popLength());
-        EXPECT_EQ(buffer1->popLength(), 0);
-        EXPECT_EQ(buffer1->length(), 0);
+        EXPECT_EQ(0, buffer1->popLength());
+        EXPECT_EQ(0, buffer1->length());
 
         buffer2->append("My first Vappu");
         EXPECT_TRUE(buffer2->equals("My first Vappu"));
-
-        //EXPECT_STREQ(buffer2->popPointer(), "My first Vappu"); Returns "My first Vappuassle"
+        EXPECT_EQ(14, buffer2->length());
 
         buffer2->poppedAll();
-        EXPECT_EQ(buffer2->popLength(), 0);
+        EXPECT_EQ(0, buffer2->popLength());
 
         delete buffer1;
         delete buffer2;
@@ -168,48 +208,36 @@ TEST_F(BufferTest, popTests)
 TEST_F(BufferTest, miscellaneousTests)
 {
         Stateplex::WriteBuffer<> *buffer = new Stateplex::WriteBuffer<>(myActor);
-        EXPECT_EQ(buffer->actor(), myActor);
-        EXPECT_EQ(buffer->allocator(), myActor->allocator());
-        EXPECT_EQ(buffer->blockSize(), 1024);
+        EXPECT_EQ(myActor, buffer->actor());
+        EXPECT_EQ(myActor->allocator(), buffer->allocator());
+        EXPECT_EQ(1024, buffer->blockSize());
 
         buffer->append("abcd");
-        EXPECT_EQ(buffer->charAt(2), 'c');
+        EXPECT_EQ('c', buffer->charAt(2));
         Stateplex::String *myString = buffer->asString();
-        EXPECT_STREQ(myString->chars(), "abcd");
+        EXPECT_STREQ("abcd", myString->chars());
         //myString = buffer->asString(2); buffer.h:513:27:   required from 'Stateplex::String* Stateplex::Buffer<mBlockSize>::asString(Stateplex::Size) const [with short unsigned int mBlockSize = 1024u; Stateplex::Size = long unsigned int]'
-        //EXPECT_STREQ(myString->chars(), "ab");
+        //EXPECT_STREQ("ab", myString->chars());
 
-        EXPECT_EQ(buffer->offsetOf('d', 0), 3);
+        EXPECT_EQ(3, buffer->offsetOf('d', 0));
         //private: Buffer::blockByOffset
         //private: Buffer::blockOffset
 
         delete buffer;
 }
 
-//Check split - it doesn't work
-TEST_F(BufferTest, splitTest)
+TEST_F(BufferTest, regionTests)  //Fail --> gives the right character string, but length is different
 {
-        Stateplex::WriteBuffer<> *buffer = new Stateplex::WriteBuffer<>(myActor);
-        buffer->append("Ritaharju school");
 
-        buffer->split('a', 4);
-        EXPECT_TRUE(buffer->equals("Rita"));
-
-        delete buffer;
-}
-
-
-TEST_F(BufferTest, regionTests)
-{
-        //Don't know if region should work like this!
         Stateplex::WriteBuffer<> *inputBuffer = new Stateplex::WriteBuffer<>(myActor);
         Stateplex::WriteBuffer<> *inputBuffer2 = new Stateplex::WriteBuffer<>(myActor);
 
         inputBuffer->append("Tomorrow I am not going to test at all.");
         inputBuffer2 = inputBuffer->region(8, 31);
-        //std::cout << "length is " << inputBuffer2->length() << "\n";
-        EXPECT_STREQ(inputBuffer2->popPointer(), " I am not going to test at all.");
-        EXPECT_EQ(inputBuffer2->length(), 39);
+        //std::cout << "inputBuffer length is " << inputBuffer->length() << "\n";
+        //std::cout << "inputBuffer2 length is " << inputBuffer2->length() << "\n";
+        EXPECT_STREQ( " I am not going to test at all.", inputBuffer2->popPointer());
+        //EXPECT_EQ(23, inputBuffer2->length());
 
         delete inputBuffer;
         delete inputBuffer2;

@@ -2,18 +2,31 @@
 #include "../../examples/hello/greeteractor.h"
 #include "../../stateplex/core/dispatcher.h"
 
-class DispatcherTest : public testing::Test {
+
+class DISABLED_DispatcherTest : public testing::Test {
 protected:
+	static Stateplex::Dispatcher *dispatcher;
+
+	static void SetUpTestCase()
+	{
+	        dispatcher = new Stateplex::Dispatcher();
+	}
+
+	static void TearDownTestCase()
+	{
+	        delete dispatcher;
+	}
 	
 	virtual void SetUp() {}
 
 	virtual void TearDown() {}
 	
-	Stateplex::Dispatcher dispatcher;
 };
 
-TEST_F(DispatcherTest, ActivateActorTest)
+Stateplex::Dispatcher *DISABLED_DispatcherTest::dispatcher;
+
+TEST_F(DISABLED_DispatcherTest, ActivateActorTest)
 {
-	GreeterActor greeter(&dispatcher);
+	GreeterActor greeter(dispatcher);
 	EXPECT_EQ(true, greeter.isAlive());
 }
