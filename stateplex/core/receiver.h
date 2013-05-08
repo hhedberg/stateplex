@@ -32,11 +32,11 @@ public:
 	virtual ~Receiver() = 0;
 
 	virtual void receiveEnd() = 0;
-	virtual void receive(const String *string) = 0;
-	virtual void receive(Buffer *buffer) = 0;
+	virtual bool receive(const String *string) = 0;
+	virtual bool receive(Buffer *buffer) = 0;
 
-	void receive(const char *data, Size length);
-	void receive(const char *cString);
+	bool receive(const char *data, Size length);
+	bool receive(const char *cString);
 };
 
 }
@@ -50,16 +50,16 @@ namespace Stateplex {
 inline Receiver::~Receiver()
 { }
 
-inline void Receiver::receive(const char *data, Size length)
+inline bool Receiver::receive(const char *data, Size length)
 {
 	String string = String::reference(data, length);
-	receive(&string);
+	return receive(&string);
 }
 
-inline void Receiver::receive(const char *cString)
+inline bool Receiver::receive(const char *cString)
 {
 	String string = String::reference(cString);
-	receive(&string);
+	return receive(&string);
 }
 
 }

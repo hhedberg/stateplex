@@ -30,8 +30,8 @@ public:
 	virtual ~TerminalReceiver();
 
 	virtual void receiveEnd();
-	virtual void receive(const String *string);
-	virtual void receive(Buffer *buffer);
+	virtual bool receive(const String *string);
+	virtual bool receive(Buffer *buffer);
 };
 
 }

@@ -73,7 +73,7 @@ class HttpConnection : public Object, public Receiver {
 	unsigned int mKeepAlive : 1;
 
 	void close();
-	void receive();
+	bool receive();
 	ProcessResult process();
 	bool eatSpaces();
 	bool handleVersion(Buffer *version);
@@ -83,8 +83,8 @@ class HttpConnection : public Object, public Receiver {
 
 protected:
 	virtual void receiveEnd();
-	virtual void receive(const String *string);
-	virtual void receive(Buffer *buffer);
+	virtual bool receive(const String *string);
+	virtual bool receive(Buffer *buffer);
 
 public:
 	HttpConnection(Actor *actor, HttpServer *server, Receiver *receiver);

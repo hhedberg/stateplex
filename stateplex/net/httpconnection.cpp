@@ -39,19 +39,19 @@ void HttpConnection::receiveEnd()
 	close();
 }
 
-void HttpConnection::receive(const String *string)
+bool HttpConnection::receive(const String *string)
 {
 	mInputBuffer.append(string);
-	receive();
+	return receive();
 }
 
-void HttpConnection::receive(Buffer *buffer)
+bool HttpConnection::receive(Buffer *buffer)
 {
 	mInputBuffer.append(buffer);
-	receive();
+	return receive();
 }
 
-void HttpConnection::receive()
+bool HttpConnection::receive()
 {
 	ProcessResult result;
 	do {
@@ -61,7 +61,7 @@ void HttpConnection::receive()
 	if (result == PROCESS_RESULT_ERROR) {
 		mKeepAlive = 0;
 		close();
-		return;
+		return false;
 	} else if (result == PROCESS_RESULT_REQUEST_END) {
 		if (mKeepAlive)
 			mState = STATE_PRE_METHOD;
@@ -70,6 +70,8 @@ void HttpConnection::receive()
 	}
 
 	/* TODO: update inactivity information */
+
+	return true;
 }
 
 HttpConnection::ProcessResult HttpConnection::process()

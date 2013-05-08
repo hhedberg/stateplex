@@ -26,17 +26,20 @@ namespace Stateplex {
 void TerminalReceiver::receiveEnd()
 { }
 
-void TerminalReceiver::receive(const String *string)
+bool TerminalReceiver::receive(const String *string)
 {
 	std::cout << string->chars();
+	return true;
 }
-void TerminalReceiver::receive(Buffer *buffer)
+bool TerminalReceiver::receive(Buffer *buffer)
 {
 	Size length;
 	for (Buffer::Iterator iterator(buffer); iterator.hasCurrent(); iterator.advance(length)) {
 		length = iterator.charBlockLength();
 		std::cout << iterator.charBlock();
 	}
+
+	return true;
 }
 
 }

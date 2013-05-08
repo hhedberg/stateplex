@@ -44,6 +44,7 @@ void ReceiverSource::handleReady(bool readyToRead, bool readyToWrite)
 		} else {
 			buffer.pushed(size);
 			mReceiver->receive(&buffer);
+			// TODO: If receive() returns false, do not read any more
 		}
 	}
 
@@ -56,27 +57,27 @@ void ReceiverSource::receiveEnd()
 	mWriteEof = true;
 }
 
-void ReceiverSource::receive(const char *data, Size length)
+bool ReceiverSource::receive(const char *data, Size length)
 {
 	if (mWriteEof)
-		return;
+		return false;
 
 	if (mWriteBuffer) {
 		mWriteBuffer->append(data, length);
-		return;
+		return true;
 	}
 
 	while (1) {
 		ssize_t size = ::write(fd(), data, length);
 		if (size == (ssize_t)length)
-			return;
+			return true;
 
 		if (size == -1) {
 			if (errno == EAGAIN || errno == EWOULDBLOCK) {
 				break;
 			} else if (errno == ECONNRESET) {
 				mWriteEof = true;
-				return;
+				return false;
 			} else {
 				perror("read");
 				abort();
@@ -88,26 +89,31 @@ void ReceiverSource::receive(const char *data, Size length)
 
 	mWriteBuffer = new WriteBuffer(actor());
 	mWriteBuffer->append(data, length);
+
+	return true;
 }
 
-void ReceiverSource::receive(const String *string)
+bool ReceiverSource::receive(const String *string)
 {
-	receive(string->chars(), string->length());
+	return receive(string->chars(), string->length());
 }
 
-void ReceiverSource::receive(Buffer *buffer)
+bool ReceiverSource::receive(Buffer *buffer)
 {
 	if (mWriteBuffer) {
 		mWriteBuffer->append(buffer);
-		return;
+		return true;
 	}
 
 	Buffer::Iterator iterator(buffer);
 	Size length;
 	while ((length = iterator.charBlockLength()) > 0) {
-		receive(iterator.charBlock(), length);
+		if (!receive(iterator.charBlock(), length))
+			return false;
 		iterator.advance(length);
 	}
+
+	return true;
 }
 
 }
