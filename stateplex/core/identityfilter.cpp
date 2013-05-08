@@ -31,7 +31,7 @@ void IdentityFilter::receive(const String *string)
 	receiver()->receive(string);
 }
 
-void IdentityFilter::receive(Buffer<> *buffer)
+void IdentityFilter::receive(Buffer *buffer)
 {
 	receiver()->receive(buffer);
 }

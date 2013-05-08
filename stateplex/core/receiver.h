@@ -33,7 +33,7 @@ public:
 
 	virtual void receiveEnd() = 0;
 	virtual void receive(const String *string) = 0;
-	virtual void receive(Buffer<> *buffer) = 0;
+	virtual void receive(Buffer *buffer) = 0;
 
 	void receive(const char *data, Size length);
 	void receive(const char *cString);

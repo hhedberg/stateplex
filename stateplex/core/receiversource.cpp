@@ -30,7 +30,7 @@ namespace Stateplex {
 void ReceiverSource::handleReady(bool readyToRead, bool readyToWrite)
 {
 	if (readyToRead) {
-		WriteBuffer<> buffer(actor());
+		WriteBuffer buffer(actor());
 		buffer.ensurePushLength(buffer.blockSize());
 		ssize_t size = ::read(fd(), buffer.pushPointer(), buffer.pushLength());
 		if (size == -1) {
@@ -80,7 +80,7 @@ void ReceiverSource::receive(const char *data, Size length)
 		length -= size;
 	};
 
-	mWriteBuffer = new WriteBuffer<>(actor());
+	mWriteBuffer = new WriteBuffer(actor());
 	mWriteBuffer->append(data, length);
 }
 
@@ -89,14 +89,14 @@ void ReceiverSource::receive(const String *string)
 	receive(string->chars(), string->length());
 }
 
-void ReceiverSource::receive(Buffer<> *buffer)
+void ReceiverSource::receive(Buffer *buffer)
 {
 	if (mWriteBuffer) {
 		mWriteBuffer->append(buffer);
 		return;
 	}
 
-	Buffer<>::Iterator iterator(buffer);
+	Buffer::Iterator iterator(buffer);
 	Size length;
 	while ((length = iterator.charBlockLength()) > 0) {
 		receive(iterator.charBlock(), length);

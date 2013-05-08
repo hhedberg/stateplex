@@ -27,7 +27,7 @@
 namespace Stateplex {
 
 class ReceiverSource : public Source, public Receiver {
-	WriteBuffer<> *mWriteBuffer;
+	WriteBuffer *mWriteBuffer;
 	Receiver *mReceiver;
 
 	int mReadEof : 1;
@@ -41,7 +41,7 @@ protected:
 	virtual void handleReady(bool readyToRead, bool readyToWrite);
 	virtual void receiveEnd();
 	virtual void receive(const String *string);
-	virtual void receive(Buffer<> *buffer);
+	virtual void receive(Buffer *buffer);
 
 public:
 	virtual ~ReceiverSource();

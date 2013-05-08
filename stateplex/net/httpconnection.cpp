@@ -45,7 +45,7 @@ void HttpConnection::receive(const String *string)
 	receive();
 }
 
-void HttpConnection::receive(Buffer<> *buffer)
+void HttpConnection::receive(Buffer *buffer)
 {
 	mInputBuffer.append(buffer);
 	receive();
@@ -103,7 +103,7 @@ HttpConnection::ProcessResult HttpConnection::process()
 		mState = STATE_VERSION;
 		// No break;
 	case STATE_VERSION: {
-		WriteBuffer<> *version;
+		WriteBuffer *version;
 		result = locateRegion('\r', ' ', &version);
 		if (result == PROCESS_RESULT_FOUND) {
 			if (!handleVersion(version))
@@ -175,7 +175,7 @@ HttpConnection::ProcessResult HttpConnection::process()
 	} break;
 	case STATE_DATA: {
 		if (mInputBuffer.length() > mHttpRequest->mDataLeft) {
-			WriteBuffer<> *buffer = mInputBuffer.region(0, mHttpRequest->mDataLeft);
+			WriteBuffer *buffer = mInputBuffer.region(0, mHttpRequest->mDataLeft);
 			mInputBuffer.popped(mHttpRequest->mDataLeft);
 			mHttpRequest->mDataLeft = 0;
 			mHttpRequest->receiveData(buffer);
@@ -208,7 +208,7 @@ bool HttpConnection::eatSpaces()
 	return true;
 }
 
-bool HttpConnection::handleVersion(Buffer<> *version)
+bool HttpConnection::handleVersion(Buffer *version)
 {
 	if (version->equals("HTTP/1.0")) {
 		mKeepAlive = 0;
@@ -220,7 +220,7 @@ bool HttpConnection::handleVersion(Buffer<> *version)
 	return true;
 }
 
-void HttpConnection::handleHeader(Buffer<> *name, Buffer<> *value)
+void HttpConnection::handleHeader(Buffer *name, Buffer *value)
 {
 	if (name->equals("Content-Length")) {
 		String *s = value->asString();
@@ -232,7 +232,7 @@ void HttpConnection::handleHeader(Buffer<> *name, Buffer<> *value)
 	}
 }
 
-HttpConnection::ProcessResult HttpConnection::locateRegion(const char success, const char fail, WriteBuffer<> **regionReturn)
+HttpConnection::ProcessResult HttpConnection::locateRegion(const char success, const char fail, WriteBuffer **regionReturn)
 {
 	ProcessResult result = locateChar(success, fail);
 	if (result == PROCESS_RESULT_FOUND) {

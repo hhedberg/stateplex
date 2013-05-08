@@ -28,9 +28,9 @@ HttpRequest *HbdpServer::instantiateHttpRequest(const HttpRequest::Embryo *embry
 {
 	HttpRequest *httpRequest = 0;
 
-	WriteBuffer<> uri(actor());
+	WriteBuffer uri(actor());
 	embryo->uri()->region(mPath->length(), embryo->uri()->length() - mPath->length(), &uri);
-	Array<WriteBuffer<> *> *elements = uri.split('/', 3);
+	Array<WriteBuffer *> *elements = uri.split('/', 3);
 
 	if (elements->length() == 0 ) {
 		if (!embryo->method()->equals("GET")) {

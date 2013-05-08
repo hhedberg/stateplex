@@ -31,7 +31,7 @@ public:
 
 	virtual void receiveEnd();
 	virtual void receive(const String *string);
-	virtual void receive(Buffer<> *buffer);
+	virtual void receive(Buffer *buffer);
 };
 
 }
