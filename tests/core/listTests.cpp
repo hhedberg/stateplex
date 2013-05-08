@@ -25,9 +25,9 @@ protected:
                 return noItems;
         }
 
-        Stateplex::ListItem *item = new Stateplex::ListItem;
-        Stateplex::ListItem *item1 = new Stateplex::ListItem;
-        Stateplex::ListItem *item2 = new Stateplex::ListItem;
+        Stateplex::ListItem *item = new Stateplex::ListItem(); //Compiler gives a warning: non-static data member initializers only available with -std=c++11 or -std=gnu++11 [enabled by default]
+        Stateplex::ListItem *item1 = new Stateplex::ListItem();
+        Stateplex::ListItem *item2 = new Stateplex::ListItem();
         Stateplex::List<Stateplex::ListItem> list;
         Stateplex::List<Stateplex::ListItem> list1;
 };

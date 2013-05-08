@@ -14,6 +14,7 @@
 #include "../../stateplex/core/dispatcher.h"
 #include "../../stateplex/core/actor.h"
 #include "../../stateplex/core/string.h"
+#include "../../stateplex/core/array.h"
 
 class BufferTest : public testing::Test {
 
@@ -57,9 +58,12 @@ TEST_F(BufferTest, appendAndEqualsTests)
         Stateplex::WriteBuffer<> *inputBuffer1 = new Stateplex::WriteBuffer<>(myActor);
         Stateplex::WriteBuffer<1024> *inputBuffer2 = new Stateplex::WriteBuffer<1024>(myActor);
 
-        //append cString
+        //append cString - Fails as it returns false when less characters
         inputBuffer1->append("Marja ");
         EXPECT_EQ(6, inputBuffer1->length());
+        //EXPECT_FALSE(inputBuffer1->equals("Marj"));//Fails
+        EXPECT_TRUE(inputBuffer1->equals("Marja "));
+        EXPECT_FALSE(inputBuffer1->equals("Marja i"));
 
         //append cString with a length
         inputBuffer1->append("is coding this complex program for ever", 10);
@@ -80,7 +84,8 @@ TEST_F(BufferTest, appendAndEqualsTests)
         delete inputBuffer1;
         delete inputBuffer2;
 }
-TEST_F(BufferTest, compareTests)
+
+TEST_F(BufferTest, compareTests) //Fails
 {
         Stateplex::WriteBuffer<> *buffer1 = new Stateplex::WriteBuffer<>(myActor);
         Stateplex::WriteBuffer<> *buffer2 = new Stateplex::WriteBuffer<>(myActor);
@@ -88,8 +93,11 @@ TEST_F(BufferTest, compareTests)
         Stateplex::WriteBuffer<> *buffer4 = new Stateplex::WriteBuffer<>(myActor);
 
         buffer1->append("This is a cString");
-        buffer2->append("This is a cString, too", 17);
         EXPECT_TRUE(!buffer1->compare("This is a cString"));//Compare returns 0 when true
+        //EXPECT_FALSE(!buffer1->compare("This is a cStrin"));Fails
+        EXPECT_FALSE(!buffer1->compare("This is a cString "));
+
+        buffer2->append("This is a cString, too", 17);
         EXPECT_TRUE(!buffer2->compare("This is a cString"));//Compare returns 0 when true
 
         Stateplex::String *myString = Stateplex::String::copy(myActor->allocator(), "Summer holidays are approaching!");
@@ -107,19 +115,20 @@ TEST_F(BufferTest, compareTests)
 
 TEST_F(BufferTest, splitTest)//Fail -- buffer contains the original character string, 16 characters as 8 characters expected
 {
-        Stateplex::WriteBuffer<> *buffer = new Stateplex::WriteBuffer<>(myActor);
-        buffer->append("Ritaharju school");
+        Stateplex::WriteBuffer<> *buffer1 = new Stateplex::WriteBuffer<>(myActor);
 
-        buffer->split('j', 8);
+        buffer1->append("Ritaharju school");
+        Stateplex::Array<Stateplex::WriteBuffer<> *> *elements = buffer1->split('j', 8);
+        Stateplex::String *myString = buffer1->asString();
+        std::cout << "MyComment: buffer1 contains: " << myString->chars() << "\n";
+        EXPECT_TRUE(buffer1->equals("Ritaharj"));
+        EXPECT_TRUE(buffer1->equals("Ritaharju school"));
+        //EXPECT_EQ(8, elements->length());Fails actual length is 2
 
-        EXPECT_TRUE(buffer->equals("Ritaharj"));
-        EXPECT_TRUE(buffer->equals("Ritaharju school"));
-        //EXPECT_EQ(8, buffer->length());
-
-        delete buffer;
+        delete buffer1;
 }
 
-TEST_F(BufferTest, insertTests)//Fail -- 3, 4 cases give a compilation error -> see below
+TEST_F(BufferTest, insertTests)//Fail -- cases 3, 4 give a compilation error -> see below
 {
         Stateplex::WriteBuffer<100> *buffer1 = new Stateplex::WriteBuffer<100>(myActor);
         Stateplex::WriteBuffer<100> *buffer2 = new Stateplex::WriteBuffer<100>(myActor);
@@ -129,7 +138,7 @@ TEST_F(BufferTest, insertTests)//Fail -- 3, 4 cases give a compilation error -> 
         //Insert -tests fail
         buffer1->append("TestiCString");
         buffer1->insert(2, "Marja");//
-        //std::cout << "buffer1 contains: " << buffer1->popPointer() << "\n";
+        std::cout << "buffer1 contains: " << buffer1->popPointer() << "\n";
         //EXPECT_TRUE(buffer1->equals("TesMarjatiCString")); //buffer1 contains the original character string
 
         buffer2->append("This is text.");
@@ -177,7 +186,7 @@ TEST_F(BufferTest, pushTests)
         delete wBuffer;
 }
 
-TEST_F(BufferTest, popTests) //Fail
+TEST_F(BufferTest, popTests)
 {
         Stateplex::WriteBuffer<> *buffer1 = new Stateplex::WriteBuffer<>(myActor);
         Stateplex::WriteBuffer<> *buffer2 = new Stateplex::WriteBuffer<>(myActor);
@@ -189,6 +198,7 @@ TEST_F(BufferTest, popTests) //Fail
         char c = buffer1->peek();
         EXPECT_EQ('F', c);
         if (c == 'F')buffer1->pop();
+        EXPECT_TRUE(buffer1->equals("irst of May hassle"));
 
         buffer1->popped(buffer1->popLength());
         EXPECT_EQ(0, buffer1->popLength());
@@ -216,8 +226,10 @@ TEST_F(BufferTest, miscellaneousTests)
         EXPECT_EQ('c', buffer->charAt(2));
         Stateplex::String *myString = buffer->asString();
         EXPECT_STREQ("abcd", myString->chars());
-        //myString = buffer->asString(2); buffer.h:513:27:   required from 'Stateplex::String* Stateplex::Buffer<mBlockSize>::asString(Stateplex::Size) const [with short unsigned int mBlockSize = 1024u; Stateplex::Size = long unsigned int]'
-        //EXPECT_STREQ("ab", myString->chars());
+
+        //Stateplex::String * myString2 = buffer->asString(2);
+        //buffer.h:513:27:   required from 'Stateplex::String* Stateplex::Buffer<mBlockSize>::asString(Stateplex::Size) const [with short unsigned int mBlockSize = 1024u; Stateplex::Size = long unsigned int]'
+        //EXPECT_STREQ("ab", myString2->chars());
 
         EXPECT_EQ(3, buffer->offsetOf('d', 0));
         //private: Buffer::blockByOffset
@@ -226,7 +238,7 @@ TEST_F(BufferTest, miscellaneousTests)
         delete buffer;
 }
 
-TEST_F(BufferTest, regionTests)  //Fail --> gives the right character string, but length is different
+TEST_F(BufferTest, regionTests)  //Fail --> gives the right character string, but length is not correct
 {
 
         Stateplex::WriteBuffer<> *inputBuffer = new Stateplex::WriteBuffer<>(myActor);
@@ -236,7 +248,7 @@ TEST_F(BufferTest, regionTests)  //Fail --> gives the right character string, bu
         inputBuffer2 = inputBuffer->region(8, 31);
         //std::cout << "inputBuffer length is " << inputBuffer->length() << "\n";
         //std::cout << "inputBuffer2 length is " << inputBuffer2->length() << "\n";
-        EXPECT_STREQ( " I am not going to test at all.", inputBuffer2->popPointer());
+        EXPECT_TRUE( inputBuffer2->equals(" I am not going to test at all."));
         //EXPECT_EQ(23, inputBuffer2->length());
 
         delete inputBuffer;
