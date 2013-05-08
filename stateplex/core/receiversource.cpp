@@ -58,6 +58,9 @@ void ReceiverSource::receiveEnd()
 
 void ReceiverSource::receive(const char *data, Size length)
 {
+	if (mWriteEof)
+		return;
+
 	if (mWriteBuffer) {
 		mWriteBuffer->append(data, length);
 		return;
@@ -71,6 +74,9 @@ void ReceiverSource::receive(const char *data, Size length)
 		if (size == -1) {
 			if (errno == EAGAIN || errno == EWOULDBLOCK) {
 				break;
+			} else if (errno == ECONNRESET) {
+				mWriteEof = true;
+				return;
 			} else {
 				perror("read");
 				abort();
