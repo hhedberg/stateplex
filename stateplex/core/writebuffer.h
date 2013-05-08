@@ -74,6 +74,8 @@ namespace Stateplex {
 
 /*
  * Allocates block to buffer after or before previous block.
+ *
+ * @return	block.
  */
 
 template<Size16 mBlockSize>
@@ -90,7 +92,9 @@ typename Buffer<mBlockSize>::Block *WriteBuffer<mBlockSize>::allocateBlock(typen
 }
 
 /*
- * 
+ * Ensures push, if there is available room it allocates block.
+ *
+ * @return	block.
  */
 
 template<Size16 mBlockSize>
@@ -101,6 +105,10 @@ typename Buffer<mBlockSize>::Block *WriteBuffer<mBlockSize>::ensurePush(typename
 
 	return block;
 }
+
+/*
+ * Calculates available room and pushes to block.
+ */
 
 template<Size16 mBlockSize>
 void WriteBuffer<mBlockSize>::pushToBlock(const char *cString, Size length, typename Buffer<mBlockSize>::Block *block)
@@ -119,8 +127,7 @@ void WriteBuffer<mBlockSize>::pushToBlock(const char *cString, Size length, type
 }
 
 /*
- *
- *
+ * Function that split block.
  */
 
 template<Size16 mBlockSize>
@@ -143,7 +150,7 @@ typename Buffer<mBlockSize>::Block *WriteBuffer<mBlockSize>::splitBlock(Size off
 }
 
 /*
- * Constructor for 
+ * Constructor.
  *
  */
 
@@ -176,7 +183,7 @@ void WriteBuffer<mBlockSize>::append(Buffer<> *buffer)
 }
 
 /**
- * Copies the C string into the end of the buffer.
+ * Copies the cString into the end of the buffer.
  * 
  * @param string	string to be added.
  */
