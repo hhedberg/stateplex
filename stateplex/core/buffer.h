@@ -158,7 +158,7 @@ public:
 
 namespace Stateplex {
 
-/**
+/** 
  * Function that allocates a block.
  *
  * @return	   allocated block.
@@ -174,31 +174,31 @@ Buffer<mBlockSize>::Block::Block(Allocator *allocator)
 }
 
 /**
- * Function that allocates a specific block
+ * Allocates a specific block
  * and increase reference count.
  */
 
-template<Size16 mBlockSize>
-Buffer<mBlockSize>::Block::Block(Allocator *allocator, Block *block)
+template<Size16 blockSize>
+Buffer<blockSize>::Block::Block(Allocator *allocator, Block *block)
 	: mBytes(block->mBytes), mStart(block->mStart), mEnd(block->mEnd)
 {
 	mBytes->mReferenceCount++;
 }
 
 /**
- * Function that allocates a specific block size
+ * Allocates a specific block size
  * and increase reference count.
  */
 
-template<Size16 mBlockSize>
-Buffer<mBlockSize>::Block::Block(Allocator *allocator, Block *block, Size16 offset, Size16 length)
+template<Size16 blockSize>
+Buffer<blockSize>::Block::Block(Allocator *allocator, Block *block, Size16 offset, Size16 length)
 	: mBytes(block->mBytes), mStart(block->mStart + offset), mEnd(block->mStart + offset + length)
 {
 	mBytes->mReferenceCount++;
 }
 
 /**
- * Fucntion that destroy the allocated block when refernce count decreases 0.
+ * Destroys the allocated block when refernce count decreases to 0.
  */
 
 template<Size16 mBlockSize>
@@ -214,69 +214,63 @@ void Buffer<mBlockSize>::Block::destroy(Allocator *allocator)
 
 /**
  * Function that starts a block.
- *
- * @return       member variable Start.
+ * 
+ * @return   member variable Start.
  */
 
-template<Size16 mBlockSize>
-Size16 Buffer<mBlockSize>::Block::start() const
+template<Size16 blockSize>
+Size16 Buffer<blockSize>::Block::start() const
 {
 	return mStart;
 }
 
 /**
  * Function that ends a block.
- *
- * @return       member variable End.
+ * 
+ * @return    member variable End.
  */
 
-template<Size16 mBlockSize>
-Size16 Buffer<mBlockSize>::Block::end() const
+template<Size16 blockSize>
+Size16 Buffer<blockSize>::Block::end() const
 {
 	return mEnd;
 }
 
 /**
- * Function that starts pointer.
- *
- * @return	 pointer to return.
+ * Function that start pointer.
+ * 
+ * @return	pointer to return.
  */
 
-template<Size16 mBlockSize>
-char *Buffer<mBlockSize>::Block::startPointer() const
+template<Size16 blockSize>
+char *Buffer<blockSize>::Block::startPointer() const
 {
 	return reinterpret_cast<char *>(mBytes) + sizeof(Bytes) + mStart;
 }
 
 /**
- * Function that ends pointer.
- *
+ * Function that end pointer.
+ * 
  * @return	pointer to return.
  */
 
-template<Size16 mBlockSize>
-char *Buffer<mBlockSize>::Block::endPointer() const
+template<Size16 blockSize>
+char *Buffer<blockSize>::Block::endPointer() const
 {
 	return reinterpret_cast<char *>(mBytes) + sizeof(Bytes) + mEnd;
 }
 
 /**
- * Function that allocate pointer.
- *
- * @return 	pointer to return.
+ * Function that takes specific size and offset.
+ * 
+ * @return	pointer to return.
  */
 
-template<Size16 mBlockSize>
-char *Buffer<mBlockSize>::Block::pointer(Size16 offset) const
+template<Size16 blockSize>
+char *Buffer<blockSize>::Block::pointer(Size16 offset) const
 {
 	return reinterpret_cast<char *>(mBytes) + sizeof(Bytes) + mStart + offset;
 }
-
-/**
- * Function that allocate raw pointer.
- *
- * @return 	pointer to return.
- */
 
 template<Size16 mBlockSize>
 char *Buffer<mBlockSize>::Block::rawPointer(Size16 offset) const
@@ -285,74 +279,74 @@ char *Buffer<mBlockSize>::Block::rawPointer(Size16 offset) const
 }
 
 /**
- * Function that calculates the size of the block.
- *
- * @return 	allocated size.
+ * Calculates the size of the block.
+ * 
+ * @return 	pointer to return.
  */
 
-template<Size16 mBlockSize>
-Size16 Buffer<mBlockSize>::Block::size() const
+template<Size16 blockSize>
+Size16 Buffer<blockSize>::Block::size() const
 {
 	return mEnd - mStart;
 }
 
 /**
- * Function that calculates available room.
- *
+ * Calculates the available room.
+ * 
  * @return	available room.
  */
 
-template<Size16 mBlockSize>
-Size16 Buffer<mBlockSize>::Block::room() const
+template<Size16 blockSize>
+Size16 Buffer<blockSize>::Block::room() const
 {
-	return mEnd == mBytes->mEnd ? mBlockSize - mEnd : 0;
+	return mEnd == mBytes->mEnd ? blockSize - mEnd : 0;
 }
 
 /**
- * Function that compares the content of the memory block.
+ * Compares the content of the memory block.
  */
 
-template<Size16 mBlockSize>
-int Buffer<mBlockSize>::Block::compare(Size16 myOffset, const Block *block, Size16 offset, Size16 length) const
+template<Size16 blockSize>
+int Buffer<blockSize>::Block::compare(Size16 myOffset, const Block *block, Size16 offset, Size16 length) const
 {
 	return memcmp(pointer(myOffset), block->pointer(offset), length);
 }
 
 /**
- * Function that is used to copy specific block.
+ * Copies specific block.
  *
  * @param *cString      chars to be placed.
  * @param  length	number of chars to copy.
  */
 
-template<Size16 mBlockSize>
-void Buffer<mBlockSize>::Block::copyFrom(const char *cString, Size16 length)
+template<Size16 blockSize>
+void Buffer<blockSize>::Block::copyFrom(const char *cString, Size16 length)
 {
 	memcpy(endPointer(), cString, length);
 	mBytes->mEnd = mEnd += length;
 }
 
 /**
- * Function that is used to copy chars to specific block.
+ * Copy chars to specific block.
  *
  * @param *cString	chars to be placed.
  * @param  length	number of chars to copy.
  */
 
-template<Size16 mBlockSize>
-void Buffer<mBlockSize>::Block::copyTo(char *cString, Size16 offset, Size16 length)
+template<Size16 blockSize>
+void Buffer<blockSize>::Block::copyTo(char *cString, Size16 offset, Size16 length)
 {
 	memcpy(cString, startPointer() + offset, length);
 }
 
 /**
- * This function takes a value and adds it to a variable that  	 represents the
+ * This function takes a value and adds it to a variable that represents the
  * blocks last address space. Also this value is added to the buffer size.
- *
+ * 
  */
 
-template<Size16 mBlockSize>
-void Buffer<mBlockSize>::Block::pushed(Size16 length)
+template<Size16 blockSize>
+void Buffer<blockSize>::Block::pushed(Size16 length)
 {
 	mEnd += length;
 }
@@ -360,22 +354,22 @@ void Buffer<mBlockSize>::Block::pushed(Size16 length)
 /**
  * This function takes a value and adds it to a variable that represents the
  * blocks begining address space. Also this value is added to the buffer size.
- *
+ * 
  * @param length	number of chars to popped.
  */
 
-template<Size16 mBlockSize>
-void Buffer<mBlockSize>::Block::popped(Size16 length)
+template<Size16 blockSize>
+void Buffer<blockSize>::Block::popped(Size16 length)
 {
 	mStart += length;
 }
 
 /**
- * Function that split the allocated memory.
+ * Splits the allocated memory.
  */
 
-template<Size16 mBlockSize>
-void Buffer<mBlockSize>::Block::split(Allocator *allocator, Size16 offset)
+template<Size16 blockSize>
+void Buffer<blockSize>::Block::split(Allocator *allocator, Size16 offset)
 {
 	void *memory = Block::allocateMemory(allocator);
 	Block *block = new(memory) Block(allocator, this, offset, size() - offset);
@@ -384,20 +378,20 @@ void Buffer<mBlockSize>::Block::split(Allocator *allocator, Size16 offset)
 }
 
 /**
- * Function that allocates memory.
- *
- * @return 	 pointer to return.
+ * Allocates memory.
+ * 
+ * @return 	pointer to return.
  */
 
-template<Size16 mBlockSize>
-void *Buffer<mBlockSize>::Block::allocateMemory(Allocator *allocator)
+template<Size16 blockSize>
+void *Buffer<blockSize>::Block::allocateMemory(Allocator *allocator)
 {
 	return allocator->allocate(sizeof(Block));
 }
 
 /**
  * Default constructor for class Buffer.
- * Initializes a new instance of buffer.
+ * Initialize a new instance of buffer.
  */
 
 template<Size16 mBlockSize>
@@ -414,7 +408,7 @@ typename Buffer<mBlockSize>::Block *Buffer<mBlockSize>::blockByOffset(Size *offs
 }
 
 /*
- * Return the current postion of the block
+ * Return the current position of the block
  * otherwise return the previous offset.
  */
 
@@ -451,6 +445,7 @@ Size Buffer<mBlockSize>::length() const
 	return mSize;
 }
 
+
 template<Size16 mBlockSize>
 Size Buffer<mBlockSize>::offsetOf(char c, Size fromOffset)
 {
@@ -467,8 +462,8 @@ Size Buffer<mBlockSize>::offsetOf(char c, Size fromOffset)
  * Returns the character at the specified position of the buffer.
  */
 
-template<Size16 mBlockSize>
-char Buffer<mBlockSize>::charAt(Size offset) const
+template<Size16 blockSize>
+char Buffer<blockSize>::charAt(Size offset) const
 {
 	for (ListIterator<Block> iterator(&mBlocks); iterator.hasCurrent(); iterator.subsequent()) {
 		Block *block = iterator.current();
@@ -507,8 +502,9 @@ String *Buffer<mBlockSize>::asString() const
  * Note! This function allocates memory and copies the byte data into it.
  */
 
-template<Size16 mBlockSize>
-String *Buffer<mBlockSize>::asString(Size length) const
+template<Size16 blockSize>
+String *Buffer<blockSize>::asString(Size length) const
+
 {
 	return asString(0, length);
 }
@@ -519,8 +515,8 @@ String *Buffer<mBlockSize>::asString(Size length) const
  * Note! This function allocates memory and copies the byte data into it.
  */
 
-template<Size16 mBlockSize>
-String *Buffer<mBlockSize>::asString(Size offset, Size length) const
+template<Size16 blockSize>
+String *Buffer<blockSize>::asString(Size offset, Size length) const
 {
 	String *string = String::uninitialised(allocator(), mSize);
 	char *p = string->chars();
@@ -542,7 +538,7 @@ String *Buffer<mBlockSize>::asString(Size offset, Size length) const
 }
 
 /*
- * Function that compares the value of the string.
+ * Compares the value of the string.
  *
  * @param *cString	chars to be compared. 
  */
@@ -587,8 +583,12 @@ int Buffer<mBlockSize>::compare(const String *string) const
 	return compare(string->chars(), string->length());
 }
 
-template<Size16 mBlockSize>
-int Buffer<mBlockSize>::compare(const Buffer *buffer) const
+/**
+ *
+ */
+
+template<Size16 blockSize>
+int Buffer<blockSize>::compare(const Buffer *buffer) const
 {
 	// TODO
 	return 0;
@@ -601,8 +601,8 @@ int Buffer<mBlockSize>::compare(const Buffer *buffer) const
  * @retrun		true or false.
  */
 
-template<Size16 mBlockSize>
-bool Buffer<mBlockSize>::equals(const char *cString) const
+template<Size16 blockSize>
+bool Buffer<blockSize>::equals(const char *cString) const
 {
 	return compare(cString) == 0;
 }
@@ -613,8 +613,8 @@ bool Buffer<mBlockSize>::equals(const char *cString) const
  * @param *cString	chars to be compared.
  */
 
-template<Size16 mBlockSize>
-bool Buffer<mBlockSize>::equals(const char *cString, Size length) const
+template<Size16 blockSize>
+bool Buffer<blockSize>::equals(const char *cString, Size length) const
 {
 	return compare(cString, length) == 0;
 }
@@ -683,7 +683,7 @@ void Buffer<mBlockSize>::region(Size offset, Size length, WriteBuffer<mBlockSize
 }
 
 /**
- *
+ * Prepares elements for split.
  */
 
 template<Size16 mBlockSize>
@@ -705,7 +705,7 @@ Size Buffer<mBlockSize>::doSplit(char delimiter, WriteBuffer<mBlockSize> **eleme
 }
 
 /*
- * 
+ * Do the actual split of the elements.
  */
 
 template<Size16 mBlockSize>
@@ -805,7 +805,7 @@ void Buffer<mBlockSize>::Iterator::advance(Size length)
 }
 
 /*
- * Gets current postion of the block.
+ * Gets current position of the block.
  */
 
 template<Size16 mBlockSize>
