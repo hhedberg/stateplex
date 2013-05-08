@@ -684,6 +684,8 @@ void Buffer<mBlockSize>::region(Size offset, Size length, WriteBuffer<mBlockSize
 
 /**
  * Prepares elements for split.
+ *
+ * @return	nElements.
  */
 
 template<Size16 mBlockSize>
