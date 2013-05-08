@@ -782,10 +782,6 @@ bool Buffer<mBlockSize>::Iterator::ensureBlock()
 	return true;
 }
 
-/* 
- *
- */
-
 template<Size16 mBlockSize>
 void Buffer<mBlockSize>::Iterator::advance(Size length)
 {
