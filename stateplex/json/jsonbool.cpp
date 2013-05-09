@@ -104,7 +104,7 @@ void JsonBool::unref()
  * Returns the reference count.
  *
  * @return	reference count as Size32.
- * @see Stateplex::Size32
+ * @see 	Stateplex::Size32.
  */
 
 Stateplex::Size32 JsonBool::refcount() 
