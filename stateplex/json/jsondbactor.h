@@ -51,7 +51,7 @@ template<typename Sender> JsonDbActor::JsonMessage::JsonMessage(JsonMessageType 
 { }
 
 template<typename Sender> JsonDbActor::JsonMessage::JsonMessage(JsonMessageType type, Stateplex::String *path, Stateplex::String *parameter, Sender *sender, JsonDbActor *receiver, JsonObject *item, void (Sender::*callbackFunction)(JsonMessage *message))
-	: Stateplex::CallbackMessage<JsonDbActor, JsonMessage>(sender, receiver, callbackFunction), mResult(item), mType(type),mPath(path),  mParameter(parameter)
+	: Stateplex::CallbackMessage<JsonDbActor, JsonMessage>(sender, receiver, callbackFunction), mResult(item), mType(type), mPath(path), mParameter(parameter)
 { }
 
 template<typename Sender> JsonDbActor::JsonMessage::JsonMessage(JsonMessageType type, Stateplex::String *path, Sender *sender, JsonDbActor *receiver, JsonObject *item, void (Sender::*callbackFunction)(JsonMessage *message))
@@ -104,7 +104,7 @@ inline void JsonDbActor::JsonMessage::result() const
 }
 
 inline JsonDbActor::JsonDbActor(Stateplex::Dispatcher *dispatcher)
-	: Object(this), Actor(dispatcher)
+	: Actor(dispatcher)
 { }
 
 template<typename Sender> void JsonDbActor::getRootObject(const char *path, JsonObject *item, Sender *sender, void (Sender::*callbackFunction)(JsonMessage *message)) 

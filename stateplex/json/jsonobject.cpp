@@ -155,7 +155,6 @@ JsonObject *JsonObject::set(Stateplex::String *path, Stateplex::String *paramete
 		
 		case JSON_STRING:
 			dynamic_cast<JsonString *>(test)->setValue(parameter);
-		
 			break;
 		
 		case JSON_NUMBER:

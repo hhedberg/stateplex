@@ -5,7 +5,7 @@
 #include <stateplex/core/callbackmessage.h>
 #include "jsoninterface.h"
 #include <stateplex/json/jsondbactor.h>
-#include <stateplex/json/jsonadapter.h>
+#include "jsonadapter.h"
 
 class JsonClient : public Stateplex::Actor {
 	
@@ -25,7 +25,7 @@ public:
 
 
 JsonClient::JsonClient(Stateplex::Dispatcher *dispatcher)
-	: Object(this), Actor(dispatcher)
+	: Actor(dispatcher)
 { }
 
 void JsonClient::showResult(JsonDbActor::JsonMessage *message)

@@ -2,7 +2,7 @@
 #define JSONDBEXAMPLE_H
 
 #include <stateplex/json/jsonobject.h>
-#include <stateplex/json/jsonadapter.h>
+#include "jsonadapter.h"
 #include "jsondb.h"
 
 class JsonDbExample : public JsonDb
@@ -47,7 +47,8 @@ void JsonDbExample::initDb(JsonDbActor *jsonActor, JsonClient *client, JsonAdapt
 	root->getObject("Employee/Tapio/")->add(new JsonBool(jsonActor, "Testi", true));
 
 	jsonActor->getRootObject("Employee/Juha/Age/", root, client,  &JsonClient::showResult);
-	jsonActor->setJsonObject("Employee/Juha/Age/", "14", root, client, &JsonClient::showResult);
+	
+	jsonActor->setJsonObject("Employee/Juha/Age/", "54", root, client, &JsonClient::showResult);
 	jsonActor->getRootObject("Employee/Tapio/Age/", root, client, &JsonClient::showResult);
 	jsonActor->getRootObject("Employee/Tapio/Testi/", root, client, &JsonClient::showResult);
 
@@ -55,8 +56,9 @@ void JsonDbExample::initDb(JsonDbActor *jsonActor, JsonClient *client, JsonAdapt
 	jsonActor->addJson("Employee/Seppo/", new JsonDouble(jsonActor, "Length", 172.43), root, client, &JsonClient::showResult);
 	
 	client->get("Employee/Seppo/", root, &JsonClient::showResult);
+	client->set("Employee/Juha/Age/", "14", root, &JsonClient::showResult);
 	client->add("Employee/Seppo/", new JsonString(jsonActor, "Beer", "Riedenberger"), root, &JsonClient::showResult);
-	client->set("Employee/Seppo/Beer", "Riedenburger", root, &JsonClient::showResult); 
+	client->set("Employee/Seppo/Beer/", "Riedenburger", root, &JsonClient::showResult); 
 	
 }
 
