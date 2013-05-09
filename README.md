@@ -23,7 +23,18 @@ Building and Installation
 
 1. ./configure
 2. make
-3. make install
+
+
+Building documents
+------------------
+
+make docs
+
+
+Building tests
+--------------
+
+make test
 
 
 Versioning
