@@ -2,14 +2,13 @@
 #define JSONSTRING_H
 
 #include "jsonitem.h"
-#include <iostream>
 
 /**
  * @brief JsonStrings contains string data
  *
  * Class JsonString is a sub class of JsonItem. JsonString
  * is a json item that can contain different kind of characters.
- * JsonString can be reused and reset after initialization.
+ * JsonString content can be modified after initialization.
  */
 
 class JsonString : public JsonItem
