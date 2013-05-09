@@ -44,7 +44,7 @@ public:
 #include <iostream>
 
 GreeterActor::GreetingMessage::GreetingMessage(Actor *sender, GreeterActor *receiver, const char *text)
-	: Message<GreeterActor>(sender, receiver), mText(text)
+	: Stateplex::Message<GreeterActor>(sender, receiver), mText(text)
 { }
 
 void GreeterActor::GreetingMessage::handle(Actor *sender, GreeterActor *receiver)

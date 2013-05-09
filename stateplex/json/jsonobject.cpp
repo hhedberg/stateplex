@@ -36,7 +36,7 @@ void JsonObject::traverse()
 	for (Stateplex::ListIterator<JsonItem> iterator(mItems); iterator.hasCurrent(); iterator.subsequent()) {
 		if(iterator.hasSubsequent()) {
 			for(int i = 0; i < count; i++) {
-				std::cout < "\t";	
+				std::cout << "\t";	
 			}
 		}
 		JsonObject *item = reinterpret_cast<JsonObject *>(iterator.current());
