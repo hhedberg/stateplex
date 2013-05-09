@@ -4,7 +4,7 @@
 #include "jsonitem.h"
 
 /**
- * @brief JsonStrings contains string data
+ * @brief JsonStrings contains string data.
  *
  * Class JsonString is a sub class of JsonItem. JsonString
  * is a json item that can contain different kind of characters.

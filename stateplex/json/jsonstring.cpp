@@ -1,7 +1,7 @@
 #include "jsonstring.h"
 
 /**
- * Constructor that takes assigns the owner of the 
+ * Constructor that assigns the owner of the 
  * jsonstring and assigns the key and value for it.
  *
  * @param *owner	pointer to the owner actor.
@@ -20,7 +20,7 @@ JsonString::JsonString(Stateplex::Actor *owner, const char *key, const char *val
 /**
  * Prints out the value of the json string.
  * 
- * @see JsonObject::traverse()
+ * @see 		JsonObject::traverse()
  */
 
 void JsonString::traverse()
@@ -66,7 +66,7 @@ JsonType JsonString::type()
  * and assigns it's value to json string's value.
  *
  * @param *str		value to set.
- * @see Stateplex::String
+ * @see 		Stateplex::String.
  */
 
 void JsonString::setValue(Stateplex::String *str)
@@ -76,7 +76,7 @@ void JsonString::setValue(Stateplex::String *str)
 
 /**
  * Increases the reference count by one.
- * reference count is used to monitor/handle the usage
+ * Reference count is used to monitor/handle the usage
  * of the JsonString.
  */
 
@@ -87,7 +87,7 @@ void JsonString::ref()
 
 /**
  * Decreases the reference count by one.
- * reference count is used to monitor/handle the usage
+ * Reference count is used to monitor/handle the usage
  * of the JsonString.
  */
 
@@ -101,8 +101,8 @@ void JsonString::unref()
 /**
  * Returns the reference count
  *
- * @return	reference count as Size32
- * @see Stateplex::Size32
+ * @return		reference count as Size32.
+ * @see 		Stateplex::Size32.
  */
 
 Stateplex::Size32 JsonString::refcount() 

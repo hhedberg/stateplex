@@ -5,6 +5,7 @@
 #include "../core/object.h"
 #include "../core/string.h"
 #include "../core/types.h"
+#include <iostream>
 
 enum JsonType {
 		JSON_STRING,
@@ -50,7 +51,7 @@ private:
 
 /**
  * Constructor that takes the owner actor as
- * parameter and initializes.
+ * parameter and initializes it.
  */
 
 inline JsonItem::JsonItem(Stateplex::Actor *owner)

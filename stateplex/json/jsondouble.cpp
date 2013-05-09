@@ -1,7 +1,7 @@
 #include "jsondouble.h"
 
 /**
- * Constructor that takes assigns the owner of the 
+ * Constructor that assigns the owner of the 
  * jsonstring and assigns the key and value for it.
  *
  * @param *owner	pointer to the owner actor.
@@ -20,7 +20,7 @@ JsonDouble::JsonDouble(Stateplex::Actor *owner, const char *key, double number)
 /**
  * Prints out the value of the json double.
  * 
- * @see JsonObject::traverse()
+ * @see 		JsonObject::traverse()
  */
 
 void JsonDouble::traverse()
@@ -75,7 +75,7 @@ void JsonDouble::setValue(double value)
 
 /**
  * Increases the reference count by one.
- * reference count is used to monitor/handle the usage
+ * Reference count is used to monitor/handle the usage
  * of the JsonDouble.
  */
 
@@ -86,7 +86,7 @@ void JsonDouble::ref()
 
 /**
  * Decreases the reference count by one.
- * reference count is used to monitor/handle the usage
+ * Reference count is used to monitor/handle the usage
  * of the JsonDouble.
  */
 
@@ -100,8 +100,8 @@ void JsonDouble::unref()
 /**
  * Returns the reference count
  *
- * @return	reference count as Size32
- * @see Stateplex::Size32
+ * @return		reference count as Size32.
+ * @see 		Stateplex::Size32.
  */
 
 Stateplex::Size32 JsonDouble::refcount() 
