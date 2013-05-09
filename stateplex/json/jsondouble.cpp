@@ -52,8 +52,10 @@ const char *JsonDouble::key()
 
 /**
  * Returns the type of json double.
- * can be used to compare that it is
+ * Can be used to compare that it is
  * actually a json double.
+ *
+ * @return		type of the jsondouble object.
  */
 
 JsonType JsonDouble::type()
@@ -75,7 +77,7 @@ void JsonDouble::setValue(double value)
 
 /**
  * Increases the reference count by one.
- * reference count is used to monitor/handle the usage
+ * Reference count is used to monitor/handle the usage
  * of the JsonDouble.
  */
 
@@ -86,7 +88,7 @@ void JsonDouble::ref()
 
 /**
  * Decreases the reference count by one.
- * reference count is used to monitor/handle the usage
+ * Reference count is used to monitor/handle the usage
  * of the JsonDouble.
  */
 
@@ -98,9 +100,9 @@ void JsonDouble::unref()
 }
 
 /**
- * Returns the reference count
+ * Returns the reference count.
  *
- * @return	reference count as Size32
+ * @return	reference count as Size32.
  * @see Stateplex::Size32
  */
 
@@ -110,7 +112,7 @@ Stateplex::Size32 JsonDouble::refcount()
 }
 
 /**
- * Default desktructor for JsonDouble.
+ * Default destructor for JsonDouble.
  */
 
 JsonDouble::~JsonDouble()

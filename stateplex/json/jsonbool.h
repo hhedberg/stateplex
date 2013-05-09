@@ -3,6 +3,14 @@
 
 #include "jsonitem.h"
 
+/**
+ * @brief JsonBool contains boolean data
+ *
+ * Class JsonBool is a sub class of JsonItem. JsonBool
+ * is a json item that contains boolean data (true or false).
+ * JsonBool content can be modified after initialization.
+ */
+
 class JsonBool : public JsonItem
 {
 public:
