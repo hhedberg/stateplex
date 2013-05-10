@@ -22,9 +22,6 @@ protected:
 	
 };
 
-
-
-
 /*** Inline implementation ***/
 
 template<class T, class M>
