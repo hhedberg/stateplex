@@ -93,7 +93,7 @@ namespace Stateplex {
  */
 
 inline Actor::Actor(Dispatcher *dispatcher)
-	: Object(this), mAlive(1), mActive(0), mDispatcher(dispatcher)
+	: Object(this), mDispatcher(dispatcher), mAlive(1), mActive(0)
 {
 	// dispatcher->activateActor(this);
 }

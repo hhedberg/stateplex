@@ -40,10 +40,10 @@ class HttpServer;
 class HttpConnection : public Object, public Receiver {
 	HttpServer *mHttpServer;
 	Receiver *mReceiver;
-	WriteBuffer<> mInputBuffer;
-	Buffer<>::Iterator mInputBufferIterator;
-	WriteBuffer<> *mMethod;
-	WriteBuffer<> *mUri;
+	WriteBuffer mInputBuffer;
+	Buffer::Iterator mInputBufferIterator;
+	WriteBuffer *mMethod;
+	WriteBuffer *mUri;
 	HttpRequest *mHttpRequest;
 
 	enum State {
@@ -73,18 +73,18 @@ class HttpConnection : public Object, public Receiver {
 	unsigned int mKeepAlive : 1;
 
 	void close();
-	void receive();
+	bool receive();
 	ProcessResult process();
 	bool eatSpaces();
-	bool handleVersion(Buffer<> *version);
-	void handleHeader(Buffer<> *name, Buffer<> *value);
+	bool handleVersion(Buffer *version);
+	void handleHeader(Buffer *name, Buffer *value);
 	ProcessResult locateChar(const char success, const char fail);
-	ProcessResult locateRegion(const char success, const char fail, WriteBuffer<> **regionReturn);
+	ProcessResult locateRegion(const char success, const char fail, WriteBuffer **regionReturn);
 
 protected:
 	virtual void receiveEnd();
-	virtual void receive(const String *string);
-	virtual void receive(Buffer<> *buffer);
+	virtual bool receive(const String *string);
+	virtual bool receive(Buffer *buffer);
 
 public:
 	HttpConnection(Actor *actor, HttpServer *server, Receiver *receiver);

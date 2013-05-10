@@ -26,14 +26,14 @@ void IdentityFilter::receiveEnd()
 	receiver()->receiveEnd();
 }
 
-void IdentityFilter::receive(const String *string)
+bool IdentityFilter::receive(const String *string)
 {
-	receiver()->receive(string);
+	return receiver()->receive(string);
 }
 
-void IdentityFilter::receive(Buffer<> *buffer)
+bool IdentityFilter::receive(Buffer *buffer)
 {
-	receiver()->receive(buffer);
+	return receiver()->receive(buffer);
 }
 
 }

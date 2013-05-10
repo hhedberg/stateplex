@@ -43,7 +43,7 @@ void HttpRequest::sendStatus(const String *status)
  * Sends the HTTP status line.
  * The status line can be sent only once. Any subsequent calls of sendStatus() functions will be ignored.
  */
-void HttpRequest::sendStatus(Buffer<> *status)
+void HttpRequest::sendStatus(Buffer *status)
 {
 	if (mStatusSent)
 		return;
@@ -67,7 +67,7 @@ void HttpRequest::sendHeader(const String *name, const String *value)
 /**
  * Sends the HTTP header line.
  */
-void HttpRequest::sendHeader(Buffer<> *name, Buffer<> *value)
+void HttpRequest::sendHeader(Buffer *name, Buffer *value)
 {
 	mHttpConnection->receiver()->receive(name);
 	mHttpConnection->receiver()->receive(":", 1);
@@ -86,7 +86,7 @@ void HttpRequest::sendData(const String *data)
 /**
  * Sends part of the HTTP message body.
  */
-void HttpRequest::sendData(Buffer<> *data)
+void HttpRequest::sendData(Buffer *data)
 {
 	mData.append(data);
 }
@@ -111,12 +111,12 @@ void HttpRequest::sendEnd()
 	mHttpConnection->receiver()->receive(&mData);
 }
 
-bool SimpleHttpRequest::receiveHeader(Buffer<> *name, Buffer<> *value)
+bool SimpleHttpRequest::receiveHeader(Buffer *name, Buffer *value)
 {
 	return true;
 }
 
-bool SimpleHttpRequest::receiveData(Buffer<> *data)
+bool SimpleHttpRequest::receiveData(Buffer *data)
 {
 	return true;
 }

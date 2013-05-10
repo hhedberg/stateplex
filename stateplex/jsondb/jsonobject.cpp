@@ -75,7 +75,7 @@ void JsonObject::freeMemberValue(Member *m)
 
 void JsonObject::escapeMember(Member *m) const
 {
-	WriteBuffer<> buffer(actor());
+	WriteBuffer buffer(actor());
 	String *name = escape(m->mName);
 	buffer.append(name);
 	name->destroy(allocator());

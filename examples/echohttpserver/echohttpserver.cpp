@@ -67,7 +67,7 @@ EchoHttpRequest::EchoHttpRequest(const HttpRequest::Embryo *embryo)
 	: HttpRequest(embryo), mDataReceived(false)
 { }
 
-bool EchoHttpRequest::receiveHeader(Stateplex::Buffer<> *key, Stateplex::Buffer<> *value)
+bool EchoHttpRequest::receiveHeader(Stateplex::Buffer *key, Stateplex::Buffer *value)
 {
 	static Stateplex::String colon = Stateplex::String::reference(":", 1);
 	static Stateplex::String newline = Stateplex::String::reference("\n", 1);
@@ -80,7 +80,7 @@ bool EchoHttpRequest::receiveHeader(Stateplex::Buffer<> *key, Stateplex::Buffer<
 	return true;
 }
 
-bool EchoHttpRequest::receiveData(Stateplex::Buffer<> *data)
+bool EchoHttpRequest::receiveData(Stateplex::Buffer *data)
 {
 	static Stateplex::String newline = Stateplex::String::reference("\n", 1);
 

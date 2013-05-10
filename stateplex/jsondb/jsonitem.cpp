@@ -97,7 +97,7 @@ String *JsonItem::escape(double decimal) const
 
 String *JsonItem::escape(const String *string) const
 {
-	WriteBuffer<> buffer(actor());
+	WriteBuffer buffer(actor());
 	buffer.append("\"", 1);
 	const char *chars = string->chars();
 	for (Size i = 0; i < string->length(); i++) {
