@@ -1,17 +1,26 @@
+/*
+ * bufferTests.cpp
+ *
+ *  Created on: Apr 19, 2013
+ *      Author: maaalto
+ */
 #include <iostream>
 #include "gtest/gtest.h"
 #include "../../stateplex/core/list.h"
+
+
+/**
+ * Unit tests for list.h, readBuffer.h and WriteBuffer.h using Google c++ testing framework.
+ *
+ **/
 
 class ListTest : public testing::Test {
 
 protected:
 
-        virtual void SetUp()
-        {
+        virtual void SetUp(){}
 
-        }
-
-        virtual void TearDown() { }
+        virtual void TearDown(){}
 
         template<typename T>
         int countItems(Stateplex::List<T> *list)
@@ -32,9 +41,13 @@ protected:
         Stateplex::List<Stateplex::ListItem> list1;
 };
 
+/*
+ * List tests start here ------------------------------------>
+ */
 
-//List tests ------------------------------------>
-// Declared list is first empty
+/*
+ * Declared list is first empty.
+ */
 TEST_F(ListTest, isEmptyTest)
 {
         EXPECT_EQ(true, list.isEmpty());
@@ -42,7 +55,9 @@ TEST_F(ListTest, isEmptyTest)
         EXPECT_EQ(0, list.last());
 }
 
-// ListItem is added to the head of the list: there is one listItem in the list
+/*
+ * ListItem is added to the head of the list: there is one listItem in the list.
+ */
 TEST_F(ListTest, addHeadTest)
 {
         list.addHead(item);
@@ -51,35 +66,46 @@ TEST_F(ListTest, addHeadTest)
         EXPECT_EQ( list.last(), item);
 }
 
-// ListItem is added to the tail of the list: there is two listItems in the list
+/*
+ * ListItem is added to the tail of the list: there is two listItems in the list.
+ */
 TEST_F(ListTest, addTailTest)
 {
         list.addTail(item);
         EXPECT_EQ(list.last(), item);
 }
 
-//First item in the list.
+/*
+ * First item in the list.
+ */
 TEST_F(ListTest, getFirstItemTest)
 {
         list.addHead(item);
         EXPECT_EQ(list.first(), item);
 }
 
-//Last item in the list.
+/*
+ * //Last item in the list.
+ */
 TEST_F(ListTest, getLastItemTest)
 {
         list.addTail(item);
         EXPECT_EQ(list.last(), item);
 }
 
-//Next item in the list.
+/*
+ * Next item in the list.
+ */
 TEST_F(ListTest, nextTest)
 {
         list.addHead(item);
         list.addTail(item1);
         EXPECT_EQ(list.next(list.first()), item1);
 }
-//Previous item in the list.
+
+/*
+ * Previous item in the list.
+ */
 TEST_F(ListTest, previousTest)
 {
         list.addHead(item);
@@ -87,7 +113,9 @@ TEST_F(ListTest, previousTest)
         EXPECT_EQ(list.previous(list.last()), item);
 }
 
-//List added before another list.
+/*
+ * List added before another list.
+ */
 TEST_F(ListTest, spliceHeadTest)
 {
         list.addHead(item);
@@ -97,7 +125,9 @@ TEST_F(ListTest, spliceHeadTest)
         EXPECT_EQ(list.last(), item);
 }
 
-//List added to the tail of a list.
+/*
+ * List added to the tail of a list.
+ */
 TEST_F(ListTest, spliceTailTest)
 {
         list.addHead(item);
@@ -108,12 +138,17 @@ TEST_F(ListTest, spliceTailTest)
 
 }
 
-//ListTests end <---------------------------------
+/*
+ * ListTests end here <----------------------------------------
+ */
 
+/*
+ * ListItem tests start here ---------------------------------->
+ */
 
-//ListItem tests ---------------------------------->
-
-
+/*
+ * Add an item before another item in a list.
+ */
 TEST_F(ListTest, addBeforeTest)
 {
         list.addHead(item);
@@ -121,6 +156,9 @@ TEST_F(ListTest, addBeforeTest)
         EXPECT_EQ(list.first(), item1);
 }
 
+/*
+ * Add an item after another item in a list.
+ */
 TEST_F(ListTest, addAfterTest)
 {
         int noItems=0;
@@ -131,7 +169,9 @@ TEST_F(ListTest, addAfterTest)
         EXPECT_EQ(list.next(list.first()), item2);
 }
 
-
+/*
+ * Remove an item in from a list.
+ */
 TEST_F(ListTest, removeTest)
 {
         list.addHead(item);
@@ -139,11 +179,17 @@ TEST_F(ListTest, removeTest)
         EXPECT_EQ(true, list.isEmpty());
 }
 
-//ListItem tests<----------------------------------
+/*
+ * ListItem tests end here <----------------------------------
+ */
 
-//ListIterator tests------------------------------>
+/*
+ * ListIterator tests start here ------------------------------>
+ */
 
-
+/*
+ * Attaching a list iterator to a list.
+ */
 TEST_F(ListTest, listIteratorListTest)
 {
         Stateplex::ListIterator<Stateplex::ListItem> li(&list);
@@ -153,6 +199,9 @@ TEST_F(ListTest, listIteratorListTest)
 
 }
 
+/*
+ * Testing the functioning of an list iterator.
+ */
 TEST_F(ListTest, listIteratorTests)
 {
         int noItems = 0;

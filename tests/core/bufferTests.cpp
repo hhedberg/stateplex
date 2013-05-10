@@ -16,6 +16,12 @@
 #include "../../stateplex/core/string.h"
 #include "../../stateplex/core/array.h"
 
+
+/**
+ * Unit tests for buffer.h, readBuffer.h and WriteBuffer.h using Google c++ testing framework.
+ *
+ **/
+
 class BufferTest : public testing::Test {
 
 protected:
@@ -29,14 +35,14 @@ protected:
                 myActor = new Stateplex::Actor(dispatcher);
 
         }
+        virtual void SetUp(){}
+        virtual void TearDown(){}
+
         static void TearDownTestCase()
         {
                 delete myActor;
                 delete dispatcher;
         }
-
-        virtual void SetUp(){}
-        virtual void TearDown(){}
 
 };
 
@@ -44,19 +50,17 @@ Stateplex::Dispatcher *BufferTest::dispatcher;
 Stateplex::Actor *BufferTest::myActor;
 
 
-//Buffer tests
-
 TEST_F(BufferTest, zeroLengthTest)
 {
-        Stateplex::WriteBuffer<1024> inputBuffer(myActor);
+        Stateplex::WriteBuffer inputBuffer(myActor);
         EXPECT_EQ(0, inputBuffer.length());
 }
 
-//WriteBuffer tests
+
 TEST_F(BufferTest, appendAndEqualsTests)
 {
-        Stateplex::WriteBuffer<> *inputBuffer1 = new Stateplex::WriteBuffer<>(myActor);
-        Stateplex::WriteBuffer<1024> *inputBuffer2 = new Stateplex::WriteBuffer<1024>(myActor);
+        Stateplex::WriteBuffer *inputBuffer1 = new Stateplex::WriteBuffer(myActor);
+        Stateplex::WriteBuffer *inputBuffer2 = new Stateplex::WriteBuffer(myActor);
 
         //append cString - Fails as it returns false when less characters
         inputBuffer1->append("Marja ");
@@ -87,10 +91,10 @@ TEST_F(BufferTest, appendAndEqualsTests)
 
 TEST_F(BufferTest, compareTests) //Fails
 {
-        Stateplex::WriteBuffer<> *buffer1 = new Stateplex::WriteBuffer<>(myActor);
-        Stateplex::WriteBuffer<> *buffer2 = new Stateplex::WriteBuffer<>(myActor);
-        Stateplex::WriteBuffer<> *buffer3 = new Stateplex::WriteBuffer<>(myActor);
-        Stateplex::WriteBuffer<> *buffer4 = new Stateplex::WriteBuffer<>(myActor);
+        Stateplex::WriteBuffer *buffer1 = new Stateplex::WriteBuffer(myActor);
+        Stateplex::WriteBuffer *buffer2 = new Stateplex::WriteBuffer(myActor);
+        Stateplex::WriteBuffer *buffer3 = new Stateplex::WriteBuffer(myActor);
+        Stateplex::WriteBuffer *buffer4 = new Stateplex::WriteBuffer(myActor);
 
         buffer1->append("This is a cString");
         EXPECT_TRUE(!buffer1->compare("This is a cString"));//Compare returns 0 when true
@@ -115,10 +119,10 @@ TEST_F(BufferTest, compareTests) //Fails
 
 TEST_F(BufferTest, splitTest)//Fail -- buffer contains the original character string, 16 characters as 8 characters expected
 {
-        Stateplex::WriteBuffer<> *buffer1 = new Stateplex::WriteBuffer<>(myActor);
+        Stateplex::WriteBuffer *buffer1 = new Stateplex::WriteBuffer(myActor);
 
         buffer1->append("Ritaharju school");
-        Stateplex::Array<Stateplex::WriteBuffer<> *> *elements = buffer1->split('j', 8);
+        Stateplex::Array<Stateplex::WriteBuffer *> *elements = buffer1->split('j', 8);
         Stateplex::String *myString = buffer1->asString();
         std::cout << "MyComment: buffer1 contains: " << myString->chars() << "\n";
         EXPECT_TRUE(buffer1->equals("Ritaharj"));
@@ -130,10 +134,10 @@ TEST_F(BufferTest, splitTest)//Fail -- buffer contains the original character st
 
 TEST_F(BufferTest, insertTests)//Fail -- cases 3, 4 give a compilation error -> see below
 {
-        Stateplex::WriteBuffer<100> *buffer1 = new Stateplex::WriteBuffer<100>(myActor);
-        Stateplex::WriteBuffer<100> *buffer2 = new Stateplex::WriteBuffer<100>(myActor);
-        Stateplex::WriteBuffer<100> *buffer3 = new Stateplex::WriteBuffer<100>(myActor);
-        Stateplex::WriteBuffer<100> *buffer4 = new Stateplex::WriteBuffer<100>(myActor);
+        Stateplex::WriteBuffer *buffer1 = new Stateplex::WriteBuffer(myActor);
+        Stateplex::WriteBuffer *buffer2 = new Stateplex::WriteBuffer(myActor);
+        Stateplex::WriteBuffer *buffer3 = new Stateplex::WriteBuffer(myActor);
+        Stateplex::WriteBuffer *buffer4 = new Stateplex::WriteBuffer(myActor);
 
         //Insert -tests fail
         buffer1->append("TestiCString");
@@ -148,13 +152,13 @@ TEST_F(BufferTest, insertTests)//Fail -- cases 3, 4 give a compilation error -> 
 
         buffer3->append("This is another piece of text.");
         //buffer3->insert(2, buffer1);
-                //tests/core/../../stateplex/core/writebuffer.h:275:86: error: no type named 'allocateMemory' in 'class Stateplex::Buffer<>::Block'
+                //tests/core/../../stateplex/core/writebuffer.h:275:86: error: no type named 'allocateMemory' in 'class Stateplex::Buffer::Block'
         // EXPECT_EQ("Ritaharju school", buffer1->asString(2, 15));
         // EXPECT_TRUE(buffer1->equals("Ritaharju school"));
 
         buffer4->append("This is the last piece of text.");
         // buffer4->insert(2, buffer3, 5, 10);
-                //tests/core/../../stateplex/core/writebuffer.h:275:86: error: no type named 'allocateMemory' in 'class Stateplex::Buffer<>::Block'
+                //tests/core/../../stateplex/core/writebuffer.h:275:86: error: no type named 'allocateMemory' in 'class Stateplex::Buffer::Block'
         // EXPECT_TRUE(buffer1->equals("Ritaharju school"));
 
         delete buffer1;
@@ -164,13 +168,12 @@ TEST_F(BufferTest, insertTests)//Fail -- cases 3, 4 give a compilation error -> 
 }
 
 
-//ReadBuffer tests
 TEST_F(BufferTest, pushTests)
 {
         ssize_t size = 0;
         int fd = open("myFile", std::fstream::in);
 
-        Stateplex::WriteBuffer<> *wBuffer = new Stateplex::WriteBuffer<>(myActor);
+        Stateplex::WriteBuffer *wBuffer = new Stateplex::WriteBuffer(myActor);
         wBuffer->ensurePushLength(wBuffer->length());
 
         if (fd > 0)
@@ -188,8 +191,8 @@ TEST_F(BufferTest, pushTests)
 
 TEST_F(BufferTest, popTests)
 {
-        Stateplex::WriteBuffer<> *buffer1 = new Stateplex::WriteBuffer<>(myActor);
-        Stateplex::WriteBuffer<> *buffer2 = new Stateplex::WriteBuffer<>(myActor);
+        Stateplex::WriteBuffer *buffer1 = new Stateplex::WriteBuffer(myActor);
+        Stateplex::WriteBuffer *buffer2 = new Stateplex::WriteBuffer(myActor);
 
         buffer1->append("First of May hassle");
         EXPECT_TRUE(buffer1->equals("First of May hassle"));
@@ -218,7 +221,7 @@ TEST_F(BufferTest, popTests)
 
 TEST_F(BufferTest, miscellaneousTests)
 {
-        Stateplex::WriteBuffer<> *buffer = new Stateplex::WriteBuffer<>(myActor);
+        Stateplex::WriteBuffer *buffer = new Stateplex::WriteBuffer(myActor);
         EXPECT_EQ(myActor, buffer->actor());
         EXPECT_EQ(myActor->allocator(), buffer->allocator());
         EXPECT_EQ(1024, buffer->blockSize());
@@ -228,13 +231,7 @@ TEST_F(BufferTest, miscellaneousTests)
         Stateplex::String *myString = buffer->asString();
         EXPECT_STREQ("abcd", myString->chars());
 
-        //Stateplex::String * myString2 = buffer->asString(2);
-        //buffer.h:513:27:   required from 'Stateplex::String* Stateplex::Buffer<mBlockSize>::asString(Stateplex::Size) const [with short unsigned int mBlockSize = 1024u; Stateplex::Size = long unsigned int]'
-        //EXPECT_STREQ("ab", myString2->chars());
-
         EXPECT_EQ(3, buffer->offsetOf('d', 0));
-        //private: Buffer::blockByOffset
-        //private: Buffer::blockOffset
 
         delete buffer;
 }
@@ -242,83 +239,18 @@ TEST_F(BufferTest, miscellaneousTests)
 TEST_F(BufferTest, regionTests)  //Fail --> gives the right character string, but length is not correct
 {
 
-        Stateplex::WriteBuffer<> *inputBuffer = new Stateplex::WriteBuffer<>(myActor);
-        Stateplex::WriteBuffer<> *inputBuffer2 = new Stateplex::WriteBuffer<>(myActor);
+        Stateplex::WriteBuffer *inputBuffer = new Stateplex::WriteBuffer(myActor);
+        Stateplex::WriteBuffer *inputBuffer2 = new Stateplex::WriteBuffer(myActor);
 
         inputBuffer->append("Tomorrow I am not going to test at all.");
         inputBuffer2 = inputBuffer->region(8, 31);
-        //std::cout << "inputBuffer length is " << inputBuffer->length() << "\n";
-        //std::cout << "inputBuffer2 length is " << inputBuffer2->length() << "\n";
+        std::cout << "inputBuffer length is " << inputBuffer->length() << "\n";
+        std::cout << "inputBuffer2 length is " << inputBuffer2->length() << "\n";
         EXPECT_TRUE( inputBuffer2->equals(" I am not going to test at all."));
-        //EXPECT_EQ(23, inputBuffer2->length());
+        //EXPECT_EQ(23, inputBuffer2->length());// This length fails, actual is 31
 
         delete inputBuffer;
         delete inputBuffer2;
 }
-
-//Buffer Tests
-/*
-        String *asString() const;
-        String *asString(Size length) const;
-        String *asString(Size offset, Size length) const;
-        char charAt(Size offset) const;
-        int compare(const char *cString) const;
-        int compare(const char *cString, Size length) const;
-        int compare(const String *string) const;
-        int compare(const Buffer *buffer) const;
-        bool equals(const char *cString) const;
-        bool equals(const char *cString, Size length) const;
-        bool equals(const String *string) const;
-        bool equals(const Buffer *buffer) const;
-        Size offsetOf(char c, Size fromOffset = 0);
-
-        WriteBuffer<mBlockSize> *region(Size offset, Size length);
-        void region(Size offset, Size length, WriteBuffer<mBlockSize> *buffer);
-        Array<WriteBuffer<mBlockSize> *> *split(char delimiter, Size maxElements);
-        Size split(char delimiter, Array<WriteBuffer<mBlockSize> *> *elements);
-
-        Size16 blockSize() const;
-
-
-
-        //WriteBuffer tests
-        TEST_F(BufferTest, WriteBufferTest)
-        {
-
-        }
-
-        //ReadBuffer tests
-        TEST_F(BufferTest, blockSizeTest)
-        {
-           std::size_t size;
-        }
-        TEST_F(BufferTest, ReadBufferTest)
-        {
-
-        }
-
-            TEST_F(BufferTest, pushToBlockTest)
-        {
-        }
-
-    //Block Tests: room, ensureBlock, pushed, popped, split, allocateMemory, pushToBlock, splitBlock
-        TEST_F(BufferTest, splitBlockTest)
-        {
-
-        }
-
-    //Iterator Tests
-            TEST_F(BufferTest, IteratorTest)
-        {
-
-        }
-           void advance(Size length = 1);
-                Size offset();
-                Size charBlockLength();
-                const char *charBlock();
-                Buffer<mBlockSize> *buffer() const;
-                bool hasCurrent();
-                char current();
-*/
 
 
