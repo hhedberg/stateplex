@@ -164,33 +164,11 @@ JsonObject *JsonObject::set(Stateplex::String *path, Stateplex::String *paramete
 			dynamic_cast<JsonObject *>(test)->setKey(parameter);
 		break;
 		
-		/*case JSON_DATA:
-			//what is this madness
-			if(isInteger(parameter)) {
-				dynamic_cast<JsonData<int> *>(test)->setValue(toInteger(parameter));
-			} else {
-				dynamic_cast<JsonData<const char> *>(test)->setValue(parameter->chars());
-			}
-		
-			break;
-		*/
 		default:
 			return NULL;
 			break;
 		
 	}
-
-
-	/*
-	* Plan:
-	* JsonObject *test = get(path);
-	* tokenizepath(str, tokens, ',');
-	* for example if(str castToint == true)
-	* dynamic_cast<JsonNumber *> (test)->setValue(str);
- 	* !!! REF COUNT ??? COPY OF THE JSONOBJECT BEFORE SETTING VALUE ???
-	* GETFUNCTION( CONST JSONOBJECT ???? )
-	*/
-
 }
 
 JsonItem *JsonObject::find(const char *target)
@@ -220,16 +198,13 @@ JsonObject *JsonObject::findObject(const char *target)
 
 
 
-void JsonObject::tokenizepath(const std::string& str, std::vector<std::string>& tokens, const std::string& delimiters)
+void JsonObject::tokenizepath(const std::string& str, std::vector<std::string>& tokens, const char delimiter)
 {
-	std::string::size_type lastPos = str.find_first_not_of(delimiters, 0);
-	std::string::size_type pos = str.find_first_of(delimiters, lastPos);
+	std::stringstream ss(str);
+	std::string token;
 
-	while (std::string::npos != pos || std::string::npos != lastPos)
-	{
-		tokens.push_back(str.substr(lastPos, pos - lastPos));
-		lastPos = str.find_first_not_of(delimiters, pos);
-		pos = str.find_first_of(delimiters, lastPos);
+	while (std::getline(ss, token, delimiter)) {
+		tokens.push_back(token);
 	}
 }
 
@@ -253,11 +228,10 @@ bool JsonObject::isInteger(Stateplex::String *str)
 
 int JsonObject::toInteger(Stateplex::String *str)
 {
-	const char *s = str->chars();
 	int value;
 	std::stringstream char_str; 
 	
-	char_str << s;
+	char_str << str->chars();
 	char_str >> value;
 	
 	return value;

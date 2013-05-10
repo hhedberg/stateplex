@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 #include <sstream>
-#include <cstdlib>
 #include <ctype.h>
 
 class JsonObject : public JsonItem
@@ -37,7 +36,7 @@ protected:
 	void ref();
 private:
 	void freeItems();
-	void tokenizepath(const std::string& str, std::vector<std::string>& tokens, const std::string& delimiters = "/");
+	void tokenizepath(const std::string& str, std::vector<std::string>& tokens, const char delimiter = '/');
 	bool isInteger(Stateplex::String *s);
 	int toInteger(Stateplex::String *s);
 	
