@@ -28,14 +28,14 @@ namespace Stateplex {
  * Sends the HTTP status line.
  * The status line can be sent only once. Any subsequent calls of sendStatus() functions will be ignored.
  */
-void HttpRequest::sendStatus(const char *status, size_t statusLength)
+void HttpRequest::sendStatus(const String *status)
 {
 	if (mStatusSent)
 		return;
 
-	mHttpConnection->sendToUpstream("HTTP/1.0 ", 9);
-	mHttpConnection->sendToUpstream(status, statusLength);
-	mHttpConnection->sendToUpstream("\r\n", 2);
+	mHttpConnection->receiver()->receive("HTTP/1.0 ", 9);
+	mHttpConnection->receiver()->receive(status);
+	mHttpConnection->receiver()->receive("\r\n", 2);
 	mStatusSent = true;
 }
 
@@ -43,50 +43,50 @@ void HttpRequest::sendStatus(const char *status, size_t statusLength)
  * Sends the HTTP status line.
  * The status line can be sent only once. Any subsequent calls of sendStatus() functions will be ignored.
  */
-void HttpRequest::sendStatus(Buffer<> *status)
+void HttpRequest::sendStatus(Buffer *status)
 {
 	if (mStatusSent)
 		return;
 
-	mHttpConnection->sendToUpstream(status);
-	mHttpConnection->sendToUpstream("\r\n", 2);
+	mHttpConnection->receiver()->receive(status);
+	mHttpConnection->receiver()->receive("\r\n", 2);
 	mStatusSent = true;
 }
 
 /**
  * Sends the HTTP header line.
  */
-void HttpRequest::sendHeader(const char *name, Size nameLength, const char *value, Size valueLength)
+void HttpRequest::sendHeader(const String *name, const String *value)
 {
-	mHttpConnection->sendToUpstream(name, nameLength);
-	mHttpConnection->sendToUpstream(":", 1);
-	mHttpConnection->sendToUpstream(value, valueLength);
-	mHttpConnection->sendToUpstream("\r\n", 2);
+	mHttpConnection->receiver()->receive(name);
+	mHttpConnection->receiver()->receive(":", 1);
+	mHttpConnection->receiver()->receive(value);
+	mHttpConnection->receiver()->receive("\r\n", 2);
 }
 
 /**
  * Sends the HTTP header line.
  */
-void HttpRequest::sendHeader(Buffer<> *name, Buffer<> *value)
+void HttpRequest::sendHeader(Buffer *name, Buffer *value)
 {
-	mHttpConnection->sendToUpstream(name);
-	mHttpConnection->sendToUpstream(":", 1);
-	mHttpConnection->sendToUpstream(value);
-	mHttpConnection->sendToUpstream("\r\n", 2);
+	mHttpConnection->receiver()->receive(name);
+	mHttpConnection->receiver()->receive(":", 1);
+	mHttpConnection->receiver()->receive(value);
+	mHttpConnection->receiver()->receive("\r\n", 2);
 }
 
 /**
  * Sends part of the HTTP message body.
  */
-void HttpRequest::sendData(const char *data, Size dataLength)
+void HttpRequest::sendData(const String *data)
 {
-	mData.append(data, dataLength);
+	mData.append(data);
 }
 
 /**
  * Sends part of the HTTP message body.
  */
-void HttpRequest::sendData(Buffer<> *data)
+void HttpRequest::sendData(Buffer *data)
 {
 	mData.append(data);
 }
@@ -98,30 +98,34 @@ void HttpRequest::sendEnd()
 {
 	char buffer[128];
 
-	if (!mStatusSent)
-		sendStatus("200 OK", 6);
+	if (!mStatusSent) {
+		String status = String::reference("200 OK", 6);
+		sendStatus(&status);
+	}
 
 	Size length = snprintf(buffer, sizeof(buffer), "%lu", (long unsigned)mData.length());
-	sendHeader("Content-Length", 14, buffer, length);
-	mHttpConnection->sendToUpstream("\r\n", 2);
-	mHttpConnection->sendToUpstream(&mData);
+	String name = String::reference("Content-Length", 14);
+	String value = String::reference(buffer, length);
+	sendHeader(&name, &value);
+	mHttpConnection->receiver()->receive("\r\n", 2);
+	mHttpConnection->receiver()->receive(&mData);
 }
 
-bool SimpleHttpRequest::receiveHeader(Buffer<> *name, Buffer<> *value)
+bool SimpleHttpRequest::receiveHeader(Buffer *name, Buffer *value)
 {
 	return true;
 }
 
-bool SimpleHttpRequest::receiveData(Buffer<> *data)
+bool SimpleHttpRequest::receiveData(Buffer *data)
 {
 	return true;
 }
 
 void SimpleHttpRequest::receiveEnd()
 {
-	sendStatus(mStatus->chars(), mStatus->length());
+	sendStatus(mStatus);
 	if (mBody) {
-		sendData(mBody->chars(), mBody->length());
+		sendData(mBody);
 	}
 	sendEnd();
 	delete this;

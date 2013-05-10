@@ -1,7 +1,7 @@
 /*
  * Stateplex - A server-side actor model library.
  *
- * examples/hello/calculatoractor.h
+ * core/identityfilter.h
  *
  * (c) 2013 Henrik Hedberg <henrik.hedberg@innologies.fi>
  *
@@ -17,33 +17,46 @@
  * Authors: Henrik Hedberg
  */
 
-#ifndef INCLUDED_CLIENT_ACTOR_H
-#define INCLUDED_CLIENT_ACTOR_H
+#ifndef INCLUDED_STATEPLEX_IDENTITY_FILTER_H
+#define INCLUDED_STATEPLEX_IDENTITY_FILTER_H
 
-#include <stateplex/core/actor.h>
-#include <stateplex/core/callbackmessage.h>
+#include "filter.h"
 
-#include "calculatoractor.h"
+namespace Stateplex {
 
-class ClientActor : public Stateplex::Actor {
+class IdentityFilter : public Object, public Filter {
+protected:
+	virtual void receiveEnd();
+	virtual bool receive(const String *string);
+	virtual bool receive(Buffer *buffer);
 
 public:
-	ClientActor(Stateplex::Dispatcher *dispatcher);
+	IdentityFilter(Actor *actor, Receiver *receiver);
+	virtual ~IdentityFilter();
 
-	void showResult(CalculatorActor::CalculationMessage *message);
 };
+
+}
 
 /*** Inline implementations ***/
 
-#include <iostream>
+namespace Stateplex {
 
-ClientActor::ClientActor(Stateplex::Dispatcher *dispatcher)
-	: Actor(dispatcher)
+/*
+ * Constructor.
+ */
+
+inline IdentityFilter::IdentityFilter(Actor *actor, Receiver *receiver)
+	: Object(actor), Filter(receiver)
 { }
 
-void ClientActor::showResult(CalculatorActor::CalculationMessage *message)
-{
-	std::cout << "Result is " << message->result();
+/*
+ * Destructor.
+ */
+
+inline IdentityFilter::~IdentityFilter()
+{ }
+
 }
 
 #endif

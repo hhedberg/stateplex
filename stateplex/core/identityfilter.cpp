@@ -1,7 +1,7 @@
 /*
  * Stateplex - A server-side actor model library.
  *
- * net/httpserver.cpp
+ * core/identityfilter.cpp
  *
  * (c) 2013 Henrik Hedberg <henrik.hedberg@innologies.fi>
  *
@@ -17,24 +17,36 @@
  * Authors: Henrik Hedberg
  */
 
-#include "httpserver.h"
-#include "httpconnection.h"
+#include "identityfilter.h"
 
 namespace Stateplex {
 
-TcpConnection *HttpServer::instantiateTcpConnection(const TcpConnection::Embryo *embryo)
-{
-	TcpConnection *tcpConnection = new TcpConnection(embryo->mTcpServer->actor(), embryo);
-	HttpConnection *httpConnection = new HttpConnection(embryo->mTcpServer->actor(), this, tcpConnection);
-	tcpConnection->setReceiver(httpConnection);
+/*
+ * Sets receiver to say it is EOF.
+ */
 
-	return tcpConnection;
+void IdentityFilter::receiveEnd()
+{
+	receiver()->receiveEnd();
 }
 
-HttpRequest *HttpServer::instantiateHttpRequest(const HttpRequest::Embryo *embryo)
+/*
+ * Receives string from identifyfilters receiver.
+ */
+
+bool IdentityFilter::receive(const String *string)
 {
-	/* TODO: take the path into account */
-	return mRequestFactoryMethod.invoke(embryo);
+	return receiver()->receive(string);
+}
+
+/*
+ * Receives pointer to a buffer from indentifyfilters
+ * receiver.
+ */
+
+bool IdentityFilter::receive(Buffer *buffer)
+{
+	return receiver()->receive(buffer);
 }
 
 }

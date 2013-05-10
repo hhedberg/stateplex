@@ -1,7 +1,7 @@
 /*
  * Stateplex - A server-side actor model library.
  *
- * core/echostream.h
+ * core/receiver.h
  *
  * (c) 2013 Henrik Hedberg <henrik.hedberg@innologies.fi>
  *
@@ -17,47 +17,46 @@
  * Authors: Henrik Hedberg
  */
 
-#ifndef INCLUDED_STATEPLEX_ECHO_STREAM_H
-#define INCLUDED_STATEPLEX_ECHO_STREAM_H
+#ifndef INCLUDED_STATEPLEX_FILTER_H
+#define INCLUDED_STATEPLEX_FILTER_H
 
-#include "downstream.h"
+#include "receiver.h"
 
 namespace Stateplex {
 
-class EchoStream : public Downstream {
-protected:
-	virtual void receiveDrainedFromUpstream();
-	virtual void receiveFromUpstream(const char *data, Size length);
-	virtual void receiveFromUpstream(Buffer<> *buffer);
+class String;
+
+class Filter : public Receiver {
+	Receiver *mReceiver;
 
 public:
-	EchoStream(Actor *actor);
-	virtual ~EchoStream();
+	Filter(Receiver *receiver = 0);
 
+	Receiver *receiver() const;
+	void setReceiver(Receiver *receiver);
 };
 
 }
 
 /*** Inline implementations ***/
 
-#include "upstream.h"
+#include "string.h"
 
 namespace Stateplex {
 
-/*
- * Constructor.
- */
-
-inline EchoStream::EchoStream(Actor *actor)
-	: Object(actor), Downstream(actor)
+Filter::Filter(Receiver *receiver)
+	: mReceiver(receiver)
 { }
 
-/*
- * Destructor.
- */
+inline Receiver *Filter::receiver() const
+{
+	return mReceiver;
+}
 
-inline EchoStream::~EchoStream()
-{ }
+inline void Filter::setReceiver(Receiver *receiver)
+{
+	mReceiver = receiver;
+}
 
 }
 
