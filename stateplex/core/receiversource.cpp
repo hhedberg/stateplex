@@ -34,7 +34,12 @@ void ReceiverSource::handleReady(bool readyToRead, bool readyToWrite)
 		buffer.ensurePushLength(buffer.blockSize());
 		ssize_t size = ::read(fd(), buffer.pushPointer(), buffer.pushLength());
 		if (size == -1) {
-			if (errno != EAGAIN && errno != EWOULDBLOCK) {
+			if (errno == ECONNRESET) {
+				mReadEof = true;
+				mWriteEof = true;
+				// TODO: Clear mWriteBuffer
+				mReceiver->receiveEnd();
+		} else if (errno != EAGAIN && errno != EWOULDBLOCK) {
 				perror("read");
 				abort();
 			}
