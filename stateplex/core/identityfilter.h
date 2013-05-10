@@ -42,10 +42,6 @@ public:
 
 namespace Stateplex {
 
-inline EchoStream::EchoStream(Actor *actor)
-	: Object(actor), Downstream(actor)
-{ }
-
 inline IdentityFilter::IdentityFilter(Actor *actor, Receiver *receiver)
 	: Object(actor), Filter(receiver)
 { }
