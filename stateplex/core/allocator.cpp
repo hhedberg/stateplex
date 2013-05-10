@@ -118,6 +118,12 @@ void *Allocator::allocateChunk(Size size)
 	return 0;
 }
 
+/*
+ * Allocates slice.
+ *  
+ * @return        allocated slice.
+ */
+
 void *Allocator::allocateSlice(Size16 index)
 {
 	List<Slice> *slices = &mFreeSlices[index];
@@ -134,6 +140,10 @@ void *Allocator::allocateSlice(Size16 index)
 	return slice;
 }
 
+/*
+ * Deallocate the allocated slice.
+ */
+ 
 void Allocator::deallocate(void *memory, Size size)
 {
 	if (size > (BLOCK_SIZE - sizeof(Block)) / 8)
@@ -146,6 +156,10 @@ void Allocator::deallocateChunk(void *memory, Size size)
 {
 	/* TODO */
 }
+
+/*
+ *
+ */
 
 void Allocator::deallocateSlice(void *memory, Size16 index)
 {
