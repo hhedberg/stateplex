@@ -4,7 +4,6 @@
 #include "jsonitem.h"
 #include "jsonnumber.h"
 #include "jsonstring.h"
-#include "jsondata.h"
 #include "jsonbool.h"
 #include "jsondouble.h"
 #include <string>
@@ -12,6 +11,14 @@
 #include <sstream>
 #include <ctype.h>
 
+/**
+ * @brief JsonObject contains JsonItems.
+ *
+ * Class JsonObject is a sub class of JsonItem. JsonObject
+ * contains other JsonItems.
+ * JsonObject content can be modified after initialization.
+ */
+ 
 class JsonObject : public JsonItem
 {
 public:

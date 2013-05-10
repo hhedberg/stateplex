@@ -21,7 +21,7 @@ JsonBool::JsonBool(Stateplex::Actor *owner, const char *key, bool b)
 /**
  * Prints out the key and value of the jsonbool object.
  * 
- * @see JsonObject::traverse()
+ * @see 		JsonObject::traverse().
  */
 
 void JsonBool::traverse()
