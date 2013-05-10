@@ -23,6 +23,7 @@
 #include <stateplex/core/dispatcher.h>
 #include <stateplex/net/tcpserver.h>
 #include <stateplex/net/tcpconnection.h>
+#include <stateplex/core/identityfilter.h>
 #include <stateplex/core/buffer.h>
 
 #include "echotcpserveractor.h"
@@ -49,19 +50,9 @@ EchoTcpServerActor::EchoTcpServerActor(Stateplex::Dispatcher *dispatcher)
 
 Stateplex::TcpConnection *EchoTcpServerActor::instantiateTcpConnection(const Stateplex::TcpConnection::Embryo *embryo)
 {
-	return new EchoTcpConnection(this, embryo);
-}
+	Stateplex::TcpConnection *tcpConnection = new Stateplex::TcpConnection(this, embryo);
+	Stateplex::IdentityFilter *identityFilter = new Stateplex::IdentityFilter(this, tcpConnection);
+	tcpConnection->setReceiver(identityFilter);
 
-EchoTcpConnection::EchoTcpConnection(Stateplex::Actor* actor, const Stateplex::TcpConnection::Embryo* embryo)
-	: TcpConnection(actor, embryo), mBuffer(actor)
-{ }
-
-void EchoTcpConnection::handleReady(bool readyRead, bool readyWrite)
-{
-
-	read(&mBuffer);
-	Stateplex::String *s = mBuffer.asString();
-	write(s->chars(), s->length());
-	//write(&mBuffer);
-	mBuffer.poppedAll();
+	return tcpConnection;
 }

@@ -50,35 +50,47 @@ EchoActor::EchoActor(Stateplex::Dispatcher *dispatcher)
 
 Stateplex::HttpRequest *EchoActor::instantiateHttpRequest(const Stateplex::HttpRequest::Embryo *embryo)
 {
-	Stateplex::HttpRequest *request = new EchoHttpRequest(embryo->httpConnection);
+	static Stateplex::String space = Stateplex::String::reference("", 1);
+	static Stateplex::String newline = Stateplex::String::reference("\n", 1);
 
-	request->sendData(embryo->method);
-	request->sendData(" ", 1);
-	request->sendData(embryo->uri);
-	request->sendData("\n", 1);
+	Stateplex::HttpRequest *request = new EchoHttpRequest(embryo);
+
+	request->sendData(embryo->method());
+	request->sendData(&space);
+	request->sendData(embryo->uri());
+	request->sendData(&newline);
 
 	return request;
 }
 
-EchoHttpRequest::EchoHttpRequest(Stateplex::HttpConnection *connection)
-	: HttpRequest(connection), mDataReceived(false)
+EchoHttpRequest::EchoHttpRequest(const HttpRequest::Embryo *embryo)
+	: HttpRequest(embryo), mDataReceived(false)
 { }
 
-bool EchoHttpRequest::receiveHeader(const Stateplex::Buffer<> *key, const Stateplex::Buffer<> *value)
+bool EchoHttpRequest::receiveHeader(Stateplex::Buffer *key, Stateplex::Buffer *value)
 {
+	static Stateplex::String colon = Stateplex::String::reference(":", 1);
+	static Stateplex::String newline = Stateplex::String::reference("\n", 1);
+
 	sendData(key);
-	sendData(": ", 2);
+	sendData(&colon);
 	sendData(value);
-	sendData("\n", 1);
+	sendData(&newline);
+
+	return true;
 }
 
-Stateplex::Size EchoHttpRequest::receiveData(const Stateplex::Buffer<> *data)
+bool EchoHttpRequest::receiveData(Stateplex::Buffer *data)
 {
+	static Stateplex::String newline = Stateplex::String::reference("\n", 1);
+
 	if (!mDataReceived) {
-		sendData("\n", 1);
+		sendData(&newline);
 		mDataReceived = true;
 	}
 	sendData(data);
+
+	return true;
 }
 
 void EchoHttpRequest::receiveEnd()

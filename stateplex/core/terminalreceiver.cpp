@@ -1,7 +1,7 @@
 /*
  * Stateplex - A server-side actor model library.
  *
- * net/httpserver.cpp
+ * core/terminalreceiver.cpp
  *
  * (c) 2013 Henrik Hedberg <henrik.hedberg@innologies.fi>
  *
@@ -17,24 +17,29 @@
  * Authors: Henrik Hedberg
  */
 
-#include "httpserver.h"
-#include "httpconnection.h"
+#include "terminalreceiver.h"
+
+#include <iostream>
 
 namespace Stateplex {
 
-TcpConnection *HttpServer::instantiateTcpConnection(const TcpConnection::Embryo *embryo)
-{
-	TcpConnection *tcpConnection = new TcpConnection(embryo->mTcpServer->actor(), embryo);
-	HttpConnection *httpConnection = new HttpConnection(embryo->mTcpServer->actor(), this, tcpConnection);
-	tcpConnection->setReceiver(httpConnection);
+void TerminalReceiver::receiveEnd()
+{ }
 
-	return tcpConnection;
+bool TerminalReceiver::receive(const String *string)
+{
+	std::cout << string->chars();
+	return true;
 }
-
-HttpRequest *HttpServer::instantiateHttpRequest(const HttpRequest::Embryo *embryo)
+bool TerminalReceiver::receive(Buffer *buffer)
 {
-	/* TODO: take the path into account */
-	return mRequestFactoryMethod.invoke(embryo);
+	Size length;
+	for (Buffer::Iterator iterator(buffer); iterator.hasCurrent(); iterator.advance(length)) {
+		length = iterator.charBlockLength();
+		std::cout << iterator.charBlock();
+	}
+
+	return true;
 }
 
 }

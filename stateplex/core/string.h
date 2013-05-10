@@ -27,23 +27,33 @@ namespace Stateplex {
 class Allocator;
 
 class String {
-	String();
-	~String();
+	Size8 mZero; // Keep first!
+	const char *mChars;
+	Size mLength;
 
-	Size getLength(Size *sizeOfLength) const;
+	String(const char *cString, Size length);
+
+	Size getLength(const char **contents) const;
 	void setLength(Size length);
 
 	static Size sizeOfLength(Size length);
 
 public:
+	~String();
+
 	const char *chars() const;
 	char *chars();
 	void destroy(Allocator *allocator);
 	Size length() const;
+	bool equals(const String *string) const;
 
 	static String *uninitialised(Allocator *allocator, Size length);
 	static String *copy(Allocator *allocator, const char *cString);
 	static String *copy(Allocator *allocator, const char *cString, Size length);
+	static String *copy(Allocator *allocator, const String *string);
+	static String reference(const char *cString);
+	static String reference(const char *cString, Size length);
+	static String reference(const String *string);
 };
 
 }
@@ -56,17 +66,30 @@ public:
 
 namespace Stateplex {
 
-inline Size String::getLength(Size *sizeOfLength) const
+inline String::String(const char *cString, Size length)
+	: mZero(0), mChars(cString), mLength(length)
+{ }
+
+inline String::~String()
+{
+	if (mZero != 0)
+		abort();
+}
+
+inline Size String::getLength(const char **contents) const
 {
 	const Size8 *size = reinterpret_cast<const Size8 *>(this);
-	if ((*size & 0x80) == 0) {
-		*sizeOfLength = 1;
+	if (*size == 0) {
+		*contents = mChars;
+		return mLength;
+	} else if ((*size & 0x80) == 0) {
+		*contents = reinterpret_cast<const char*>(this) + 1;
 		return *size;
 	} else if ((*(size + 1) & 0x80) == 0) {
-		*sizeOfLength = 2;
+		*contents = reinterpret_cast<const char*>(this) + 2;
 		return (*size & 0x7f) + (*(size + 1) << 7);
 	} else {
-		*sizeOfLength = 3;
+		*contents = reinterpret_cast<const char*>(this) + 3;
 		return (*size & 0x7f) + ((*(size + 1) & 0x7f) << 7) + ((*(size + 2) & 0x7f) << 14);
 	}
 }
@@ -78,7 +101,7 @@ inline void String::setLength(Size length)
 		*size = length | 0x80;
 		*(size + 1) = length >> 7 | 0x80;
 		*(size + 2) = length >> 14;
-	} else if (length >= 2 << 7) {
+	} else if (length == 0 || length >= 2 << 7) {
 		*size = length | 0x80;
 		*(size + 1) = length >> 7;
 	} else {
@@ -89,8 +112,9 @@ inline void String::setLength(Size length)
 inline Size String::sizeOfLength(Size length)
 {
 	Size size;
-
-	if (length >= 2 << 14)
+	if (length == 0)
+		size = 2;
+	else if (length >= 2 << 14)
 		size = 3;
 	else if (length >= 2 << 7)
 		size = 2;
@@ -102,23 +126,37 @@ inline Size String::sizeOfLength(Size length)
 
 inline const char *String::chars() const
 {
-	Size size;
-	getLength(&size);
-	return reinterpret_cast<const char *>(this) + size;
+	const char *contents;
+	getLength(&contents);
+	return contents;
 }
 
 inline char *String::chars()
 {
-	Size size;
-	getLength(&size);
-	return reinterpret_cast<char *>(this) + size;
+	const char *contents;
+	getLength(&contents);
+	return const_cast<char *>(contents);
 }
 
 inline Size String::length() const
 {
-	Size size;
-	return getLength(&size);
+	const char *contents;
+	return getLength(&contents);
 }
+
+inline bool String::equals(const String *string) const
+{
+	const char *mine;
+	Size length = getLength(&mine);
+	const char *compared;
+	Size stringLength = string->getLength(&compared);
+
+	if (length != stringLength)
+		return false;
+
+	return memcmp(mine, compared, length) == 0;
+}
+
 
 inline String *String::uninitialised(Allocator *allocator, Size length)
 {
@@ -148,12 +186,43 @@ inline String *String::copy(Allocator *allocator, const char *cString, Size leng
 	return string;
 }
 
+inline String *String::copy(Allocator *allocator, const String *string)
+{
+	const char *contents;
+	Size length = string->getLength(&contents);
+	Size size = sizeOfLength(length);
+	char *memory = reinterpret_cast<char *>(allocator->allocate(size + length + 1));
+	memcpy(memory + size, reinterpret_cast<const char *>(string) + size, length + 1);
+	String *newString = reinterpret_cast<String *>(memory);
+	newString->setLength(length);
+
+	return newString;
+}
+
 inline void String::destroy(Allocator *allocator)
 {
-	Size size;
-	Size length = getLength(&size);
-	size += length + 1;
-	allocator->deallocate(reinterpret_cast<void *>(this), size);
+	if (mZero == 0)
+		abort();
+
+	const char *contents;
+	Size length = getLength(&contents);
+	Size size = sizeOfLength(length);
+	allocator->deallocate(reinterpret_cast<void *>(this), size + length + 1);
+}
+
+inline String String::reference(const char *cString)
+{
+	return String(cString, strlen(cString));
+}
+
+inline String String::reference(const char *cString, Size length)
+{
+	return String(cString, length);
+}
+
+inline String String::reference(const String *string)
+{
+	return String(string->chars(), string->length());
 }
 
 }

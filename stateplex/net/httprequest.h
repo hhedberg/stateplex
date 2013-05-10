@@ -23,7 +23,8 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
-#include "../core/buffer.h"
+#include "../core/object.h"
+#include "../core/writebuffer.h"
 
 namespace Stateplex {
 
@@ -37,21 +38,25 @@ class HttpConnection;
  * One HttpConnection may carry through multiple requests.
  */
 
-class HttpRequest {
+class HttpRequest : public Object {
 	friend class HttpConnection;
 
 	HttpConnection *mHttpConnection;
+	WriteBuffer mData;
+	Size mDataLeft;
+
+	int mStatusSent : 1;
 
 protected:
 	/**
 	 * Receives an HTTP header belonging to the request.
 	 */
-	virtual bool receiveHeader(const Buffer<> *name, const Buffer<> *value) = 0;
+	virtual bool receiveHeader(Buffer *name, Buffer *value) = 0;
 
 	/**
 	 * Receives an HTTP message body content belonging to the request.
 	 */
-	virtual Size receiveData(const Buffer<> *data) = 0;
+	virtual bool receiveData(Buffer *data) = 0;
 
 	/**
 	 * Indicates that the full HTTP request is now received.
@@ -71,33 +76,56 @@ protected:
 
 public:
 	class Embryo {
-	public:
-		HttpConnection *httpConnection;
-		const Buffer<> *method;
-		const Buffer<> *uri;
+		HttpConnection *mHttpConnection;
+		Buffer *mMethod;
+		Buffer *mUri;
+		Buffer *mVersion;
 
-		Embryo(HttpConnection *httpConnection, const Buffer<> *method, const Buffer<> *uri);
+	public:
+		Embryo(HttpConnection *httpConnection, Buffer *method, Buffer *uri, Buffer *version);
+
+		HttpConnection *httpConnection() const;
+		Buffer *method() const;
+		Buffer *uri() const;
+		Buffer *version() const;
 	};
 
-	HttpRequest(HttpConnection *httpConnection);
+	HttpRequest(const Embryo *embryo);
 	virtual ~HttpRequest();
 
 	HttpConnection *httpConnection() const;
 
-	void sendStatus(const char *status, Size statusLength);
-	void sendStatus(const Buffer<> *status);
-	void sendHeader(const char *name, Size nameLength, const char *value, Size valueLength);
-	void sendHeader(const Buffer<> *name, const Buffer<> *value);
-	void sendData(const char *data, Size dataLength);
-	void sendData(const Buffer<> *data);
+	void sendStatus(const String *status);
+	void sendStatus(Buffer *status);
+	void sendHeader(const String *name, const String *value);
+	void sendHeader(Buffer *name, Buffer *value);
+	void sendData(const String *data);
+	void sendData(Buffer *data);
 	void sendEnd();
 };
+
+class SimpleHttpRequest : public HttpRequest {
+	String *mStatus;
+	String *mBody;
+
+protected:
+	virtual bool receiveHeader(Buffer *name, Buffer *value);
+	virtual bool receiveData(Buffer *data);
+	virtual void receiveEnd();
+	virtual void receiveAbort();
+
+public:
+	SimpleHttpRequest(const HttpRequest::Embryo *embryo, const char *status);
+	SimpleHttpRequest(const HttpRequest::Embryo *embryo, const char *status, const char *body);
+};
+
 
 }
 
 /*** Inline implementations ***/
 
 #include "tcpconnection.h"
+#include "httpconnection.h"
 
 namespace Stateplex {
 
@@ -105,8 +133,8 @@ namespace Stateplex {
  * Constructs a new request and associates it to the given HttpConnection.
  */
 
-inline HttpRequest::HttpRequest(HttpConnection *httpConnection)
-	: mHttpConnection(httpConnection)
+inline HttpRequest::HttpRequest(const Embryo *embryo)
+	: Object(embryo->httpConnection()->actor()), mHttpConnection(embryo->httpConnection()), mData(actor()), mDataLeft(0), mStatusSent(false)
 { }
 
 /**
@@ -127,9 +155,29 @@ inline HttpConnection *HttpRequest::httpConnection() const
 	return mHttpConnection;
 }
 
-inline HttpRequest::Embryo::Embryo(HttpConnection *httpConnection, const Buffer<> *method, const Buffer<> *uri)
-	: httpConnection(httpConnection), method(method), uri(uri)
+inline HttpRequest::Embryo::Embryo(HttpConnection *httpConnection, Buffer *method, Buffer *uri, Buffer *version)
+	: mHttpConnection(httpConnection), mMethod(method), mUri(uri), mVersion(version)
 { }
+
+inline HttpConnection *HttpRequest::Embryo::httpConnection() const
+{
+	return mHttpConnection;
+}
+
+inline Buffer *HttpRequest::Embryo::method() const
+{
+	return mMethod;
+}
+
+inline Buffer *HttpRequest::Embryo::uri() const
+{
+	return mUri;
+}
+
+inline Buffer *HttpRequest::Embryo::version() const
+{
+	return mVersion;
+}
 
 }
 

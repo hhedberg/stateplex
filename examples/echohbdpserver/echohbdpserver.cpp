@@ -25,6 +25,8 @@
 #include <stateplex/net/httpserver.h>
 #include <stateplex/net/httprequest.h>
 #include <stateplex/net/hbdpserver.h>
+#include <stateplex/net/hbdpconnection.h>
+#include <stateplex/core/identityfilter.h>
 
 #include "echohbdpserver.h"
 
@@ -53,16 +55,9 @@ EchoActor::EchoActor(Stateplex::Dispatcher *dispatcher)
 
 Stateplex::HbdpConnection *EchoActor::instantiateHbdpConnection(const Stateplex::HbdpConnection::Embryo *embryo)
 {
-	return new EchoHbdpConnection(embryo);
+	Stateplex::HbdpConnection *hbdpConnection = new Stateplex::HbdpConnection(this, embryo);
+	Stateplex::IdentityFilter *identityFilter = new Stateplex::IdentityFilter(this, hbdpConnection);
+	hbdpConnection->setReceiver(identityFilter);
+
+	return hbdpConnection;
 }
-
-
-void EchoHbdpConnection::receive()
-{
-
-}
-
-EchoHbdpConnection::EchoHbdpConnection(const Stateplex::HbdpConnection::Embryo *embryo)
-	: Stateplex::HbdpConnection(embryo)
-{ }
-

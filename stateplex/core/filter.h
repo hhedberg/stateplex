@@ -1,7 +1,7 @@
 /*
  * Stateplex - A server-side actor model library.
  *
- * net/httpserver.cpp
+ * core/receiver.h
  *
  * (c) 2013 Henrik Hedberg <henrik.hedberg@innologies.fi>
  *
@@ -17,24 +17,47 @@
  * Authors: Henrik Hedberg
  */
 
-#include "httpserver.h"
-#include "httpconnection.h"
+#ifndef INCLUDED_STATEPLEX_FILTER_H
+#define INCLUDED_STATEPLEX_FILTER_H
+
+#include "receiver.h"
 
 namespace Stateplex {
 
-TcpConnection *HttpServer::instantiateTcpConnection(const TcpConnection::Embryo *embryo)
+class String;
+
+class Filter : public Receiver {
+	Receiver *mReceiver;
+
+public:
+	Filter(Receiver *receiver = 0);
+
+	Receiver *receiver() const;
+	void setReceiver(Receiver *receiver);
+};
+
+}
+
+/*** Inline implementations ***/
+
+#include "string.h"
+
+namespace Stateplex {
+
+Filter::Filter(Receiver *receiver)
+	: mReceiver(receiver)
+{ }
+
+inline Receiver *Filter::receiver() const
 {
-	TcpConnection *tcpConnection = new TcpConnection(embryo->mTcpServer->actor(), embryo);
-	HttpConnection *httpConnection = new HttpConnection(embryo->mTcpServer->actor(), this, tcpConnection);
-	tcpConnection->setReceiver(httpConnection);
-
-	return tcpConnection;
+	return mReceiver;
 }
 
-HttpRequest *HttpServer::instantiateHttpRequest(const HttpRequest::Embryo *embryo)
+inline void Filter::setReceiver(Receiver *receiver)
 {
-	/* TODO: take the path into account */
-	return mRequestFactoryMethod.invoke(embryo);
+	mReceiver = receiver;
 }
 
 }
+
+#endif

@@ -32,13 +32,4 @@ public:
 	Stateplex::HbdpConnection *instantiateHbdpConnection(const Stateplex::HbdpConnection::Embryo *embryo);
 };
 
-class EchoHbdpConnection : public Stateplex::HbdpConnection {
-
-protected:
-	virtual void receive();
-
-public:
-	EchoHbdpConnection(const Stateplex::HbdpConnection::Embryo *embryo);
-};
-
 #endif

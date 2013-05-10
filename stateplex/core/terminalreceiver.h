@@ -1,7 +1,7 @@
 /*
  * Stateplex - A server-side actor model library.
  *
- * net/httpserver.cpp
+ * core/terminalreceiver.h
  *
  * (c) 2013 Henrik Hedberg <henrik.hedberg@innologies.fi>
  *
@@ -17,24 +17,36 @@
  * Authors: Henrik Hedberg
  */
 
-#include "httpserver.h"
-#include "httpconnection.h"
+#ifndef INCLUDED_STATEPLEX_TERMINAL_RECEIVER_H
+#define INCLUDED_STATEPLEX_TERMINAL_RECEIVER_H
+
+#include "receiver.h"
 
 namespace Stateplex {
 
-TcpConnection *HttpServer::instantiateTcpConnection(const TcpConnection::Embryo *embryo)
-{
-	TcpConnection *tcpConnection = new TcpConnection(embryo->mTcpServer->actor(), embryo);
-	HttpConnection *httpConnection = new HttpConnection(embryo->mTcpServer->actor(), this, tcpConnection);
-	tcpConnection->setReceiver(httpConnection);
+class TerminalReceiver : public Object, public Receiver {
+public:
+	TerminalReceiver(Actor *actor);
+	virtual ~TerminalReceiver();
 
-	return tcpConnection;
-}
-
-HttpRequest *HttpServer::instantiateHttpRequest(const HttpRequest::Embryo *embryo)
-{
-	/* TODO: take the path into account */
-	return mRequestFactoryMethod.invoke(embryo);
-}
+	virtual void receiveEnd();
+	virtual bool receive(const String *string);
+	virtual bool receive(Buffer *buffer);
+};
 
 }
+
+/*** Inline implementations ***/
+
+namespace Stateplex {
+
+TerminalReceiver::TerminalReceiver(Actor *actor)
+	: Object(actor)
+{ }
+
+TerminalReceiver::~TerminalReceiver()
+{ }
+
+}
+
+#endif

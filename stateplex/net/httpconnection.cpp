@@ -25,123 +25,238 @@ namespace Stateplex {
 
 void HttpConnection::close()
 {
-	bool keepAlive = mKeepAlive;
-
 	if (mHttpRequest)
 		delete mHttpRequest;
 }
 
-void HttpConnection::handleReady(bool readyToRead, bool readyToWrite)
+void HttpConnection::receiveEnd()
 {
-	Size length;
-	if (readyToRead) {
-		length = read(&mInputBuffer);
-		if (hasReachedEof()) {
-			if (mHttpRequest) {
-				mHttpRequest->receiveAbort();
-				mHttpRequest = 0;
-			}
-			mKeepAlive = 0;
-			close();
-		}
-		if (length == 0)
-			return;
-
-		int found;
-		do {
-			found = process();
-		} while (found == 1);
-
-		if (found == -1) {
-			mKeepAlive = 0;
-			close();
-			return;
-		}
-
-		/* TODO: update inactivity information */
+	if (mHttpRequest) {
+		mHttpRequest->receiveAbort();
+		mHttpRequest = 0;
 	}
+	mKeepAlive = 0;
+	close();
 }
 
-int HttpConnection::process()
+bool HttpConnection::receive(const String *string)
 {
-	int found;
-	Size processed;
+	mInputBuffer.append(string);
+	return receive();
+}
+
+bool HttpConnection::receive(Buffer *buffer)
+{
+	mInputBuffer.append(buffer);
+	return receive();
+}
+
+bool HttpConnection::receive()
+{
+	ProcessResult result;
+	do {
+		result = process();
+	} while (result == PROCESS_RESULT_FOUND && mInputBuffer.length() > 0);
+
+	if (result == PROCESS_RESULT_ERROR) {
+		mKeepAlive = 0;
+		close();
+		return false;
+	} else if (result == PROCESS_RESULT_REQUEST_END) {
+		if (mKeepAlive)
+			mState = STATE_PRE_METHOD;
+		else
+			close();
+	}
+
+	/* TODO: update inactivity information */
+
+	return true;
+}
+
+HttpConnection::ProcessResult HttpConnection::process()
+{
+	ProcessResult result = PROCESS_RESULT_NOT_FOUND;
 
 	switch (mState) {
+	case STATE_PRE_METHOD:
+		if (eatSpaces())
+			return PROCESS_RESULT_NOT_FOUND;
+		mState = STATE_METHOD;
+		// No break.
 	case STATE_METHOD: {
-		found = locateRegion(' ', '\r', &mMethod);
-		if (found == 1)
-			mState = STATE_URI;
+		result = locateRegion(' ', '\r', &mMethod);
+		if (result == PROCESS_RESULT_FOUND)
+			mState = STATE_PRE_URI;
 	} break;
+	case STATE_PRE_URI:
+		if (eatSpaces())
+			return PROCESS_RESULT_NOT_FOUND;
+		mState = STATE_URI;
+		// No break;
 	case STATE_URI: {
-		found = locateRegion(' ', '\r', &mUri);
-		if (found == 1)
-			mState = STATE_VERSION;
+		result = locateRegion(' ', '\r', &mUri);
+		if (result == PROCESS_RESULT_FOUND)
+			mState = STATE_PRE_VERSION;
 	} break;
+	case STATE_PRE_VERSION:
+		if (eatSpaces())
+			return PROCESS_RESULT_NOT_FOUND;
+		mState = STATE_VERSION;
+		// No break;
 	case STATE_VERSION: {
-		Buffer<> *version;
-		found = locateRegion('\r', ' ', &version);
-		if (found == 1) {
-			HttpRequest::Embryo embryo(this, mMethod, mUri);
+		WriteBuffer *version;
+		result = locateRegion('\r', ' ', &version);
+		if (result == PROCESS_RESULT_FOUND) {
+			if (!handleVersion(version))
+				return PROCESS_RESULT_ERROR;
+			HttpRequest::Embryo embryo(this, mMethod, mUri, version);
 			mHttpRequest = mHttpServer->instantiateHttpRequest(&embryo);
+			if (!mHttpRequest)
+				mHttpRequest = new SimpleHttpRequest(&embryo, "501 Not Implemented");
+			delete mMethod;
+			delete mUri;
+			delete version;
 			mState = STATE_REQUEST_LINE_EOL;
 		}
 	} break;
-	case STATE_REQUEST_LINE_EOL:
-		/* TODO: from this on... */
-	case STATE_KEY:
-	case STATE_VALUE:
-	case STATE_HEADER_EOL:
-	case STATE_REQUEST_EOL:
-	case STATE_DATA: {
-		if (mInputBuffer.length() > mDataLeft) {
-			Buffer<> *buffer = mInputBuffer.region(0, mDataLeft);
-			processed = mHttpRequest->receiveData(buffer);
-			delete buffer;
-		} else
-			processed = mHttpRequest->receiveData(&mInputBuffer);
-		mInputBuffer.popped(processed);
-		mDataLeft -= processed;
-		if (mDataLeft == 0) {
+	case STATE_REQUEST_LINE_EOL: {
+		if (mInputBuffer.pop() != '\n')
+			return PROCESS_RESULT_ERROR;
+		result = PROCESS_RESULT_FOUND;
+		mState = STATE_PRE_KEY;
+	} break;
+	case STATE_PRE_KEY:
+		if (eatSpaces())
+			return PROCESS_RESULT_NOT_FOUND;
+		if (mInputBuffer.charAt(0) == '\r') {
+			mInputBuffer.pop();
+			result = PROCESS_RESULT_FOUND;
+			mState = STATE_HEADERS_END_EOL;
+			break;
+		}
+		mState = STATE_KEY;
+		// No break.
+	case STATE_KEY: {
+		result = locateRegion(':', '\r', &mMethod);
+		if (result == PROCESS_RESULT_FOUND)
+			mState = STATE_PRE_VALUE;
+	} break;
+	case STATE_PRE_VALUE:
+		if (eatSpaces())
+			return PROCESS_RESULT_NOT_FOUND;
+		mState = STATE_VALUE;
+		// No break;
+	case STATE_VALUE: {
+		result = locateRegion('\r', '\n', &mUri);
+		if (result == PROCESS_RESULT_FOUND) {
+			handleHeader(mMethod, mUri);
+			mHttpRequest->receiveHeader(mMethod, mUri);
+			delete mMethod;
+			delete mUri;
+			mState = STATE_HEADER_EOL;
+		}
+	} break;
+	case STATE_HEADER_EOL: {
+		if (mInputBuffer.pop() != '\n')
+			return PROCESS_RESULT_ERROR;
+		result = PROCESS_RESULT_FOUND;
+		mState = STATE_PRE_KEY;
+	} break;
+	case STATE_HEADERS_END_EOL: {
+		if (mInputBuffer.pop() != '\n')
+			return PROCESS_RESULT_ERROR;
+		result = PROCESS_RESULT_FOUND;
+		if (mHttpRequest->mDataLeft == 0) {
 			mHttpRequest->receiveEnd();
 			mHttpRequest = 0;
-			mState = STATE_METHOD;
+			result = PROCESS_RESULT_REQUEST_END;
+		} else {
+			mState = STATE_DATA;
+		}
+	} break;
+	case STATE_DATA: {
+		if (mInputBuffer.length() > mHttpRequest->mDataLeft) {
+			WriteBuffer *buffer = mInputBuffer.region(0, mHttpRequest->mDataLeft);
+			mInputBuffer.popped(mHttpRequest->mDataLeft);
+			mHttpRequest->mDataLeft = 0;
+			mHttpRequest->receiveData(buffer);
+			delete buffer;
+		} else {
+			mHttpRequest->receiveData(&mInputBuffer);
+			mHttpRequest->mDataLeft -= mInputBuffer.length();
+			mInputBuffer.poppedAll();
+		}
+		if (mHttpRequest->mDataLeft == 0) {
+			mHttpRequest->receiveEnd();
+			mHttpRequest = 0;
+			result = PROCESS_RESULT_REQUEST_END;
 		}
 	} break;
 	}
 
-	return found;
+	return result;
 }
 
-int HttpConnection::locateRegion(const char success, const char fail, Buffer<> **regionReturn)
+bool HttpConnection::eatSpaces()
 {
-	int found = locateChar(success, fail);
-	if (found == 1) {
-		Size length = mInputBuffer.offset();
+	while (mInputBuffer.length() > 0) {
+		char c = mInputBuffer.peek();
+		if (c != ' ' && c != '\t')
+			return false;
+		mInputBuffer.pop();
+	}
+
+	return true;
+}
+
+bool HttpConnection::handleVersion(Buffer *version)
+{
+	if (version->equals("HTTP/1.0")) {
+		mKeepAlive = 0;
+	} else if (version->equals("HTTP/1.1")) {
+		mKeepAlive = 1;
+	} else
+		return false;
+
+	return true;
+}
+
+void HttpConnection::handleHeader(Buffer *name, Buffer *value)
+{
+	if (name->equals("Content-Length")) {
+		String *s = value->asString();
+		mHttpRequest->mDataLeft = atoi(s->chars());
+		s->destroy(allocator());
+	} else if (name->equals("Connection")) {
+		if (value->equals("Keep-Alive"))
+			mKeepAlive = 1;
+	}
+}
+
+HttpConnection::ProcessResult HttpConnection::locateRegion(const char success, const char fail, WriteBuffer **regionReturn)
+{
+	ProcessResult result = locateChar(success, fail);
+	if (result == PROCESS_RESULT_FOUND) {
+		Size length = mInputBufferIterator.offset();
 		*regionReturn = mInputBuffer.region(0, length);
 		mInputBuffer.popped(length + 1);
 	}
-	return found;
+	return result;
 }
 
-int HttpConnection::locateChar(const char success, const char fail)
+HttpConnection::ProcessResult HttpConnection::locateChar(const char success, const char fail)
 {
-	while (mInputBuffer.left() > 0) {
-		const char c = mInputBuffer.here();
+	while (mInputBufferIterator.hasCurrent()) {
+		const char c = mInputBufferIterator.current();
 		if (c == success)
-			return 1;
+			return PROCESS_RESULT_FOUND;
 		if (c == fail)
-			return -1;
-		mInputBuffer.next();
+			return PROCESS_RESULT_ERROR;
+		mInputBufferIterator.advance();
 	}
 
-	return 0;
-}
-
-bool HttpConnection::eatChars(const char eaten)
-{
-	for (bool found = false; mInputBuffer.left() > 0 && mInputBuffer.here() == eaten; mInputBuffer.next())
-		found = true;
+	return PROCESS_RESULT_NOT_FOUND;
 }
 
 }

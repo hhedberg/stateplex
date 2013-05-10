@@ -23,6 +23,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
+#include "../core/object.h"
 #include "../core/factorymethod.h"
 #include "tcpconnection.h"
 #include "httprequest.h"
@@ -35,7 +36,7 @@ class HttpConnection;
 /**
  * The main class to implement a HTTP server.
  */
-class HttpServer {
+class HttpServer : public Object {
 	friend class HttpConnection;
 
 	TcpServer *mTcpServer;
@@ -60,7 +61,7 @@ public:
 namespace Stateplex {
 
 inline HttpServer::HttpServer(TcpServer* tcpServer)
-	: mTcpServer(tcpServer)
+	: Object(tcpServer->actor()), mTcpServer(tcpServer)
 {
 	tcpServer->setTcpConnectionFactoryMethod(this, &HttpServer::instantiateTcpConnection);
 }

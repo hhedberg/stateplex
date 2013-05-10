@@ -36,13 +36,13 @@ class EchoHttpRequest : public Stateplex::HttpRequest {
 	bool mDataReceived;
 
 protected:
-	virtual bool receiveHeader(const Stateplex::Buffer<> *name, const Stateplex::Buffer<> *value);
-	virtual Stateplex::Size receiveData(const Stateplex::Buffer<> *data);
+	virtual bool receiveHeader(Stateplex::Buffer *name, Stateplex::Buffer *value);
+	virtual bool receiveData(Stateplex::Buffer *data);
 	virtual void receiveEnd();
 	virtual void receiveAbort();
 
 public:
-	EchoHttpRequest(Stateplex::HttpConnection *connection);
+	EchoHttpRequest(const Stateplex::HttpRequest::Embryo *embryo);
 };
 
 #endif
