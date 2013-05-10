@@ -189,6 +189,12 @@ inline Array<Type> *Array<Type>::uninitialised(Allocator *allocator, Size length
 	return array;
 }
 
+/*
+ * Copies and set the length of the array
+ *
+ * @return 	allocated array length.
+ */
+
 template<typename Type>
 inline Array<Type> *Array<Type>::copy(Allocator *allocator, Type *const cArray, Size length)
 {
@@ -200,6 +206,12 @@ inline Array<Type> *Array<Type>::copy(Allocator *allocator, Type *const cArray, 
 
 	return array;
 }
+
+/*
+ * Copies the array and allocate memory.
+ *
+ * @return	allocated array memory.
+ */
 
 template<typename Type>
 inline Array<Type> *Array<Type>::copy(Allocator *allocator, Array<Type> *array)
