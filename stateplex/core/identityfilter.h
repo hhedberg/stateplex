@@ -27,8 +27,8 @@ namespace Stateplex {
 class IdentityFilter : public Object, public Filter {
 protected:
 	virtual void receiveEnd();
-	virtual void receive(const String *string);
-	virtual void receive(Buffer<> *buffer);
+	virtual bool receive(const String *string);
+	virtual bool receive(Buffer *buffer);
 
 public:
 	IdentityFilter(Actor *actor, Receiver *receiver);

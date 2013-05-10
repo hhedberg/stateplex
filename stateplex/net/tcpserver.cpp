@@ -41,7 +41,6 @@ namespace Stateplex {
 int TcpServer::createServerSocket(const struct sockaddr *address, socklen_t length)
 {
 	int fd;
-	int flags;
 
 	fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (fd == -1)

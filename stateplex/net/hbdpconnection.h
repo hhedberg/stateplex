@@ -38,8 +38,8 @@ class HbdpConnection : public Object, public Receiver, public ListItem {
 		HbdpConnection *mHbdpConnection;
 
 	protected:
-		virtual bool receiveHeader(Buffer<> *name, Buffer<> *value);
-		virtual bool receiveData(Buffer<> *data);
+		virtual bool receiveHeader(Buffer *name, Buffer *value);
+		virtual bool receiveData(Buffer *data);
 		virtual void receiveEnd();
 		virtual void receiveAbort();
 
@@ -51,7 +51,7 @@ class HbdpConnection : public Object, public Receiver, public ListItem {
 	HbdpRequest *mHbdpRequest;
 	String *mId;
 	Size32 mSerialNumber;
-	WriteBuffer<> mOut;
+	WriteBuffer mOut;
 	bool mEndReceived;
 	Receiver *mReceiver;
 
@@ -76,8 +76,8 @@ public:
 	HbdpServer *hbdpServer() const;
 	const String *id() const;
 	virtual void receiveEnd();
-	virtual void receive(const String *string);
-	virtual void receive(Buffer<> *buffer);
+	virtual bool receive(const String *string);
+	virtual bool receive(Buffer *buffer);
 	void setReceiver(Receiver *receiver);
 };
 

@@ -109,7 +109,7 @@ inline TcpConnection::TcpConnection(Actor *actor, const Embryo *embryo)
  */
 
 inline TcpConnection::Embryo::Embryo(TcpServer *server, int fd, const struct sockaddr *address, socklen_t addressLength)
-	: mTcpServer(server), mFd(fd), mAddress(address), mAddressLength(addressLength)
+	: mFd(fd), mTcpServer(server), mAddress(address), mAddressLength(addressLength)
 { }
 
 }

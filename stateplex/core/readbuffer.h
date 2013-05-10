@@ -24,7 +24,7 @@
 
 namespace Stateplex {
 
-template<Size16 blockSize> class WriteBuffer;
+template<Size16 blockSize> class GenericWriteBuffer;
 
 /**
  * Holds bytes.
@@ -40,13 +40,13 @@ template<Size16 blockSize> class WriteBuffer;
  * When constructing a new buffer, the WriteBuffer class must be used.
  */
 
-template<Size16 mBlockSize = 1024>
-class ReadBuffer : public Buffer<mBlockSize> {
-	friend class WriteBuffer<mBlockSize>;
+template<Size16 mBlockSize>
+class GenericReadBuffer : public GenericBuffer<mBlockSize> {
+	friend class GenericWriteBuffer<mBlockSize>;
 
-	ReadBuffer(Actor *actor);
+	GenericReadBuffer(Actor *actor);
 
-	void deleteBlock(typename Buffer<mBlockSize>::Block *block);
+	void deleteBlock(typename GenericBuffer<mBlockSize>::Block *block);
 
 public:
 	char peek() const;
@@ -58,6 +58,8 @@ public:
 	void poppedAll();
 };
 
+typedef GenericReadBuffer<1024> ReadBuffer;
+
 }
 
 /*** Template implementations ***/
@@ -65,14 +67,14 @@ public:
 namespace Stateplex {
 
 template<Size16 mBlockSize>
-ReadBuffer<mBlockSize>::ReadBuffer(Actor *actor)
-	: Buffer<mBlockSize>(actor)
+GenericReadBuffer<mBlockSize>::GenericReadBuffer(Actor *actor)
+	: GenericBuffer<mBlockSize>(actor)
 { }
 
 template<Size16 mBlockSize>
-void ReadBuffer<mBlockSize>::deleteBlock(typename Buffer<mBlockSize>::Block *block)
+void GenericReadBuffer<mBlockSize>::deleteBlock(typename GenericBuffer<mBlockSize>::Block *block)
 {
-	for (typename Buffer<mBlockSize>::Iterator *iterator = this->mIterators.first(); iterator; iterator = this->mIterators.next(iterator)) {
+	for (typename GenericBuffer<mBlockSize>::Iterator *iterator = this->mIterators.first(); iterator; iterator = this->mIterators.next(iterator)) {
 		iterator->deleteBlock(block);
 	}
 	block->destroy(this->allocator());
@@ -82,7 +84,7 @@ void ReadBuffer<mBlockSize>::deleteBlock(typename Buffer<mBlockSize>::Block *blo
  * Returns the first byte in the buffer.
  */
 template<Size16 mBlockSize>
-char ReadBuffer<mBlockSize>::peek() const
+char GenericReadBuffer<mBlockSize>::peek() const
 {
 	return *popPointer();
 }
@@ -94,7 +96,7 @@ char ReadBuffer<mBlockSize>::peek() const
  */
 
 template<Size16 mBlockSize>
-char ReadBuffer<mBlockSize>::pop()
+char GenericReadBuffer<mBlockSize>::pop()
 {
 	char c = *popPointer();
 	popped(1);
@@ -109,9 +111,9 @@ char ReadBuffer<mBlockSize>::pop()
  */
 
 template<Size16 mBlockSize>
-const char *ReadBuffer<mBlockSize>::popPointer() const
+const char *GenericReadBuffer<mBlockSize>::popPointer() const
 {
-	typename Buffer<mBlockSize>::Block *block = this->mBlocks.first();
+	typename GenericBuffer<mBlockSize>::Block *block = this->mBlocks.first();
 	if (!block)
 		return 0;
 
@@ -127,9 +129,9 @@ const char *ReadBuffer<mBlockSize>::popPointer() const
  */
 
 template<Size16 mBlockSize>
-Size16 ReadBuffer<mBlockSize>::popLength() const
+Size16 GenericReadBuffer<mBlockSize>::popLength() const
 {
-	typename Buffer<mBlockSize>::Block *block = this->mBlocks.first();
+	typename GenericBuffer<mBlockSize>::Block *block = this->mBlocks.first();
 	if (!block)
 		return 0;
 
@@ -143,14 +145,14 @@ Size16 ReadBuffer<mBlockSize>::popLength() const
  */
 
 template<Size16 mBlockSize>
-void ReadBuffer<mBlockSize>::popped(Size16 length)
+void GenericReadBuffer<mBlockSize>::popped(Size16 length)
 {
 	if (length > this->mSize)
 		length = this->mSize;
 
 	this->mSize -= length;
-	for (ListIterator<typename Buffer<mBlockSize>::Block> iterator(&this->mBlocks); iterator.hasCurrent(); iterator.subsequent()) {
-		typename Buffer<mBlockSize>::Block *block = iterator.current();
+	for (ListIterator<typename GenericBuffer<mBlockSize>::Block> iterator(&this->mBlocks); iterator.hasCurrent(); iterator.subsequent()) {
+		typename GenericBuffer<mBlockSize>::Block *block = iterator.current();
 		Size16 size = block->size();
 		if (size > length) {
 			block->popped(length);
@@ -164,7 +166,7 @@ void ReadBuffer<mBlockSize>::popped(Size16 length)
 }
 
 template<Size16 mBlockSize>
-void ReadBuffer<mBlockSize>::poppedAll()
+void GenericReadBuffer<mBlockSize>::poppedAll()
 {
 	popped(this->mSize);
 }

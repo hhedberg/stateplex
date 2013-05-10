@@ -30,11 +30,16 @@ namespace Stateplex {
 void ReceiverSource::handleReady(bool readyToRead, bool readyToWrite)
 {
 	if (readyToRead) {
-		WriteBuffer<> buffer(actor());
+		WriteBuffer buffer(actor());
 		buffer.ensurePushLength(buffer.blockSize());
 		ssize_t size = ::read(fd(), buffer.pushPointer(), buffer.pushLength());
 		if (size == -1) {
-			if (errno != EAGAIN && errno != EWOULDBLOCK) {
+			if (errno == ECONNRESET) {
+				mReadEof = true;
+				mWriteEof = true;
+				// TODO: Clear mWriteBuffer
+				mReceiver->receiveEnd();
+		} else if (errno != EAGAIN && errno != EWOULDBLOCK) {
 				perror("read");
 				abort();
 			}
@@ -44,6 +49,7 @@ void ReceiverSource::handleReady(bool readyToRead, bool readyToWrite)
 		} else {
 			buffer.pushed(size);
 			mReceiver->receive(&buffer);
+			// TODO: If receive() returns false, do not read any more
 		}
 	}
 
@@ -56,21 +62,27 @@ void ReceiverSource::receiveEnd()
 	mWriteEof = true;
 }
 
-void ReceiverSource::receive(const char *data, Size length)
+bool ReceiverSource::receive(const char *data, Size length)
 {
+	if (mWriteEof)
+		return false;
+
 	if (mWriteBuffer) {
 		mWriteBuffer->append(data, length);
-		return;
+		return true;
 	}
 
 	while (1) {
 		ssize_t size = ::write(fd(), data, length);
 		if (size == (ssize_t)length)
-			return;
+			return true;
 
 		if (size == -1) {
 			if (errno == EAGAIN || errno == EWOULDBLOCK) {
 				break;
+			} else if (errno == ECONNRESET) {
+				mWriteEof = true;
+				return false;
 			} else {
 				perror("read");
 				abort();
@@ -80,28 +92,33 @@ void ReceiverSource::receive(const char *data, Size length)
 		length -= size;
 	};
 
-	mWriteBuffer = new WriteBuffer<>(actor());
+	mWriteBuffer = new WriteBuffer(actor());
 	mWriteBuffer->append(data, length);
+
+	return true;
 }
 
-void ReceiverSource::receive(const String *string)
+bool ReceiverSource::receive(const String *string)
 {
-	receive(string->chars(), string->length());
+	return receive(string->chars(), string->length());
 }
 
-void ReceiverSource::receive(Buffer<> *buffer)
+bool ReceiverSource::receive(Buffer *buffer)
 {
 	if (mWriteBuffer) {
 		mWriteBuffer->append(buffer);
-		return;
+		return true;
 	}
 
-	Buffer<>::Iterator iterator(buffer);
+	Buffer::Iterator iterator(buffer);
 	Size length;
 	while ((length = iterator.charBlockLength()) > 0) {
-		receive(iterator.charBlock(), length);
+		if (!receive(iterator.charBlock(), length))
+			return false;
 		iterator.advance(length);
 	}
+
+	return true;
 }
 
 }

@@ -42,7 +42,7 @@ class HttpRequest : public Object {
 	friend class HttpConnection;
 
 	HttpConnection *mHttpConnection;
-	WriteBuffer<> mData;
+	WriteBuffer mData;
 	Size mDataLeft;
 
 	int mStatusSent : 1;
@@ -51,12 +51,12 @@ protected:
 	/**
 	 * Receives an HTTP header belonging to the request.
 	 */
-	virtual bool receiveHeader(Buffer<> *name, Buffer<> *value) = 0;
+	virtual bool receiveHeader(Buffer *name, Buffer *value) = 0;
 
 	/**
 	 * Receives an HTTP message body content belonging to the request.
 	 */
-	virtual bool receiveData(Buffer<> *data) = 0;
+	virtual bool receiveData(Buffer *data) = 0;
 
 	/**
 	 * Indicates that the full HTTP request is now received.
@@ -77,17 +77,17 @@ protected:
 public:
 	class Embryo {
 		HttpConnection *mHttpConnection;
-		Buffer<> *mMethod;
-		Buffer<> *mUri;
-		Buffer<> *mVersion;
+		Buffer *mMethod;
+		Buffer *mUri;
+		Buffer *mVersion;
 
 	public:
-		Embryo(HttpConnection *httpConnection, Buffer<> *method, Buffer<> *uri, Buffer<> *version);
+		Embryo(HttpConnection *httpConnection, Buffer *method, Buffer *uri, Buffer *version);
 
 		HttpConnection *httpConnection() const;
-		Buffer<> *method() const;
-		Buffer<> *uri() const;
-		Buffer<> *version() const;
+		Buffer *method() const;
+		Buffer *uri() const;
+		Buffer *version() const;
 	};
 
 	HttpRequest(const Embryo *embryo);
@@ -96,11 +96,11 @@ public:
 	HttpConnection *httpConnection() const;
 
 	void sendStatus(const String *status);
-	void sendStatus(Buffer<> *status);
+	void sendStatus(Buffer *status);
 	void sendHeader(const String *name, const String *value);
-	void sendHeader(Buffer<> *name, Buffer<> *value);
+	void sendHeader(Buffer *name, Buffer *value);
 	void sendData(const String *data);
-	void sendData(Buffer<> *data);
+	void sendData(Buffer *data);
 	void sendEnd();
 };
 
@@ -109,8 +109,8 @@ class SimpleHttpRequest : public HttpRequest {
 	String *mBody;
 
 protected:
-	virtual bool receiveHeader(Buffer<> *name, Buffer<> *value);
-	virtual bool receiveData(Buffer<> *data);
+	virtual bool receiveHeader(Buffer *name, Buffer *value);
+	virtual bool receiveData(Buffer *data);
 	virtual void receiveEnd();
 	virtual void receiveAbort();
 
@@ -155,7 +155,7 @@ inline HttpConnection *HttpRequest::httpConnection() const
 	return mHttpConnection;
 }
 
-inline HttpRequest::Embryo::Embryo(HttpConnection *httpConnection, Buffer<> *method, Buffer<> *uri, Buffer<> *version)
+inline HttpRequest::Embryo::Embryo(HttpConnection *httpConnection, Buffer *method, Buffer *uri, Buffer *version)
 	: mHttpConnection(httpConnection), mMethod(method), mUri(uri), mVersion(version)
 { }
 
@@ -164,17 +164,17 @@ inline HttpConnection *HttpRequest::Embryo::httpConnection() const
 	return mHttpConnection;
 }
 
-inline Buffer<> *HttpRequest::Embryo::method() const
+inline Buffer *HttpRequest::Embryo::method() const
 {
 	return mMethod;
 }
 
-inline Buffer<> *HttpRequest::Embryo::uri() const
+inline Buffer *HttpRequest::Embryo::uri() const
 {
 	return mUri;
 }
 
-inline Buffer<> *HttpRequest::Embryo::version() const
+inline Buffer *HttpRequest::Embryo::version() const
 {
 	return mVersion;
 }
