@@ -4,7 +4,6 @@
 #include "jsonitem.h"
 #include "jsonnumber.h"
 #include "jsonstring.h"
-#include "jsondata.h"
 #include "jsonbool.h"
 #include "jsondouble.h"
 #include <string>
