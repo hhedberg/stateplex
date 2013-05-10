@@ -21,7 +21,7 @@ Step three
 Explicitly include file gtest/gtest.h, from your local drive where you have installed it, to all your testcase files: <testcase>.cpp and runalltests.cpp.
 	
 Step four
-    ---------
+---------
 Declare a new test class to a file <testcase>.cpp for similar set of tests e.g. class ListTest, and  inherit it publicly from the Google test framework, testing::Test, e.g.  class ListTest : public testing::Test.
     
 Step five
