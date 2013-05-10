@@ -138,8 +138,8 @@ inline void JsonDbActor::JsonMessage::handle(Actor *sender, JsonDbActor *receive
 		test = dynamic_cast<JsonObject *>(mResult)->get(tmp);
 	}
 	
-	mResult = dynamic_cast<JsonItem *>(test);
-	
+	mResult = dynamic_cast<JsonItem *>(test);	
+
 	if(test == NULL) {
 		invokeCallback(NULL);
 	} else {

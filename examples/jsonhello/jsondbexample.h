@@ -61,7 +61,7 @@ void JsonDbExample::initDb(JsonDbActor *jsonActor, JsonClient *client, JsonAdapt
 	client->set("Employee/Michael/Age/", "54", root, &JsonClient::showResult);
 	client->get("Employee/John/Age/", root, &JsonClient::showResult);
 	client->get("Employee/John/BoolTest/", root, &JsonClient::showResult);
-	
+
 	client->add("Employee/", new JsonObject(jsonActor, "Stanley"), root, &JsonClient::showResult);
 	client->add("Employee/Stanley/", new JsonDouble(jsonActor, "Length", 172.43), root, &JsonClient::showResult);
 	
@@ -69,8 +69,8 @@ void JsonDbExample::initDb(JsonDbActor *jsonActor, JsonClient *client, JsonAdapt
 	client->set("Employee/Michael/Age/", "14", root, &JsonClient::showResult);
 	client->add("Employee/Stanley/", new JsonString(jsonActor, "Beverage", "Milk"), root, &JsonClient::showResult);
 	client->set("Employee/Stanley/Beverage/", "Water", root, &JsonClient::showResult); 
-	client->set("Employee/Michael/Age/", "12", root, &JsonClient::showResult);
-	client->get("Employee/John/Age/", root, &JsonClient::showResult);
+	client->set("Employee/John/Age/", "12.12", root, &JsonClient::showResult);
+	client->set("Employee/John/BoolTest/", "false", root, &JsonClient::showResult);
 	
 }
 

@@ -46,6 +46,8 @@ private:
 	void tokenizepath(const std::string& str, std::vector<std::string>& tokens, const char delimiter = '/');
 	bool isInteger(Stateplex::String *s);
 	int toInteger(Stateplex::String *s);
+	bool isDouble(Stateplex::String *str);
+	double toDouble(Stateplex::String *str);
 	
 	Stateplex::List<JsonItem> *mItems;
 };

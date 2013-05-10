@@ -257,11 +257,29 @@ JsonObject *JsonObject::set(Stateplex::String *path, Stateplex::String *paramete
 			if(isInteger(parameter)) {
 				dynamic_cast<JsonNumber *>(test)->setValue(toInteger(parameter));
 			}
+
 			break;
 		
 		case JSON_OBJECT:
 			dynamic_cast<JsonObject *>(test)->setKey(parameter);
-		break;
+
+			break;
+
+		case JSON_BOOL:
+			if(strcmp(parameter->chars(), "true") == 0) {
+				dynamic_cast<JsonBool *>(test)->setValue(true);
+			} else if(strcmp(parameter->chars(), "false") == 0) {
+				dynamic_cast<JsonBool *>(test)->setValue(false);
+			}
+
+			break;
+
+		case JSON_DOUBLE:
+			if(isDouble(parameter)) {
+				dynamic_cast<JsonDouble *>(test)->setValue(toDouble(parameter));
+			}
+				
+			break;
 		
 		default:
 			return NULL;
@@ -371,6 +389,26 @@ int JsonObject::toInteger(Stateplex::String *str)
 	
 	return value;
 }
+
+bool JsonObject::isDouble(Stateplex::String *str)
+{
+	bool isDouble = false;
+	const char *s = str->chars();
+
+	if(strtod(s, NULL)) {
+		isDouble = true;
+	}
+
+	return isDouble;
+}
+
+double JsonObject::toDouble(Stateplex::String *str)
+{
+	double value = strtod(str->chars(), NULL);
+
+	return value;
+}
+
 
 /**
  * Increases the reference count by one.
