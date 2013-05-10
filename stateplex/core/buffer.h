@@ -160,6 +160,12 @@ typedef GenericBuffer<1024> Buffer;
 
 namespace Stateplex {
 
+/**
+ * Function that allocates a block.
+ *
+ * @param *allocator	pointer to Allocator.
+ */
+
 template<Size16 mBlockSize>
 GenericBuffer<mBlockSize>::Block::Block(Allocator *allocator)
 	: mStart(0), mEnd(0)
@@ -169,12 +175,21 @@ GenericBuffer<mBlockSize>::Block::Block(Allocator *allocator)
 	mBytes->mStart = mBytes->mEnd = 0;
 }
 
+/**
+ * Allocates a specific block and increase reference count.
+ */
+
 template<Size16 mBlockSize>
 GenericBuffer<mBlockSize>::Block::Block(Allocator *allocator, Block *block)
 	: mBytes(block->mBytes), mStart(block->mStart), mEnd(block->mEnd)
 {
 	mBytes->mReferenceCount++;
 }
+
+/**
+ * Function that allocates a specific block size
+ * and increase reference count.
+ */
 
 template<Size16 mBlockSize>
 GenericBuffer<mBlockSize>::Block::Block(Allocator *allocator, Block *block, Size16 offset, Size16 length)
@@ -184,7 +199,7 @@ GenericBuffer<mBlockSize>::Block::Block(Allocator *allocator, Block *block, Size
 }
 
 /**
- * Destroys the allocated block when refernce count decreases to 0.
+ * Deallocate the allocated block when refernce count decreases to 0.
  */
 
 template<Size16 mBlockSize>
@@ -259,6 +274,13 @@ char *GenericBuffer<mBlockSize>::Block::pointer(Size16 offset) const
 	return reinterpret_cast<char *>(mBytes) + sizeof(Bytes) + mStart + offset;
 }
 
+/**
+ * Returns a pointer to a specified place in block
+ * that has been given as parameter.
+ * 
+ * @return	pointer to return.
+ */
+
 template<Size16 mBlockSize>
 char *GenericBuffer<mBlockSize>::Block::rawPointer(Size16 offset) const
 {
@@ -330,7 +352,6 @@ void GenericBuffer<mBlockSize>::Block::copyTo(char *cString, Size16 offset, Size
 /**
  * This function takes a value and adds it to a variable that represents the
  * blocks last address space. Also this value is added to the buffer size.
- * 
  */
 
 template<Size16 mBlockSize>
@@ -394,10 +415,6 @@ typename GenericBuffer<mBlockSize>::Block *GenericBuffer<mBlockSize>::blockByOff
 
 	return 0;
 }
-
-/*
- *
- */
 
 template<Size16 mBlockSize>
 Size GenericBuffer<mBlockSize>::blockOffset(Block *block)
@@ -564,6 +581,8 @@ int GenericBuffer<mBlockSize>::compare(const char *cString, Size length) const
 
 /*
  * Compares this string chars to string length.
+ *
+ * @param *string	chars to be compared.
  */
 
 template<Size16 mBlockSize>
@@ -728,6 +747,7 @@ Size16 GenericBuffer<mBlockSize>::blockSize() const
 }
 
 /**
+ * Initialize new instance of Iterator. 
  * Add block at the end of buffer.
  */
 
@@ -739,7 +759,7 @@ GenericBuffer<mBlockSize>::Iterator::Iterator(GenericBuffer<mBlockSize> *buffer)
 }
 
 /**
- * Destructor function.
+ * Default destructor function.
  */
 
 template<Size16 mBlockSize>
@@ -793,6 +813,8 @@ void GenericBuffer<mBlockSize>::Iterator::advance(Size length)
 
 /*
  * Gets current position of the block.
+ *
+ * @return	current start of the block.
  */
 
 template<Size16 mBlockSize>
@@ -818,7 +840,7 @@ Size GenericBuffer<mBlockSize>::Iterator::charBlockLength()
 }
 
 /**
- * Returns pointer to block position.
+ * Returns rawPointer to block position.
  */
 
 template<Size16 mBlockSize>
@@ -841,7 +863,9 @@ GenericBuffer<mBlockSize> *GenericBuffer<mBlockSize>::Iterator::buffer() const
 }
 
 /**
- * Returns the current position of block.
+ * Returns the current position of block end.
+ *
+ * @return 	current end of the block.
  */
 
 template<Size16 mBlockSize>
@@ -864,7 +888,8 @@ char GenericBuffer<mBlockSize>::Iterator::current()
 }
 
 /**
- * Delete blocks if the value is not equal to 0.
+ * Delete blocks if the value is different from 0
+ * and returns the start or the end of block.
  */
 
 template<Size16 mBlockSize>

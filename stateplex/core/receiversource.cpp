@@ -28,7 +28,7 @@
 namespace Stateplex {
 
 /*
- * Handles ready, read and write to buffer. 
+ *  
  */
 
 void ReceiverSource::handleReady(bool readyToRead, bool readyToWrite)
@@ -72,6 +72,8 @@ void ReceiverSource::receiveEnd()
 
 /*
  * Receives character data of size length and writes to buffer.
+ *
+ * @param length	data length to be received.
  */
 
 bool ReceiverSource::receive(const char *data, Size length)
@@ -109,6 +111,12 @@ bool ReceiverSource::receive(const char *data, Size length)
 
 	return true;
 }
+
+/*
+ * Receives data and writes to target string.
+ *
+ * @param *string	pointer to string.
+ */
 
 bool ReceiverSource::receive(const String *string)
 {
