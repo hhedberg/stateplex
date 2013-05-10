@@ -4,8 +4,8 @@ Here are all the test cases that have been used for the Stateplex library.
 
 First, you must create a folder to this folder. After that place your module's tests in to the folder you created. If you want you can sort out your tests by placing them in to different folders.
 
-How to write new test cases for Google testing (see http://code.google.com/p/googletest/ for more details):
-=======
+How to write new test cases
+------
 
     1. Edit your configure file and set variable gtest_dir to point to your installation of Google unit testing framework. e.g. gtest_dir=/home/user/gtest/gtest-1.6.0/src
 
@@ -26,5 +26,7 @@ How to write new test cases for Google testing (see http://code.google.com/p/goo
     9. For sharing resources between several tests, two static void functions are provided: void static SetUpTestCases(){} and void static TearDownTestCases(){}. SetUpTestCases() is for declaring shared variables, which are declared in the beginning of the test case and not deleted in between different tests. TeadDownTestCases() is for doing cleaning up such as deleting dynamically created memory. It is done only in the end of the test case.
 
     10. make test and run your test from build folder.
+
+    11.  For more details see http://code.google.com/p/googletest/ for more details
 
 
