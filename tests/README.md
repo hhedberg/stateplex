@@ -1,4 +1,5 @@
-# Googletest Tests
+Googletest Tests
+================
 
 Here are all the test cases that have been used for the Stateplex library.
 
