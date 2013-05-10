@@ -21,14 +21,14 @@
 
 namespace Stateplex {
 
-bool HbdpConnection::HbdpRequest::receiveHeader(Buffer<> *name, Buffer<> *value)
+bool HbdpConnection::HbdpRequest::receiveHeader(Buffer *name, Buffer *value)
 {
 	return true;
 }
 
-bool HbdpConnection::HbdpRequest::receiveData(Buffer<> *data)
+bool HbdpConnection::HbdpRequest::receiveData(Buffer *data)
 {
-	mHbdpConnection->sendToDownstream(data);
+	mHbdpConnection->mReceiver->receive(data);
 	return true;
 }
 
@@ -87,31 +87,35 @@ HbdpServer *HbdpConnection::hbdpServer() const
 	return mHbdpServer;
 }
 
-void HbdpConnection::receiveDrainedFromDownstream()
+void HbdpConnection::receiveEnd()
 {
 	// TODO
 }
 
-void HbdpConnection::receiveFromDownstream(const char *data, Size length)
+bool HbdpConnection::receive(const String *string)
 {
 	if (!mHbdpRequest || !mEndReceived) {
-		mOut.append(data);
-		return;
+		mOut.append(string);
+		return true;
 	}
 
-	mHbdpRequest->sendData(data, length);
+	mHbdpRequest->sendData(string);
 	endRequest();
+
+	return true;
 }
 
-void HbdpConnection::receiveFromDownstream(Buffer<> *buffer)
+bool HbdpConnection::receive(Buffer *buffer)
 {
 	if (!mHbdpRequest || !mEndReceived) {
 		mOut.append(buffer);
-		return;
+		return true;
 	}
 
 	mHbdpRequest->sendData(buffer);
 	endRequest();
+
+	return true;
 }
 
 }

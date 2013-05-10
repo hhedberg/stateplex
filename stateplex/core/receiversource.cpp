@@ -22,32 +22,34 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "upstreamsource.h"
+#include "receiversource.h"
 #include "writebuffer.h"
 
 namespace Stateplex {
 
-/*
- * Handles ready, read and write to buffer. 
- */
-
-void UpstreamSource::handleReady(bool readyToRead, bool readyToWrite)
+void ReceiverSource::handleReady(bool readyToRead, bool readyToWrite)
 {
 	if (readyToRead) {
-		WriteBuffer<> buffer(actor());
+		WriteBuffer buffer(actor());
 		buffer.ensurePushLength(buffer.blockSize());
 		ssize_t size = ::read(fd(), buffer.pushPointer(), buffer.pushLength());
 		if (size == -1) {
-			if (errno != EAGAIN && errno != EWOULDBLOCK) {
+			if (errno == ECONNRESET) {
+				mReadEof = true;
+				mWriteEof = true;
+				// TODO: Clear mWriteBuffer
+				mReceiver->receiveEnd();
+		} else if (errno != EAGAIN && errno != EWOULDBLOCK) {
 				perror("read");
 				abort();
 			}
 		} else if (size == 0) {
 			mReadEof = true;
-			sendDrainedToDownstream();
+			mReceiver->receiveEnd();
 		} else {
 			buffer.pushed(size);
-			sendToDownstream(&buffer);
+			mReceiver->receive(&buffer);
+			// TODO: If receive() returns false, do not read any more
 		}
 	}
 
@@ -55,34 +57,32 @@ void UpstreamSource::handleReady(bool readyToRead, bool readyToWrite)
 	}
 }
 
-/*
- * Receives drained from Downstream.
- */
-
-void UpstreamSource::receiveDrainedFromDownstream()
+void ReceiverSource::receiveEnd()
 {
 	mWriteEof = true;
 }
 
-/*
- * Receives character data of size length and writes to buffer.
- */
-
-void UpstreamSource::receiveFromDownstream(const char *data, Size length)
+bool ReceiverSource::receive(const char *data, Size length)
 {
+	if (mWriteEof)
+		return false;
+
 	if (mWriteBuffer) {
 		mWriteBuffer->append(data, length);
-		return;
+		return true;
 	}
 
 	while (1) {
 		ssize_t size = ::write(fd(), data, length);
 		if (size == (ssize_t)length)
-			return;
+			return true;
 
 		if (size == -1) {
 			if (errno == EAGAIN || errno == EWOULDBLOCK) {
 				break;
+			} else if (errno == ECONNRESET) {
+				mWriteEof = true;
+				return false;
 			} else {
 				perror("read");
 				abort();
@@ -92,27 +92,33 @@ void UpstreamSource::receiveFromDownstream(const char *data, Size length)
 		length -= size;
 	};
 
-	mWriteBuffer = new WriteBuffer<>(actor());
+	mWriteBuffer = new WriteBuffer(actor());
 	mWriteBuffer->append(data, length);
+
+	return true;
 }
 
-/*
- * Receives pointer buffer and writes to buffer.
- */
+bool ReceiverSource::receive(const String *string)
+{
+	return receive(string->chars(), string->length());
+}
 
-void UpstreamSource::receiveFromDownstream(Buffer<> *buffer)
+bool ReceiverSource::receive(Buffer *buffer)
 {
 	if (mWriteBuffer) {
 		mWriteBuffer->append(buffer);
-		return;
+		return true;
 	}
 
-	Buffer<>::Iterator iterator(buffer);
+	Buffer::Iterator iterator(buffer);
 	Size length;
 	while ((length = iterator.charBlockLength()) > 0) {
-		receiveFromDownstream(iterator.charBlock(), length);
+		if (!receive(iterator.charBlock(), length))
+			return false;
 		iterator.advance(length);
 	}
+
+	return true;
 }
 
 }

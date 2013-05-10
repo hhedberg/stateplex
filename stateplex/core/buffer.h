@@ -29,8 +29,8 @@ namespace Stateplex {
 
 class Allocator;
 class String;
-template<Size16 blockSize> class ReadBuffer;
-template<Size16 blockSize> class WriteBuffer;
+template<Size16 blockSize> class GenericReadBuffer;
+template<Size16 blockSize> class GenericWriteBuffer;
 
 /**
  * Holds bytes.
@@ -46,17 +46,17 @@ template<Size16 blockSize> class WriteBuffer;
  * When constructing a new buffer, the WriteBuffer class must be used.
  */
 
-template<Size16 mBlockSize = 1024>
-class Buffer : public Object {
-	friend class ReadBuffer<mBlockSize>;
-	friend class WriteBuffer<mBlockSize>;
+template<Size16 mBlockSize>
+class GenericBuffer : public Object {
+	friend class GenericReadBuffer<mBlockSize>;
+	friend class GenericWriteBuffer<mBlockSize>;
 
 	class Block;
 public:
 	class Iterator : public ListItem {
-		friend class ReadBuffer<mBlockSize>;
+		friend class GenericReadBuffer<mBlockSize>;
 
-		Buffer<mBlockSize> *mBuffer;
+		GenericBuffer<mBlockSize> *mBuffer;
 		Block *mBlock;
 		Size16 mPosition;
 
@@ -64,14 +64,14 @@ public:
 		void deleteBlock(Block *block);
 
 	public:
-		Iterator(Buffer<mBlockSize> *buffer);
+		Iterator(GenericBuffer<mBlockSize> *buffer);
 		~Iterator();
 
 		void advance(Size length = 1);
 		Size offset();
 		Size charBlockLength();
 		const char *charBlock();
-		Buffer<mBlockSize> *buffer() const;
+		GenericBuffer<mBlockSize> *buffer() const;
 		bool hasCurrent();
 		char current();
 	};
@@ -116,11 +116,11 @@ private:
 	Size mSize;
 	List<Iterator> mIterators;
 
-	Buffer(Actor *actor);
+	GenericBuffer(Actor *actor);
 
 	Block *blockByOffset(Size *offset);
 	Size blockOffset(Block *block);
-	Size doSplit(char delimiter, WriteBuffer<mBlockSize> **elements, Size maxElements);
+	Size doSplit(char delimiter, GenericWriteBuffer<mBlockSize> **elements, Size maxElements);
 
 public:
 	String *asString() const;
@@ -130,21 +130,23 @@ public:
 	int compare(const char *cString) const;
 	int compare(const char *cString, Size length) const;
 	int compare(const String *string) const;
-	int compare(const Buffer *buffer) const;
+	int compare(const GenericBuffer *buffer) const;
 	bool equals(const char *cString) const;
 	bool equals(const char *cString, Size length) const;
 	bool equals(const String *string) const;
-	bool equals(const Buffer *buffer) const;
+	bool equals(const GenericBuffer *buffer) const;
 	Size length() const;
 	Size offsetOf(char c, Size fromOffset = 0);
 
-	WriteBuffer<mBlockSize> *region(Size offset, Size length);
-	void region(Size offset, Size length, WriteBuffer<mBlockSize> *buffer);
-	Array<WriteBuffer<mBlockSize> *> *split(char delimiter, Size maxElements);
-	Size split(char delimiter, Array<WriteBuffer<mBlockSize> *> *elements);
+	GenericWriteBuffer<mBlockSize> *region(Size offset, Size length);
+	void region(Size offset, Size length, GenericWriteBuffer<mBlockSize> *buffer);
+	Array<GenericWriteBuffer<mBlockSize> *> *split(char delimiter, Size maxElements);
+	Size split(char delimiter, Array<GenericWriteBuffer<mBlockSize> *> *elements);
 
 	Size16 blockSize() const;
 };
+
+typedef GenericBuffer<1024> Buffer;
 
 }
 
@@ -165,7 +167,7 @@ namespace Stateplex {
  */
 
 template<Size16 mBlockSize>
-Buffer<mBlockSize>::Block::Block(Allocator *allocator)
+GenericBuffer<mBlockSize>::Block::Block(Allocator *allocator)
 	: mStart(0), mEnd(0)
 {
 	mBytes = reinterpret_cast<Bytes *>(allocator->allocate(sizeof(Bytes) + mBlockSize));
@@ -179,7 +181,7 @@ Buffer<mBlockSize>::Block::Block(Allocator *allocator)
  */
 
 template<Size16 mBlockSize>
-Buffer<mBlockSize>::Block::Block(Allocator *allocator, Block *block)
+GenericBuffer<mBlockSize>::Block::Block(Allocator *allocator, Block *block)
 	: mBytes(block->mBytes), mStart(block->mStart), mEnd(block->mEnd)
 {
 	mBytes->mReferenceCount++;
@@ -191,7 +193,7 @@ Buffer<mBlockSize>::Block::Block(Allocator *allocator, Block *block)
  */
 
 template<Size16 mBlockSize>
-Buffer<mBlockSize>::Block::Block(Allocator *allocator, Block *block, Size16 offset, Size16 length)
+GenericBuffer<mBlockSize>::Block::Block(Allocator *allocator, Block *block, Size16 offset, Size16 length)
 	: mBytes(block->mBytes), mStart(block->mStart + offset), mEnd(block->mStart + offset + length)
 {
 	mBytes->mReferenceCount++;
@@ -202,7 +204,7 @@ Buffer<mBlockSize>::Block::Block(Allocator *allocator, Block *block, Size16 offs
  */
 
 template<Size16 mBlockSize>
-void Buffer<mBlockSize>::Block::destroy(Allocator *allocator)
+void GenericBuffer<mBlockSize>::Block::destroy(Allocator *allocator)
 {
 	remove();
 	mBytes->mReferenceCount--;
@@ -219,7 +221,7 @@ void Buffer<mBlockSize>::Block::destroy(Allocator *allocator)
  */
 
 template<Size16 mBlockSize>
-Size16 Buffer<mBlockSize>::Block::start() const
+Size16 GenericBuffer<mBlockSize>::Block::start() const
 {
 	return mStart;
 }
@@ -231,7 +233,7 @@ Size16 Buffer<mBlockSize>::Block::start() const
  */
 
 template<Size16 mBlockSize>
-Size16 Buffer<mBlockSize>::Block::end() const
+Size16 GenericBuffer<mBlockSize>::Block::end() const
 {
 	return mEnd;
 }
@@ -243,7 +245,7 @@ Size16 Buffer<mBlockSize>::Block::end() const
  */
 
 template<Size16 mBlockSize>
-char *Buffer<mBlockSize>::Block::startPointer() const
+char *GenericBuffer<mBlockSize>::Block::startPointer() const
 {
 	return reinterpret_cast<char *>(mBytes) + sizeof(Bytes) + mStart;
 }
@@ -255,7 +257,7 @@ char *Buffer<mBlockSize>::Block::startPointer() const
  */
 
 template<Size16 mBlockSize>
-char *Buffer<mBlockSize>::Block::endPointer() const
+char *GenericBuffer<mBlockSize>::Block::endPointer() const
 {
 	return reinterpret_cast<char *>(mBytes) + sizeof(Bytes) + mEnd;
 }
@@ -267,7 +269,7 @@ char *Buffer<mBlockSize>::Block::endPointer() const
  */
 
 template<Size16 mBlockSize>
-char *Buffer<mBlockSize>::Block::pointer(Size16 offset) const
+char *GenericBuffer<mBlockSize>::Block::pointer(Size16 offset) const
 {
 	return reinterpret_cast<char *>(mBytes) + sizeof(Bytes) + mStart + offset;
 }
@@ -279,7 +281,7 @@ char *Buffer<mBlockSize>::Block::pointer(Size16 offset) const
  */
 
 template<Size16 mBlockSize>
-char *Buffer<mBlockSize>::Block::rawPointer(Size16 offset) const
+char *GenericBuffer<mBlockSize>::Block::rawPointer(Size16 offset) const
 {
 	return reinterpret_cast<char *>(mBytes) + sizeof(Bytes) + offset;
 }
@@ -291,7 +293,7 @@ char *Buffer<mBlockSize>::Block::rawPointer(Size16 offset) const
  */
 
 template<Size16 mBlockSize>
-Size16 Buffer<mBlockSize>::Block::size() const
+Size16 GenericBuffer<mBlockSize>::Block::size() const
 {
 	return mEnd - mStart;
 }
@@ -303,7 +305,7 @@ Size16 Buffer<mBlockSize>::Block::size() const
  */
 
 template<Size16 mBlockSize>
-Size16 Buffer<mBlockSize>::Block::room() const
+Size16 GenericBuffer<mBlockSize>::Block::room() const
 {
 	return mEnd == mBytes->mEnd ? mBlockSize - mEnd : 0;
 }
@@ -313,7 +315,7 @@ Size16 Buffer<mBlockSize>::Block::room() const
  */
 
 template<Size16 mBlockSize>
-int Buffer<mBlockSize>::Block::compare(Size16 myOffset, const Block *block, Size16 offset, Size16 length) const
+int GenericBuffer<mBlockSize>::Block::compare(Size16 myOffset, const Block *block, Size16 offset, Size16 length) const
 {
 	return memcmp(pointer(myOffset), block->pointer(offset), length);
 }
@@ -326,7 +328,7 @@ int Buffer<mBlockSize>::Block::compare(Size16 myOffset, const Block *block, Size
  */
 
 template<Size16 mBlockSize>
-void Buffer<mBlockSize>::Block::copyFrom(const char *cString, Size16 length)
+void GenericBuffer<mBlockSize>::Block::copyFrom(const char *cString, Size16 length)
 {
 	memcpy(endPointer(), cString, length);
 	mBytes->mEnd = mEnd += length;
@@ -340,7 +342,7 @@ void Buffer<mBlockSize>::Block::copyFrom(const char *cString, Size16 length)
  */
 
 template<Size16 mBlockSize>
-void Buffer<mBlockSize>::Block::copyTo(char *cString, Size16 offset, Size16 length)
+void GenericBuffer<mBlockSize>::Block::copyTo(char *cString, Size16 offset, Size16 length)
 {
 	memcpy(cString, startPointer() + offset, length);
 }
@@ -352,7 +354,7 @@ void Buffer<mBlockSize>::Block::copyTo(char *cString, Size16 offset, Size16 leng
  */
 
 template<Size16 mBlockSize>
-void Buffer<mBlockSize>::Block::pushed(Size16 length)
+void GenericBuffer<mBlockSize>::Block::pushed(Size16 length)
 {
 	mEnd += length;
 }
@@ -365,7 +367,7 @@ void Buffer<mBlockSize>::Block::pushed(Size16 length)
  */
 
 template<Size16 mBlockSize>
-void Buffer<mBlockSize>::Block::popped(Size16 length)
+void GenericBuffer<mBlockSize>::Block::popped(Size16 length)
 {
 	mStart += length;
 }
@@ -375,7 +377,7 @@ void Buffer<mBlockSize>::Block::popped(Size16 length)
  */
 
 template<Size16 mBlockSize>
-void Buffer<mBlockSize>::Block::split(Allocator *allocator, Size16 offset)
+void GenericBuffer<mBlockSize>::Block::split(Allocator *allocator, Size16 offset)
 {
 	void *memory = Block::allocateMemory(allocator);
 	Block *block = new(memory) Block(allocator, this, offset, size() - offset);
@@ -390,7 +392,7 @@ void Buffer<mBlockSize>::Block::split(Allocator *allocator, Size16 offset)
  */
 
 template<Size16 mBlockSize>
-void *Buffer<mBlockSize>::Block::allocateMemory(Allocator *allocator)
+void *GenericBuffer<mBlockSize>::Block::allocateMemory(Allocator *allocator)
 {
 	return allocator->allocate(sizeof(Block));
 }
@@ -401,7 +403,7 @@ void *Buffer<mBlockSize>::Block::allocateMemory(Allocator *allocator)
  */
 
 template<Size16 mBlockSize>
-typename Buffer<mBlockSize>::Block *Buffer<mBlockSize>::blockByOffset(Size *offset)
+typename GenericBuffer<mBlockSize>::Block *GenericBuffer<mBlockSize>::blockByOffset(Size *offset)
 {
 	for (Block *block = mBlocks.first(); block; block = mBlocks.next(block)) {
 		Size16 size = block->size();
@@ -419,7 +421,7 @@ typename Buffer<mBlockSize>::Block *Buffer<mBlockSize>::blockByOffset(Size *offs
  */
 
 template<Size16 mBlockSize>
-Size Buffer<mBlockSize>::blockOffset(Block *block)
+Size GenericBuffer<mBlockSize>::blockOffset(Block *block)
 {
 	Size offset = 0;
 	while (1) {
@@ -435,7 +437,7 @@ Size Buffer<mBlockSize>::blockOffset(Block *block)
  */
 
 template<Size16 mBlockSize>
-Buffer<mBlockSize>::Buffer(Actor *actor)
+GenericBuffer<mBlockSize>::GenericBuffer(Actor *actor)
 	: Object(actor), mSize(0)
 { }
 
@@ -446,13 +448,13 @@ Buffer<mBlockSize>::Buffer(Actor *actor)
  */
  
 template<Size16 mBlockSize>
-Size Buffer<mBlockSize>::length() const
+Size GenericBuffer<mBlockSize>::length() const
 {
 	return mSize;
 }
 
 template<Size16 mBlockSize>
-Size Buffer<mBlockSize>::offsetOf(char c, Size fromOffset)
+Size GenericBuffer<mBlockSize>::offsetOf(char c, Size fromOffset)
 {
 	for (Block *block = blockByOffset(&fromOffset); block; block = mBlocks.next(block), fromOffset = 0) {
 		char *found = reinterpret_cast<char *>(memchr(block->pointer(fromOffset), c, block->size() - fromOffset));
@@ -468,7 +470,7 @@ Size Buffer<mBlockSize>::offsetOf(char c, Size fromOffset)
  */
 
 template<Size16 mBlockSize>
-char Buffer<mBlockSize>::charAt(Size offset) const
+char GenericBuffer<mBlockSize>::charAt(Size offset) const
 {
 	for (ListIterator<Block> iterator(&mBlocks); iterator.hasCurrent(); iterator.subsequent()) {
 		Block *block = iterator.current();
@@ -488,7 +490,7 @@ char Buffer<mBlockSize>::charAt(Size offset) const
  */
 
 template<Size16 mBlockSize>
-String *Buffer<mBlockSize>::asString() const
+String *GenericBuffer<mBlockSize>::asString() const
 {
 	String *string = String::uninitialised(allocator(), mSize);
 	char *p = string->chars();
@@ -508,7 +510,7 @@ String *Buffer<mBlockSize>::asString() const
  */
 
 template<Size16 mBlockSize>
-String *Buffer<mBlockSize>::asString(Size length) const
+String *GenericBuffer<mBlockSize>::asString(Size length) const
 {
 	return asString(0, length);
 }
@@ -520,7 +522,7 @@ String *Buffer<mBlockSize>::asString(Size length) const
  */
 
 template<Size16 mBlockSize>
-String *Buffer<mBlockSize>::asString(Size offset, Size length) const
+String *GenericBuffer<mBlockSize>::asString(Size offset, Size length) const
 {
 	String *string = String::uninitialised(allocator(), mSize);
 	char *p = string->chars();
@@ -548,7 +550,7 @@ String *Buffer<mBlockSize>::asString(Size offset, Size length) const
  */
 
 template<Size16 mBlockSize>
-int Buffer<mBlockSize>::compare(const char *cString) const
+int GenericBuffer<mBlockSize>::compare(const char *cString) const
 {
 	return compare(cString, strlen(cString));
 }
@@ -558,7 +560,7 @@ int Buffer<mBlockSize>::compare(const char *cString) const
  */
 
 template<Size16 mBlockSize>
-int Buffer<mBlockSize>::compare(const char *cString, Size length) const
+int GenericBuffer<mBlockSize>::compare(const char *cString, Size length) const
 {
 	if (length > mSize)
 		return 1;
@@ -582,13 +584,13 @@ int Buffer<mBlockSize>::compare(const char *cString, Size length) const
  */
 
 template<Size16 mBlockSize>
-int Buffer<mBlockSize>::compare(const String *string) const
+int GenericBuffer<mBlockSize>::compare(const String *string) const
 {
 	return compare(string->chars(), string->length());
 }
 
 template<Size16 mBlockSize>
-int Buffer<mBlockSize>::compare(const Buffer *buffer) const
+int GenericBuffer<mBlockSize>::compare(const GenericBuffer *buffer) const
 {
 	// TODO
 	return 0;
@@ -602,7 +604,7 @@ int Buffer<mBlockSize>::compare(const Buffer *buffer) const
  */
 
 template<Size16 mBlockSize>
-bool Buffer<mBlockSize>::equals(const char *cString) const
+bool GenericBuffer<mBlockSize>::equals(const char *cString) const
 {
 	return compare(cString) == 0;
 }
@@ -614,7 +616,7 @@ bool Buffer<mBlockSize>::equals(const char *cString) const
  */
 
 template<Size16 mBlockSize>
-bool Buffer<mBlockSize>::equals(const char *cString, Size length) const
+bool GenericBuffer<mBlockSize>::equals(const char *cString, Size length) const
 {
 	return compare(cString, length) == 0;
 }
@@ -626,7 +628,7 @@ bool Buffer<mBlockSize>::equals(const char *cString, Size length) const
  */
 
 template<Size16 mBlockSize>
-bool Buffer<mBlockSize>::equals(const String *string) const
+bool GenericBuffer<mBlockSize>::equals(const String *string) const
 {
 	return compare(string) == 0;
 }
@@ -638,7 +640,7 @@ bool Buffer<mBlockSize>::equals(const String *string) const
  */
 
 template<Size16 mBlockSize>
-bool Buffer<mBlockSize>::equals(const Buffer *buffer) const
+bool GenericBuffer<mBlockSize>::equals(const GenericBuffer *buffer) const
 {
 	return compare(buffer) == 0;
 }
@@ -648,9 +650,9 @@ bool Buffer<mBlockSize>::equals(const Buffer *buffer) const
  */
 
 template<Size16 mBlockSize>
-WriteBuffer<mBlockSize> *Buffer<mBlockSize>::region(Size offset, Size length)
+GenericWriteBuffer<mBlockSize> *GenericBuffer<mBlockSize>::region(Size offset, Size length)
 {
-	WriteBuffer<mBlockSize> *buffer = new WriteBuffer<mBlockSize>(actor());
+	GenericWriteBuffer<mBlockSize> *buffer = new GenericWriteBuffer<mBlockSize>(actor());
 	region(offset, length, buffer);
 	return buffer;
 }
@@ -660,12 +662,12 @@ WriteBuffer<mBlockSize> *Buffer<mBlockSize>::region(Size offset, Size length)
  */
 
 template<Size16 mBlockSize>
-void Buffer<mBlockSize>::region(Size offset, Size length, WriteBuffer<mBlockSize> *buffer)
+void GenericBuffer<mBlockSize>::region(Size offset, Size length, GenericWriteBuffer<mBlockSize> *buffer)
 {
 	Allocator *allocator = actor()->dispatcher()->allocator();
 	for (Block *oldBlock = blockByOffset(&offset); oldBlock; oldBlock = mBlocks.next(oldBlock)) {
 		Size16 size = oldBlock->size();
-		if (offset + length < size) {
+		if (offset + length <= size) {
 			void *memory = Block::allocateMemory(allocator);
 			Block *newBlock = new(memory) Block(allocator, oldBlock, offset, length);
 			buffer->mBlocks.addTail(newBlock);
@@ -687,7 +689,7 @@ void Buffer<mBlockSize>::region(Size offset, Size length, WriteBuffer<mBlockSize
  */
 
 template<Size16 mBlockSize>
-Size Buffer<mBlockSize>::doSplit(char delimiter, WriteBuffer<mBlockSize> **elements, Size maxElements)
+Size GenericBuffer<mBlockSize>::doSplit(char delimiter, GenericWriteBuffer<mBlockSize> **elements, Size maxElements)
 {
 	Size nElements = 0;
 	Size previousOffset = 0;
@@ -709,16 +711,16 @@ Size Buffer<mBlockSize>::doSplit(char delimiter, WriteBuffer<mBlockSize> **eleme
  */
 
 template<Size16 mBlockSize>
-Array<WriteBuffer<mBlockSize> *> *Buffer<mBlockSize>::split(char delimiter, Size maxElements)
+Array<GenericWriteBuffer<mBlockSize> *> *GenericBuffer<mBlockSize>::split(char delimiter, Size maxElements)
 {
-	WriteBuffer<mBlockSize> *elements[maxElements];
+	GenericWriteBuffer<mBlockSize> *elements[maxElements];
 	Size nElements = doSplit(delimiter, elements, maxElements);
 
-	return Array<WriteBuffer<mBlockSize> *>::copy(allocator(), elements, nElements);
+	return Array<GenericWriteBuffer<mBlockSize> *>::copy(allocator(), elements, nElements);
 }
 
 template<Size16 mBlockSize>
-Size Buffer<mBlockSize>::split(char delimiter, Array<WriteBuffer<mBlockSize> *> *elements)
+Size GenericBuffer<mBlockSize>::split(char delimiter, Array<GenericWriteBuffer<mBlockSize> *> *elements)
 {
 	return doSplit(delimiter, elements->elements(), elements->length());
 }
@@ -731,7 +733,7 @@ Size Buffer<mBlockSize>::split(char delimiter, Array<WriteBuffer<mBlockSize> *> 
  */
 
 template<Size16 mBlockSize>
-Size16 Buffer<mBlockSize>::blockSize() const
+Size16 GenericBuffer<mBlockSize>::blockSize() const
 {
 	return mBlockSize;
 }
@@ -741,7 +743,7 @@ Size16 Buffer<mBlockSize>::blockSize() const
  */
 
 template<Size16 mBlockSize>
-Buffer<mBlockSize>::Iterator::Iterator(Buffer<mBlockSize> *buffer)
+GenericBuffer<mBlockSize>::Iterator::Iterator(GenericBuffer<mBlockSize> *buffer)
 	: mBuffer(buffer), mBlock(0), mPosition(0)
 {
 	mBuffer->mIterators.addTail(this);
@@ -752,7 +754,7 @@ Buffer<mBlockSize>::Iterator::Iterator(Buffer<mBlockSize> *buffer)
  */
 
 template<Size16 mBlockSize>
-Buffer<mBlockSize>::Iterator::~Iterator()
+GenericBuffer<mBlockSize>::Iterator::~Iterator()
 {
 	remove();
 }
@@ -764,7 +766,7 @@ Buffer<mBlockSize>::Iterator::~Iterator()
  */
 
 template<Size16 mBlockSize>
-bool Buffer<mBlockSize>::Iterator::ensureBlock()
+bool GenericBuffer<mBlockSize>::Iterator::ensureBlock()
 {
 	if (!mBlock) {
 		if ((mBlock = mBuffer->mBlocks.first()) != 0) {
@@ -785,7 +787,7 @@ bool Buffer<mBlockSize>::Iterator::ensureBlock()
  */
 
 template<Size16 mBlockSize>
-void Buffer<mBlockSize>::Iterator::advance(Size length)
+void GenericBuffer<mBlockSize>::Iterator::advance(Size length)
 {
 	if (!ensureBlock())
 		return;
@@ -809,7 +811,7 @@ void Buffer<mBlockSize>::Iterator::advance(Size length)
  */
 
 template<Size16 mBlockSize>
-Size Buffer<mBlockSize>::Iterator::offset()
+Size GenericBuffer<mBlockSize>::Iterator::offset()
 {
 	if (!ensureBlock())
 		return mBuffer->length();
@@ -822,7 +824,7 @@ Size Buffer<mBlockSize>::Iterator::offset()
  */
 
 template<Size16 mBlockSize>
-Size Buffer<mBlockSize>::Iterator::charBlockLength()
+Size GenericBuffer<mBlockSize>::Iterator::charBlockLength()
 {
 	if (!ensureBlock())
 		return 0;
@@ -835,7 +837,7 @@ Size Buffer<mBlockSize>::Iterator::charBlockLength()
  */
 
 template<Size16 mBlockSize>
-const char *Buffer<mBlockSize>::Iterator::charBlock()
+const char *GenericBuffer<mBlockSize>::Iterator::charBlock()
 {
 	if (!ensureBlock())
 		return 0;
@@ -848,7 +850,7 @@ const char *Buffer<mBlockSize>::Iterator::charBlock()
  */
 
 template<Size16 mBlockSize>
-Buffer<mBlockSize> *Buffer<mBlockSize>::Iterator::buffer() const
+GenericBuffer<mBlockSize> *GenericBuffer<mBlockSize>::Iterator::buffer() const
 {
 	return mBuffer;
 }
@@ -858,7 +860,7 @@ Buffer<mBlockSize> *Buffer<mBlockSize>::Iterator::buffer() const
  */
 
 template<Size16 mBlockSize>
-bool Buffer<mBlockSize>::Iterator::hasCurrent()
+bool GenericBuffer<mBlockSize>::Iterator::hasCurrent()
 {
 	return ensureBlock() && mPosition < mBlock->end();
 }
@@ -868,7 +870,7 @@ bool Buffer<mBlockSize>::Iterator::hasCurrent()
  */
 
 template<Size16 mBlockSize>
-char Buffer<mBlockSize>::Iterator::current()
+char GenericBuffer<mBlockSize>::Iterator::current()
 {
 	if (!ensureBlock())
 		return 0;
@@ -881,7 +883,7 @@ char Buffer<mBlockSize>::Iterator::current()
  */
 
 template<Size16 mBlockSize>
-void Buffer<mBlockSize>::Iterator::deleteBlock(Block *block)
+void GenericBuffer<mBlockSize>::Iterator::deleteBlock(Block *block)
 {
 	if (block != mBlock)
 		return;

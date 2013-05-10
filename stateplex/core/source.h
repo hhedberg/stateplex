@@ -32,14 +32,14 @@ class Actor;
  * @brief Inherited from ListItem. Source is used by the net module.
  */
 
-class Source : public virtual Object, public ListItem {
+class Source : public Object, public ListItem {
 	friend class Dispatcher;
 
 	int mFd;
-	int mEnabled : 1;
-	int mDispatched : 1;
 	int mReadable : 1;
 	int mWritable : 1;
+	int mEnabled : 1;
+	int mDispatched : 1;
 
 	void manageDispatching();
 	void setNonblocking();

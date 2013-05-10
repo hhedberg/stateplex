@@ -25,13 +25,11 @@ namespace Stateplex {
 
 void HttpConnection::close()
 {
-	bool keepAlive = mKeepAlive;
-
 	if (mHttpRequest)
 		delete mHttpRequest;
 }
 
-void HttpConnection::receiveDrainedFromUpstream()
+void HttpConnection::receiveEnd()
 {
 	if (mHttpRequest) {
 		mHttpRequest->receiveAbort();
@@ -41,19 +39,19 @@ void HttpConnection::receiveDrainedFromUpstream()
 	close();
 }
 
-void HttpConnection::receiveFromUpstream(const char *data, Size length)
+bool HttpConnection::receive(const String *string)
 {
-	mInputBuffer.append(data, length);
-	receive();
+	mInputBuffer.append(string);
+	return receive();
 }
 
-void HttpConnection::receiveFromUpstream(Buffer<> *buffer)
+bool HttpConnection::receive(Buffer *buffer)
 {
 	mInputBuffer.append(buffer);
-	receive();
+	return receive();
 }
 
-void HttpConnection::receive()
+bool HttpConnection::receive()
 {
 	ProcessResult result;
 	do {
@@ -63,7 +61,7 @@ void HttpConnection::receive()
 	if (result == PROCESS_RESULT_ERROR) {
 		mKeepAlive = 0;
 		close();
-		return;
+		return false;
 	} else if (result == PROCESS_RESULT_REQUEST_END) {
 		if (mKeepAlive)
 			mState = STATE_PRE_METHOD;
@@ -72,6 +70,8 @@ void HttpConnection::receive()
 	}
 
 	/* TODO: update inactivity information */
+
+	return true;
 }
 
 HttpConnection::ProcessResult HttpConnection::process()
@@ -105,7 +105,7 @@ HttpConnection::ProcessResult HttpConnection::process()
 		mState = STATE_VERSION;
 		// No break;
 	case STATE_VERSION: {
-		WriteBuffer<> *version;
+		WriteBuffer *version;
 		result = locateRegion('\r', ' ', &version);
 		if (result == PROCESS_RESULT_FOUND) {
 			if (!handleVersion(version))
@@ -176,15 +176,14 @@ HttpConnection::ProcessResult HttpConnection::process()
 		}
 	} break;
 	case STATE_DATA: {
-		bool ok;
 		if (mInputBuffer.length() > mHttpRequest->mDataLeft) {
-			WriteBuffer<> *buffer = mInputBuffer.region(0, mHttpRequest->mDataLeft);
+			WriteBuffer *buffer = mInputBuffer.region(0, mHttpRequest->mDataLeft);
 			mInputBuffer.popped(mHttpRequest->mDataLeft);
 			mHttpRequest->mDataLeft = 0;
-			ok = mHttpRequest->receiveData(buffer);
+			mHttpRequest->receiveData(buffer);
 			delete buffer;
 		} else {
-			ok = mHttpRequest->receiveData(&mInputBuffer);
+			mHttpRequest->receiveData(&mInputBuffer);
 			mHttpRequest->mDataLeft -= mInputBuffer.length();
 			mInputBuffer.poppedAll();
 		}
@@ -211,7 +210,7 @@ bool HttpConnection::eatSpaces()
 	return true;
 }
 
-bool HttpConnection::handleVersion(Buffer<> *version)
+bool HttpConnection::handleVersion(Buffer *version)
 {
 	if (version->equals("HTTP/1.0")) {
 		mKeepAlive = 0;
@@ -223,7 +222,7 @@ bool HttpConnection::handleVersion(Buffer<> *version)
 	return true;
 }
 
-void HttpConnection::handleHeader(Buffer<> *name, Buffer<> *value)
+void HttpConnection::handleHeader(Buffer *name, Buffer *value)
 {
 	if (name->equals("Content-Length")) {
 		String *s = value->asString();
@@ -235,7 +234,7 @@ void HttpConnection::handleHeader(Buffer<> *name, Buffer<> *value)
 	}
 }
 
-HttpConnection::ProcessResult HttpConnection::locateRegion(const char success, const char fail, WriteBuffer<> **regionReturn)
+HttpConnection::ProcessResult HttpConnection::locateRegion(const char success, const char fail, WriteBuffer **regionReturn)
 {
 	ProcessResult result = locateChar(success, fail);
 	if (result == PROCESS_RESULT_FOUND) {

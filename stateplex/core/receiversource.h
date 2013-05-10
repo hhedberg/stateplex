@@ -1,7 +1,7 @@
 /*
  * Stateplex - A server-side actor model library.
  *
- * core/upstreamsource.h
+ * core/receiversource.h
  *
  * (c) 2013 Henrik Hedberg <henrik.hedberg@innologies.fi>
  *
@@ -17,31 +17,36 @@
  * Authors: Henrik Hedberg
  */
 
-#ifndef INCLUDED_STATEPLEX_UPSTREAM_SOURCE_H
-#define INCLUDED_STATEPLEX_UPSTREAM_SOURCE_H
+#ifndef INCLUDED_STATEPLEX_RECEIVER_SOURCE_H
+#define INCLUDED_STATEPLEX_RECEIVER_SOURCE_H
 
-#include "upstream.h"
 #include "source.h"
+#include "receiver.h"
 #include "writebuffer.h"
 
 namespace Stateplex {
 
-class UpstreamSource : public Upstream, public Source {
-	WriteBuffer<> *mWriteBuffer;
+class ReceiverSource : public Source, public Receiver {
+	WriteBuffer *mWriteBuffer;
+	Receiver *mReceiver;
 
 	int mReadEof : 1;
 	int mWriteEof : 1;
 
+	bool receive(const char *data, Size length);
+
 protected:
-	UpstreamSource(Actor *actor, int fd = -1, bool readable = true, bool writable = true, bool enabled = true);
+	ReceiverSource(Actor *actor, int fd = -1, bool readable = true, bool writable = true, bool enabled = true);
 
 	virtual void handleReady(bool readyToRead, bool readyToWrite);
-	virtual void receiveDrainedFromDownstream();
-	virtual void receiveFromDownstream(const char *data, Size length);
-	virtual void receiveFromDownstream(Buffer<> *buffer);
+	virtual void receiveEnd();
+	virtual bool receive(const String *string);
+	virtual bool receive(Buffer *buffer);
 
 public:
-	virtual ~UpstreamSource();
+	virtual ~ReceiverSource();
+
+	void setReceiver(Receiver *receiver);
 };
 
 }
@@ -55,20 +60,17 @@ public:
 
 namespace Stateplex {
 
-/*
- * Constructor.
- */
-	
-inline UpstreamSource::UpstreamSource(Actor *actor, int fd, bool readable, bool writable, bool enabled)
-	: Object(actor), Upstream(actor), Source(actor, fd, readable, writable, enabled), mWriteBuffer(0), mReadEof(false), mWriteEof(false)
+inline ReceiverSource::ReceiverSource(Actor *actor, int fd, bool readable, bool writable, bool enabled)
+	: Source(actor, fd, readable, writable, enabled), mWriteBuffer(0), mReceiver(0), mReadEof(false), mWriteEof(false)
 { }
 
-/* 
- * Destructor.
- */
-
-inline UpstreamSource::~UpstreamSource()
+inline ReceiverSource::~ReceiverSource()
 { }
+
+inline void ReceiverSource::setReceiver(Receiver *receiver)
+{
+	mReceiver = receiver;
+}
 
 }
 

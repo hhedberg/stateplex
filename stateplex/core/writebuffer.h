@@ -38,17 +38,17 @@ namespace Stateplex {
  * When constructing a new buffer, the WriteBuffer class must be used.
  */
 
-template<Size16 mBlockSize = 1024>
-class WriteBuffer : public ReadBuffer<mBlockSize> {
-	typename Buffer<mBlockSize>::Block *allocateBlock(typename Buffer<mBlockSize>::Block *previousBlock);
-	typename Buffer<mBlockSize>::Block *ensurePush(typename Buffer<mBlockSize>::Block *block, Size length);
-	void pushToBlock(const char *cString, Size length, typename Buffer<mBlockSize>::Block *block);
-	typename Buffer<mBlockSize>::Block *splitBlock(Size offset);
+template<Size16 mBlockSize>
+class GenericWriteBuffer : public GenericReadBuffer<mBlockSize> {
+	typename GenericBuffer<mBlockSize>::Block *allocateBlock(typename GenericBuffer<mBlockSize>::Block *previousBlock);
+	typename GenericBuffer<mBlockSize>::Block *ensurePush(typename GenericBuffer<mBlockSize>::Block *block, Size length);
+	void pushToBlock(const char *cString, Size length, typename GenericBuffer<mBlockSize>::Block *block);
+	typename GenericBuffer<mBlockSize>::Block *splitBlock(Size offset);
 
 public:
-	WriteBuffer(Actor *actor);
+	GenericWriteBuffer(Actor *actor);
 
-	void append(Buffer<> *buffer);
+	void append(GenericBuffer<mBlockSize> *buffer);
 	void append(const char *cString);
 	void append(const char *cString, Size length);
 	void append(const String *string);
@@ -58,11 +58,13 @@ public:
 	Size16 pushLength() const;
 	void pushed(Size16 length);
 
-	void insert(Size offset, Buffer<> *buffer);
-	void insert(Size insertOffset, Buffer<> *buffer, Size offset, Size length);
+	void insert(Size offset, GenericBuffer<mBlockSize> *buffer);
+	void insert(Size insertOffset, GenericBuffer<mBlockSize> *buffer, Size offset, Size length);
 	void insert(Size offset, const char *cString);
 	void insert(Size offset, const char *cString, Size length);
 };
+
+typedef GenericWriteBuffer<1024> WriteBuffer;
 
 }
 
@@ -77,10 +79,10 @@ namespace Stateplex {
  */
 
 template<Size16 mBlockSize>
-typename Buffer<mBlockSize>::Block *WriteBuffer<mBlockSize>::allocateBlock(typename Buffer<mBlockSize>::Block *previousBlock)
+typename GenericBuffer<mBlockSize>::Block *GenericWriteBuffer<mBlockSize>::allocateBlock(typename GenericBuffer<mBlockSize>::Block *previousBlock)
 {
-	void *memory = Buffer<mBlockSize>::Block::allocateMemory(this->allocator());
-	typename Buffer<mBlockSize>::Block *block = new(memory) typename Buffer<mBlockSize>::Block(this->allocator());
+	void *memory = GenericBuffer<mBlockSize>::Block::allocateMemory(this->allocator());
+	typename GenericBuffer<mBlockSize>::Block *block = new(memory) typename GenericBuffer<mBlockSize>::Block(this->allocator());
 	if (previousBlock)
 		block->addAfter(previousBlock);
 	else
@@ -94,7 +96,7 @@ typename Buffer<mBlockSize>::Block *WriteBuffer<mBlockSize>::allocateBlock(typen
  */
 
 template<Size16 mBlockSize>
-typename Buffer<mBlockSize>::Block *WriteBuffer<mBlockSize>::ensurePush(typename Buffer<mBlockSize>::Block *block, Size length)
+typename GenericBuffer<mBlockSize>::Block *GenericWriteBuffer<mBlockSize>::ensurePush(typename GenericBuffer<mBlockSize>::Block *block, Size length)
 {
 	if (!block || length < block->room())
 		block = this->allocateBlock(block);
@@ -103,7 +105,7 @@ typename Buffer<mBlockSize>::Block *WriteBuffer<mBlockSize>::ensurePush(typename
 }
 
 template<Size16 mBlockSize>
-void WriteBuffer<mBlockSize>::pushToBlock(const char *cString, Size length, typename Buffer<mBlockSize>::Block *block)
+void GenericWriteBuffer<mBlockSize>::pushToBlock(const char *cString, Size length, typename GenericBuffer<mBlockSize>::Block *block)
 {
 	block = ensurePush(block, 1);
 	Size16 room = block->room();
@@ -124,12 +126,12 @@ void WriteBuffer<mBlockSize>::pushToBlock(const char *cString, Size length, type
  */
 
 template<Size16 mBlockSize>
-typename Buffer<mBlockSize>::Block *WriteBuffer<mBlockSize>::splitBlock(Size offset)
+typename GenericBuffer<mBlockSize>::Block *GenericWriteBuffer<mBlockSize>::splitBlock(Size offset)
 {
 	if (offset == 0)
 		return 0;
 
-	for (typename Buffer<mBlockSize>::Block *block = this->mBlocks.first(); block; block = this->mBlocks.next(block)) {
+	for (typename GenericBuffer<mBlockSize>::Block *block = this->mBlocks.first(); block; block = this->mBlocks.next(block)) {
 		Size16 size = block->size();
 		if (offset <= size) {
 			if (offset > 0 && offset < size)
@@ -148,8 +150,8 @@ typename Buffer<mBlockSize>::Block *WriteBuffer<mBlockSize>::splitBlock(Size off
  */
 
 template<Size16 mBlockSize>
-WriteBuffer<mBlockSize>::WriteBuffer(Actor *actor)
-	: ReadBuffer<mBlockSize>(actor)
+GenericWriteBuffer<mBlockSize>::GenericWriteBuffer(Actor *actor)
+	: GenericReadBuffer<mBlockSize>(actor)
 { }
 
 /**
@@ -160,12 +162,12 @@ WriteBuffer<mBlockSize>::WriteBuffer(Actor *actor)
  */
 
 template<Size16 mBlockSize>
-void WriteBuffer<mBlockSize>::append(Buffer<> *buffer)
+void GenericWriteBuffer<mBlockSize>::append(GenericBuffer<mBlockSize> *buffer)
 {
-	typename Buffer<mBlockSize>::Block *previousBlock = this->mBlocks.last();
-	for (ListIterator<typename Buffer<mBlockSize>::Block> iterator(&buffer->mBlocks); iterator.hasCurrent(); iterator.subsequent()) {
-		void *memory = Buffer<mBlockSize>::Block::allocateMemory(this->allocator());
-		typename Buffer<mBlockSize>::Block *block = new(memory) typename Buffer<mBlockSize>::Block(this->allocator(), iterator.current());
+	typename GenericBuffer<mBlockSize>::Block *previousBlock = this->mBlocks.last();
+	for (ListIterator<typename GenericBuffer<mBlockSize>::Block> iterator(&buffer->mBlocks); iterator.hasCurrent(); iterator.subsequent()) {
+		void *memory = GenericBuffer<mBlockSize>::Block::allocateMemory(this->allocator());
+		typename GenericBuffer<mBlockSize>::Block *block = new(memory) typename GenericBuffer<mBlockSize>::Block(this->allocator(), iterator.current());
 		if (previousBlock)
 			block->addAfter(previousBlock);
 		else
@@ -182,7 +184,7 @@ void WriteBuffer<mBlockSize>::append(Buffer<> *buffer)
  */
 
 template<Size16 mBlockSize>
-void WriteBuffer<mBlockSize>::append(const char *cString)
+void GenericWriteBuffer<mBlockSize>::append(const char *cString)
 {
 	append(cString, strlen(cString));
 }
@@ -192,7 +194,7 @@ void WriteBuffer<mBlockSize>::append(const char *cString)
  */
 
 template<Size16 mBlockSize>
-void WriteBuffer<mBlockSize>::append(const char *cString, Size length)
+void GenericWriteBuffer<mBlockSize>::append(const char *cString, Size length)
 {
 	this->pushToBlock(cString, length, this->mBlocks.last());
 }
@@ -202,7 +204,7 @@ void WriteBuffer<mBlockSize>::append(const char *cString, Size length)
  */
 
 template<Size16 mBlockSize>
-void WriteBuffer<mBlockSize>::append(const String *string)
+void GenericWriteBuffer<mBlockSize>::append(const String *string)
 {
 	this->pushToBlock(string->chars(), string->length(), this->mBlocks.last());
 }
@@ -218,7 +220,7 @@ void WriteBuffer<mBlockSize>::append(const String *string)
  */
 
 template<Size16 mBlockSize>
-void WriteBuffer<mBlockSize>::ensurePushLength(Size16 length)
+void GenericWriteBuffer<mBlockSize>::ensurePushLength(Size16 length)
 {
 	this->ensurePush(this->mBlocks.last(), length);
 }
@@ -230,9 +232,9 @@ void WriteBuffer<mBlockSize>::ensurePushLength(Size16 length)
  */
 
 template<Size16 mBlockSize>
-char *WriteBuffer<mBlockSize>::pushPointer() const
+char *GenericWriteBuffer<mBlockSize>::pushPointer() const
 {
-	typename Buffer<mBlockSize>::Block *block = this->mBlocks.last();
+	typename GenericBuffer<mBlockSize>::Block *block = this->mBlocks.last();
 	return block->endPointer();
 }
 
@@ -243,9 +245,9 @@ char *WriteBuffer<mBlockSize>::pushPointer() const
  */
 
 template<Size16 mBlockSize>
-Size16 WriteBuffer<mBlockSize>::pushLength() const
+Size16 GenericWriteBuffer<mBlockSize>::pushLength() const
 {
-	typename Buffer<mBlockSize>::Block *block = this->mBlocks.last();
+	typename GenericBuffer<mBlockSize>::Block *block = this->mBlocks.last();
 	return block->room();
 }
 
@@ -258,20 +260,20 @@ Size16 WriteBuffer<mBlockSize>::pushLength() const
  */
 
 template<Size16 mBlockSize>
-void WriteBuffer<mBlockSize>::pushed(Size16 length)
+void GenericWriteBuffer<mBlockSize>::pushed(Size16 length)
 {
-	typename Buffer<mBlockSize>::Block *block = this->mBlocks.last();
+	typename GenericBuffer<mBlockSize>::Block *block = this->mBlocks.last();
 	block->pushed(length);
 	this->mSize += length;
 }
 
 template<Size16 mBlockSize>
-void WriteBuffer<mBlockSize>::insert(Size offset, Buffer<> *buffer)
+void GenericWriteBuffer<mBlockSize>::insert(Size offset, GenericBuffer<mBlockSize> *buffer)
 {
-	typename Buffer<mBlockSize>::Block *previousBlock = this->splitBlock(offset);
-	for (ListIterator<typename Buffer<mBlockSize>::Block> iterator(&buffer->mBlocks); iterator.hasCurrent(); iterator.subsequent()) {
-		void *memory = typename Buffer<mBlockSize>::Block::allocateMemory(this->allocator());
-		typename Buffer<mBlockSize>::Block *block = new(memory) typename Buffer<mBlockSize>::Block(iterator.current());
+	typename GenericBuffer<mBlockSize>::Block *previousBlock = this->splitBlock(offset);
+	for (ListIterator<typename GenericBuffer<mBlockSize>::Block> iterator(&buffer->mBlocks); iterator.hasCurrent(); iterator.subsequent()) {
+		void *memory = typename GenericBuffer<mBlockSize>::Block::allocateMemory(this->allocator());
+		typename GenericBuffer<mBlockSize>::Block *block = new(memory) typename GenericBuffer<mBlockSize>::Block(iterator.current());
 		if (previousBlock)
 			block->addAfter(previousBlock);
 		else
@@ -282,17 +284,17 @@ void WriteBuffer<mBlockSize>::insert(Size offset, Buffer<> *buffer)
 }
 
 template<Size16 mBlockSize>
-void WriteBuffer<mBlockSize>::insert(Size insertOffset, Buffer<> *buffer, Size offset, Size length)
+void GenericWriteBuffer<mBlockSize>::insert(Size insertOffset, GenericBuffer<mBlockSize> *buffer, Size offset, Size length)
 {
-	typename Buffer<mBlockSize>::Block *previousBlock = this->splitBlock(insertOffset);
-	for (typename Buffer<mBlockSize>::Block *block = this->blockByOffset(&offset); block && length; block = this->mBlocks.next(block)) {
+	typename GenericBuffer<mBlockSize>::Block *previousBlock = this->splitBlock(insertOffset);
+	for (typename GenericBuffer<mBlockSize>::Block *block = this->blockByOffset(&offset); block && length; block = this->mBlocks.next(block)) {
 		Size size;
 		if (offset + length < block->size())
 			size = length;
 		else
 			size = block->size();
-		void *memory = typename Buffer<mBlockSize>::Block::allocateMemory(this->allocator());
-		typename Buffer<mBlockSize>::Block *newBlock = new(memory) typename Buffer<mBlockSize>::Block(this->allocator(), block, offset, size);
+		void *memory = typename GenericBuffer<mBlockSize>::Block::allocateMemory(this->allocator());
+		typename GenericBuffer<mBlockSize>::Block *newBlock = new(memory) typename GenericBuffer<mBlockSize>::Block(this->allocator(), block, offset, size);
 		if (previousBlock)
 			block->addAfter(previousBlock);
 		else
@@ -304,15 +306,15 @@ void WriteBuffer<mBlockSize>::insert(Size insertOffset, Buffer<> *buffer, Size o
 }
 
 template<Size16 mBlockSize>
-void WriteBuffer<mBlockSize>::insert(Size offset, const char *cString)
+void GenericWriteBuffer<mBlockSize>::insert(Size offset, const char *cString)
 {
 	insert(offset, cString, strlen(cString));
 }
 
 template<Size16 mBlockSize>
-void WriteBuffer<mBlockSize>::insert(Size offset, const char *cString, Size length)
+void GenericWriteBuffer<mBlockSize>::insert(Size offset, const char *cString, Size length)
 {
-	typename Buffer<mBlockSize>::Block *previousBlock = this->splitBlock(offset);
+	typename GenericBuffer<mBlockSize>::Block *previousBlock = this->splitBlock(offset);
 	this->pushToBlock(cString, strlen(cString), previousBlock);
 }
 

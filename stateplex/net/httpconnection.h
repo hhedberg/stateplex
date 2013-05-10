@@ -37,12 +37,13 @@ class HttpServer;
 /**
  * HTTP connection between the HttpServer and a client.
  */
-class HttpConnection : public Downstream {
+class HttpConnection : public Object, public Receiver {
 	HttpServer *mHttpServer;
-	WriteBuffer<> mInputBuffer;
-	Buffer<>::Iterator mInputBufferIterator;
-	WriteBuffer<> *mMethod;
-	WriteBuffer<> *mUri;
+	Receiver *mReceiver;
+	WriteBuffer mInputBuffer;
+	Buffer::Iterator mInputBufferIterator;
+	WriteBuffer *mMethod;
+	WriteBuffer *mUri;
 	HttpRequest *mHttpRequest;
 
 	enum State {
@@ -72,23 +73,24 @@ class HttpConnection : public Downstream {
 	unsigned int mKeepAlive : 1;
 
 	void close();
-	void receive();
+	bool receive();
 	ProcessResult process();
 	bool eatSpaces();
-	bool handleVersion(Buffer<> *version);
-	void handleHeader(Buffer<> *name, Buffer<> *value);
+	bool handleVersion(Buffer *version);
+	void handleHeader(Buffer *name, Buffer *value);
 	ProcessResult locateChar(const char success, const char fail);
-	ProcessResult locateRegion(const char success, const char fail, WriteBuffer<> **regionReturn);
+	ProcessResult locateRegion(const char success, const char fail, WriteBuffer **regionReturn);
 
 protected:
-	virtual void receiveDrainedFromUpstream();
-	virtual void receiveFromUpstream(const char *data, Size length);
-	virtual void receiveFromUpstream(Buffer<> *buffer);
+	virtual void receiveEnd();
+	virtual bool receive(const String *string);
+	virtual bool receive(Buffer *buffer);
 
 public:
-	HttpConnection(Actor *actor, HttpServer *server);
+	HttpConnection(Actor *actor, HttpServer *server, Receiver *receiver);
 
 	HttpServer *httpServer() const;
+	Receiver *receiver() const;
 };
 
 }
@@ -97,13 +99,18 @@ public:
 
 namespace Stateplex {
 
-inline HttpConnection::HttpConnection(Actor *actor, HttpServer *server)
-	: Object(actor), Downstream(actor), mHttpServer(server), mInputBuffer(actor), mInputBufferIterator(&mInputBuffer), mMethod(0), mUri(0), mHttpRequest(0), mState(STATE_PRE_METHOD), mKeepAlive(0)
+inline HttpConnection::HttpConnection(Actor *actor, HttpServer *server, Receiver *receiver)
+	: Object(actor), mHttpServer(server), mReceiver(receiver), mInputBuffer(actor), mInputBufferIterator(&mInputBuffer), mMethod(0), mUri(0), mHttpRequest(0), mState(STATE_PRE_METHOD), mKeepAlive(0)
 { }
 
 inline HttpServer *HttpConnection::httpServer() const
 {
 	return mHttpServer;
+}
+
+inline Receiver *HttpConnection::receiver() const
+{
+	return mReceiver;
 }
 
 }

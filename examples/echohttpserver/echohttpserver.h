@@ -36,8 +36,8 @@ class EchoHttpRequest : public Stateplex::HttpRequest {
 	bool mDataReceived;
 
 protected:
-	virtual bool receiveHeader(Stateplex::Buffer<> *name, Stateplex::Buffer<> *value);
-	virtual bool receiveData(Stateplex::Buffer<> *data);
+	virtual bool receiveHeader(Stateplex::Buffer *name, Stateplex::Buffer *value);
+	virtual bool receiveData(Stateplex::Buffer *data);
 	virtual void receiveEnd();
 	virtual void receiveAbort();
 
