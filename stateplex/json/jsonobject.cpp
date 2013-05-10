@@ -1,7 +1,4 @@
 #include "jsonobject.h"
-#include <iostream>
-#include <cstdlib>
-#include <ctype.h>
 
 JsonObject::JsonObject(Stateplex::Actor *owner, const char *key)
 	: JsonItem(owner)

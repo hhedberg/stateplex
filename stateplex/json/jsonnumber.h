@@ -2,7 +2,6 @@
 #define JSONNUMBER_H
 
 #include "jsonitem.h"
-#include <iostream>
 
 /**
  * @brief JsonNumbers contains non-decimal numbers.
