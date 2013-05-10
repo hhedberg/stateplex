@@ -59,7 +59,7 @@ public:
 #include "actor.h"
 
 namespace Stateplex {
-	
+
 inline ReceiverSource::ReceiverSource(Actor *actor, int fd, bool readable, bool writable, bool enabled)
 	: Source(actor, fd, readable, writable, enabled), mWriteBuffer(0), mReceiver(0), mReadEof(false), mWriteEof(false)
 { }

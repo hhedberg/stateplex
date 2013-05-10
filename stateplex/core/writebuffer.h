@@ -74,6 +74,9 @@ typedef GenericWriteBuffer<1024> WriteBuffer;
 
 namespace Stateplex {
 
+/*
+ * Allocates block to buffer after or before previous block.
+ */
 
 template<Size16 mBlockSize>
 typename GenericBuffer<mBlockSize>::Block *GenericWriteBuffer<mBlockSize>::allocateBlock(typename GenericBuffer<mBlockSize>::Block *previousBlock)
@@ -87,6 +90,10 @@ typename GenericBuffer<mBlockSize>::Block *GenericWriteBuffer<mBlockSize>::alloc
 
 	return block;
 }
+
+/*
+ * 
+ */
 
 template<Size16 mBlockSize>
 typename GenericBuffer<mBlockSize>::Block *GenericWriteBuffer<mBlockSize>::ensurePush(typename GenericBuffer<mBlockSize>::Block *block, Size length)
@@ -113,6 +120,10 @@ void GenericWriteBuffer<mBlockSize>::pushToBlock(const char *cString, Size lengt
 	}
 }
 
+/*
+ *
+ *
+ */
 
 template<Size16 mBlockSize>
 typename GenericBuffer<mBlockSize>::Block *GenericWriteBuffer<mBlockSize>::splitBlock(Size offset)
@@ -132,6 +143,11 @@ typename GenericBuffer<mBlockSize>::Block *GenericWriteBuffer<mBlockSize>::split
 
 	return 0;
 }
+
+/*
+ * Constructor for 
+ *
+ */
 
 template<Size16 mBlockSize>
 GenericWriteBuffer<mBlockSize>::GenericWriteBuffer(Actor *actor)
@@ -164,8 +180,9 @@ void GenericWriteBuffer<mBlockSize>::append(GenericBuffer<mBlockSize> *buffer)
 /**
  * Copies the C string into the end of the buffer.
  * 
- * @param string	string to be added
+ * @param string	string to be added.
  */
+
 template<Size16 mBlockSize>
 void GenericWriteBuffer<mBlockSize>::append(const char *cString)
 {
@@ -175,6 +192,7 @@ void GenericWriteBuffer<mBlockSize>::append(const char *cString)
 /**
  * Copies the given amount of bytes from the specified location into the end of the buffer.
  */
+
 template<Size16 mBlockSize>
 void GenericWriteBuffer<mBlockSize>::append(const char *cString, Size length)
 {
@@ -184,6 +202,7 @@ void GenericWriteBuffer<mBlockSize>::append(const char *cString, Size length)
 /**
  * Copies the contents of the given String into the end of the buffer.
  */
+
 template<Size16 mBlockSize>
 void GenericWriteBuffer<mBlockSize>::append(const String *string)
 {
