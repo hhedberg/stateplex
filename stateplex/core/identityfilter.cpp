@@ -21,15 +21,28 @@
 
 namespace Stateplex {
 
+/*
+ * Sets receiver to say it is EOF.
+ */
+
 void IdentityFilter::receiveEnd()
 {
 	receiver()->receiveEnd();
 }
 
+/*
+ * Receives string from identifyfilters receiver.
+ */
+
 bool IdentityFilter::receive(const String *string)
 {
 	return receiver()->receive(string);
 }
+
+/*
+ * Receives pointer to a buffer from indentifyfilters
+ * receiver.
+ */
 
 bool IdentityFilter::receive(Buffer *buffer)
 {

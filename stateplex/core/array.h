@@ -60,6 +60,10 @@ public:
 
 namespace Stateplex {
 
+/*
+ * Checks and gets the length of the array.
+ */
+
 template<typename Type>
 inline Size Array<Type>::getLength(Size *sizeOfLength) const
 {
@@ -75,6 +79,10 @@ inline Size Array<Type>::getLength(Size *sizeOfLength) const
 		return (*size & 0x7f) + ((*(size + 1) & 0x7f) << 7) + ((*(size + 2) & 0x7f) << 14);
 	}
 }
+
+/*
+ * Checks and sets the array length.
+ */
 
 template<typename Type>
 inline void Array<Type>::setLength(Size length)
@@ -92,6 +100,10 @@ inline void Array<Type>::setLength(Size length)
 	}
 }
 
+/*
+ * Checks the size of the length and return the size.
+ */
+
 template<typename Type>
 inline Size Array<Type>::sizeOfLength(Size length)
 {
@@ -107,6 +119,10 @@ inline Size Array<Type>::sizeOfLength(Size length)
 	return size;
 }
 
+/*
+ * Return a Type of size long.
+ */
+
 template<typename Type>
 Type *Array<Type>::elements() const
 {
@@ -116,6 +132,10 @@ Type *Array<Type>::elements() const
 	Array<Type> *self = const_cast<Array<Type> *>(this);
 	return *reinterpret_cast<Type **>(reinterpret_cast<char *>(self) + size);
 }
+
+/*
+ * Return a Type of size long and index.
+ */
 
 template<typename Type>
 Type Array<Type>::element(Size index) const
@@ -128,6 +148,10 @@ Type Array<Type>::element(Size index) const
 	return *(reinterpret_cast<Type *>(reinterpret_cast<char *>(self) + size) + index);
 }
 
+/*
+ * Takes index and value and sets element.
+ */
+
 template<typename Type>
 void Array<Type>::setElement(Size index, Type value)
 {
@@ -138,12 +162,21 @@ void Array<Type>::setElement(Size index, Type value)
 	*(reinterpret_cast<Type *>(reinterpret_cast<char *>(this) + size) + index) = value;
 }
 
+/*
+ * Returns the length of the array.
+ */
+
 template<typename Type>
 inline Size Array<Type>::length() const
 {
 	Size size;
 	return getLength(&size);
 }
+
+/*
+ * Allocates memory and sets the length of uninitialised
+ * array and return array.
+ */
 
 template<typename Type>
 inline Array<Type> *Array<Type>::uninitialised(Allocator *allocator, Size length)
@@ -155,6 +188,12 @@ inline Array<Type> *Array<Type>::uninitialised(Allocator *allocator, Size length
 
 	return array;
 }
+
+/*
+ * Copies and set the length of the array
+ *
+ * @return 	allocated array length.
+ */
 
 template<typename Type>
 inline Array<Type> *Array<Type>::copy(Allocator *allocator, Type *const cArray, Size length)
@@ -168,6 +207,12 @@ inline Array<Type> *Array<Type>::copy(Allocator *allocator, Type *const cArray, 
 	return array;
 }
 
+/*
+ * Copies the array and allocate memory.
+ *
+ * @return	allocated array memory.
+ */
+
 template<typename Type>
 inline Array<Type> *Array<Type>::copy(Allocator *allocator, Array<Type> *array)
 {
@@ -178,6 +223,10 @@ inline Array<Type> *Array<Type>::copy(Allocator *allocator, Array<Type> *array)
 
 	return reinterpret_cast<Array *>(memory);
 }
+
+/*
+ * Destroys the allocated array.
+ */
 
 template<typename Type>
 inline void Array<Type>::destroy(Allocator *allocator)

@@ -60,13 +60,27 @@ public:
 
 namespace Stateplex {
 
+/*
+ * Constructor that initialize a new instances of ReceiverSource.
+ */
+	
 inline ReceiverSource::ReceiverSource(Actor *actor, int fd, bool readable, bool writable, bool enabled)
 	: Source(actor, fd, readable, writable, enabled), mWriteBuffer(0), mReceiver(0), mReadEof(false), mWriteEof(false)
 { }
 
+/* 
+ * Default destructor function for resceiverSource.
+ */
+
 inline ReceiverSource::~ReceiverSource()
 { }
 
+/*
+ * Sets memeber variable receiver.
+ *
+ * @param *receiver	pointer Receiver.
+ */
+ 
 inline void ReceiverSource::setReceiver(Receiver *receiver)
 {
 	mReceiver = receiver;

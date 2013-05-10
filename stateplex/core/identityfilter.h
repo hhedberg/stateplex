@@ -42,9 +42,20 @@ public:
 
 namespace Stateplex {
 
+/*
+ * Constructor that initialize a new instances of IdentityFilter.
+ *
+ * @param *actor	pointer to Actor.
+ * @param *receiver	pointer to Receiver.
+ */
+
 inline IdentityFilter::IdentityFilter(Actor *actor, Receiver *receiver)
 	: Object(actor), Filter(receiver)
 { }
+
+/*
+ * Default destructor.
+ */
 
 inline IdentityFilter::~IdentityFilter()
 { }

@@ -76,6 +76,8 @@ namespace Stateplex {
 
 /*
  * Allocates block to buffer after or before previous block.
+ *
+ * @return	allocated block.
  */
 
 template<Size16 mBlockSize>
@@ -92,7 +94,9 @@ typename GenericBuffer<mBlockSize>::Block *GenericWriteBuffer<mBlockSize>::alloc
 }
 
 /*
- * 
+ * Ensures push, checks if there is available room and allocates block.
+ *
+ * @return	allocated block.
  */
 
 template<Size16 mBlockSize>
@@ -103,6 +107,12 @@ typename GenericBuffer<mBlockSize>::Block *GenericWriteBuffer<mBlockSize>::ensur
 
 	return block;
 }
+
+/*
+ * Calculates available room and pushes to block.
+ *
+ * @param *string	pointer to string
+ */
 
 template<Size16 mBlockSize>
 void GenericWriteBuffer<mBlockSize>::pushToBlock(const char *cString, Size length, typename GenericBuffer<mBlockSize>::Block *block)
@@ -121,8 +131,7 @@ void GenericWriteBuffer<mBlockSize>::pushToBlock(const char *cString, Size lengt
 }
 
 /*
- *
- *
+ * Checks the offset value and splits block.
  */
 
 template<Size16 mBlockSize>
@@ -145,8 +154,9 @@ typename GenericBuffer<mBlockSize>::Block *GenericWriteBuffer<mBlockSize>::split
 }
 
 /*
- * Constructor for 
+ * Constructor that initialize a new instances of GenericWriteBuffer.
  *
+ * @param 
  */
 
 template<Size16 mBlockSize>
@@ -178,7 +188,7 @@ void GenericWriteBuffer<mBlockSize>::append(GenericBuffer<mBlockSize> *buffer)
 }
 
 /**
- * Copies the C string into the end of the buffer.
+ * Copies the cString into the end of the buffer.
  * 
  * @param string	string to be added.
  */
@@ -241,7 +251,7 @@ char *GenericWriteBuffer<mBlockSize>::pushPointer() const
 /**
  * Function that returns last pushed blocks length.
  * 
- * @return	lenght of the push.
+ * @return	length of the push.
  */
 
 template<Size16 mBlockSize>
@@ -267,6 +277,13 @@ void GenericWriteBuffer<mBlockSize>::pushed(Size16 length)
 	this->mSize += length;
 }
 
+/**
+ * Inserts a buffer given as parameter to itself.
+ *
+ * @param offset	offset for splitting buffer.
+ * @param *buffer	target buffer to add.
+ */
+ 
 template<Size16 mBlockSize>
 void GenericWriteBuffer<mBlockSize>::insert(Size offset, GenericBuffer<mBlockSize> *buffer)
 {
@@ -282,6 +299,15 @@ void GenericWriteBuffer<mBlockSize>::insert(Size offset, GenericBuffer<mBlockSiz
 		previousBlock = block;
 	}
 }
+
+/**
+ * Insert a buffer given as parameter to itself.
+ *
+ * @param insertOffset	offset for splitting buffer.
+ * @param *buffer	target buffer to add.
+ * @param offset	offset for inserting new buffer.
+ * @param length	how much of the buffer is added at max.
+ */
 
 template<Size16 mBlockSize>
 void GenericWriteBuffer<mBlockSize>::insert(Size insertOffset, GenericBuffer<mBlockSize> *buffer, Size offset, Size length)
@@ -305,11 +331,29 @@ void GenericWriteBuffer<mBlockSize>::insert(Size insertOffset, GenericBuffer<mBl
 	}
 }
 
+/**
+ * Takes offset and string as parameter and
+ * adds string to the buffer using offset as
+ * restriction.
+ *
+ * @param offset	offset for inserting in to the buffer.
+ * @param *cString	string to add.	
+ */
+
 template<Size16 mBlockSize>
 void GenericWriteBuffer<mBlockSize>::insert(Size offset, const char *cString)
 {
 	insert(offset, cString, strlen(cString));
 }
+
+/**
+ * Takes offset, string and size and adds
+ * string to buffer using restrictions length, offset.
+ *
+ * @param offset	offset for inserting in to the buffer.
+ * @param cString	string to add.
+ * @parama length 	max length to add.
+ */
 
 template<Size16 mBlockSize>
 void GenericWriteBuffer<mBlockSize>::insert(Size offset, const char *cString, Size length)
