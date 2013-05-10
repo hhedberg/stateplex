@@ -1,9 +1,3 @@
-#include <stateplex/json/jsonitem.h>
-#include <stateplex/json/jsonnumber.h>
-#include <stateplex/json/jsonstring.h>
-#include <stateplex/json/jsonobject.h>
-#include <stateplex/json/jsondouble.h>
-#include <stateplex/json/jsonbool.h>
 #include <stateplex/core/dispatcher.h>
 #include <stateplex/json/jsondbactor.h>
 #include "jsonclient.h"
