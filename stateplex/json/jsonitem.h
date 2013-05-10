@@ -7,13 +7,17 @@
 #include "../core/types.h"
 #include <iostream>
 
+ /**
+* JsonType enum is used to compare jsonitems
+* JsonType to see which kind of jsonitem it is.
+*/
+
 enum JsonType {
 		JSON_STRING,
 		JSON_NUMBER,
 		JSON_BOOL,
 		JSON_DOUBLE,
-		JSON_OBJECT,
-		JSON_DATA
+		JSON_OBJECT
 };
 
 /**
