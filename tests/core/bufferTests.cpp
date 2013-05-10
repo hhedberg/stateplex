@@ -204,9 +204,10 @@ TEST_F(BufferTest, popTests)
         EXPECT_EQ(0, buffer1->popLength());
         EXPECT_EQ(0, buffer1->length());
 
-        buffer2->append("My first Vappu");
+        buffer2->append("My first Vappu is the best.");
+        std::cout << "popTest-buffer2: " << buffer2->popPointer() << "\n";
         EXPECT_TRUE(buffer2->equals("My first Vappu"));
-        EXPECT_EQ(14, buffer2->length());
+        EXPECT_EQ(27, buffer2->length());
 
         buffer2->poppedAll();
         EXPECT_EQ(0, buffer2->popLength());
