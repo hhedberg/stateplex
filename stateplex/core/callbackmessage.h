@@ -32,7 +32,7 @@ protected:
 	template<typename Sender> CallbackMessage(Sender *sender, Receiver *receiver, void (Sender::*callbackFunction)(Subtype *));
 
 	virtual void handle(Actor *sender, Receiver *receiver) = 0;
-	void invokeCallback() const;
+	void invokeCallback(Subtype * message) const;
 
 public:
 	virtual ~CallbackMessage();
@@ -54,9 +54,10 @@ inline CallbackMessage<Receiver, Subtype>::~CallbackMessage()
 { }
 
 template<typename Receiver, typename Subtype>
-inline void CallbackMessage<Receiver, Subtype>::invokeCallback() const
+inline void CallbackMessage<Receiver, Subtype>::invokeCallback(Subtype *message) const
 {
 	/* TODO */
+	mCallback.invoke(message);
 }
 
 }
